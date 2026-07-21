@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from radar.classifier import classify_item, content_hash, load_cache, save_cache
-from radar.sources import fetch_google_news
+from radar.sources import fetch_bluesky, fetch_google_news, fetch_mastodon
 
 ROOT = Path(__file__).parent
 CONFIG_PATH = ROOT / "config.json"
@@ -31,13 +31,25 @@ def main():
     config = load_config()
     errors = []
 
-    print("== Fase 1: ingesta ==")
-    raw_items = fetch_google_news(config, errors)
-    print(f"Google News: {len(raw_items)} items crudos")
+    print("== Fase 1: ingesta (noticias) ==")
+    news_items = fetch_google_news(config, errors)
+    print(f"Google News: {len(news_items)} items crudos")
     print_errors(errors)
 
+    print("== Fase 3: ingesta (redes sociales) ==")
+    errors_before = len(errors)
+    bluesky_items = fetch_bluesky(config, errors)
+    print(f"Bluesky: {len(bluesky_items)} items crudos")
+    print_errors(errors, since=errors_before)
+
+    errors_before = len(errors)
+    mastodon_items = fetch_mastodon(config, errors)
+    print(f"Mastodon: {len(mastodon_items)} items crudos")
+    print_errors(errors, since=errors_before)
+
+    raw_items = news_items + bluesky_items + mastodon_items
     RAW_ITEMS_PATH.write_text(json.dumps(raw_items, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"Guardado en {RAW_ITEMS_PATH}")
+    print(f"Guardado en {RAW_ITEMS_PATH} ({len(raw_items)} items totales)")
 
     print("== Fase 2: clasificación ==")
     cache = load_cache(CLASSIFY_CACHE_PATH)
