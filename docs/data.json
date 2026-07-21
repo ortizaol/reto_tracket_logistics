@@ -1,0 +1,162 @@
+{
+  "generated_at": "2026-07-21T00:34:14.480044+00:00",
+  "demo": true,
+  "demo_note": "Datos de ejemplo generados localmente porque el sandbox de desarrollo bloquea el egress a news.google.com / bsky / mastodon (ver README). El workflow de GitHub Actions corre pipeline.py con internet real y sobrescribe este archivo con datos en vivo.",
+  "sources": {
+    "google_news": 8,
+    "bluesky": 2,
+    "mastodon": 1
+  },
+  "errors": [],
+  "events": [
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "Buenaventura",
+      "severidad": 5,
+      "resumen": "Paro portuario en Buenaventura paraliza exportaciones hacia México, dice gremio",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "El Tiempo",
+          "url": "https://example.com/n1",
+          "fecha": "Mon, 20 Jul 2026 22:00:00 GMT",
+          "origen": "google_news"
+        },
+        {
+          "fuente": "Portafolio",
+          "url": "https://example.com/n2",
+          "fecha": "Mon, 20 Jul 2026 20:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 2,
+      "fecha_mas_reciente": "2026-07-20T22:00:00+00:00",
+      "score": 5.2929,
+      "id": 1
+    },
+    {
+      "tipo_evento": "bloqueo",
+      "ubicacion": "Buenaventura",
+      "severidad": 2,
+      "resumen": "Bloqueo en la vía Buga-Buenaventura cumple 30 horas y varados camiones",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Caracol Radio",
+          "url": "https://example.com/n3",
+          "fecha": "Mon, 20 Jul 2026 18:00:00 GMT",
+          "origen": "google_news"
+        },
+        {
+          "fuente": "@transportecol",
+          "url": "https://bsky.app/profile/transportecol/post/2",
+          "fecha": "2026-07-20T20:30:00.000Z",
+          "origen": "bluesky"
+        }
+      ],
+      "n_fuentes": 2,
+      "fecha_mas_reciente": "2026-07-20T20:30:00+00:00",
+      "score": 2.0718,
+      "id": 2
+    },
+    {
+      "tipo_evento": "clima",
+      "ubicacion": "Veracruz",
+      "severidad": 3,
+      "resumen": "Huracán se aproxima a Veracruz; navieras evalúan retrasos preventivos",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "El Universal",
+          "url": "https://example.com/n5",
+          "fecha": "Mon, 20 Jul 2026 14:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-20T14:00:00+00:00",
+      "score": 1.7851,
+      "id": 3
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "Manzanillo",
+      "severidad": 3,
+      "resumen": "Puerto de Manzanillo reporta demoras por alta demanda de contenedores",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "@puertosmx",
+          "url": "https://mastodon.social/@puertosmx/1",
+          "fecha": "2026-07-19T20:00:00.000Z",
+          "origen": "mastodon"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-19T20:00:00+00:00",
+      "score": 1.3765,
+      "id": 4
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "Buenaventura",
+      "severidad": 2,
+      "resumen": "Sindicato confirma que continúa el paro en el puerto de Buenaventura",
+      "actores": [
+        "sindicato"
+      ],
+      "fuentes": [
+        {
+          "fuente": "@logisticacol",
+          "url": "https://bsky.app/profile/logisticacol/post/1",
+          "fecha": "2026-07-20T23:00:00.000Z",
+          "origen": "bluesky"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-20T23:00:00+00:00",
+      "score": 1.3552,
+      "id": 5
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "Manzanillo",
+      "severidad": 2,
+      "resumen": "Congestión portuaria en Manzanillo retrasa despachos hacia Colombia",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Reforma",
+          "url": "https://example.com/n4",
+          "fecha": "Sun, 19 Jul 2026 15:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-19T15:00:00+00:00",
+      "score": 0.8537,
+      "id": 6
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "Colombia",
+      "severidad": 2,
+      "resumen": "Maersk anuncia recargo por congestión en rutas Colombia-México",
+      "actores": [
+        "Maersk"
+      ],
+      "fuentes": [
+        {
+          "fuente": "La República",
+          "url": "https://example.com/n6",
+          "fecha": "Sat, 18 Jul 2026 10:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-18T10:00:00+00:00",
+      "score": 0.5616,
+      "id": 7
+    }
+  ]
+}
