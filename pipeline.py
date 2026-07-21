@@ -6,15 +6,19 @@ Run with: python pipeline.py
 import json
 import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from radar.classifier import classify_item, content_hash, load_cache, save_cache
+from radar.dedup import group_events
+from radar.scoring import build_events
 from radar.sources import fetch_bluesky, fetch_google_news, fetch_mastodon
 
 ROOT = Path(__file__).parent
 CONFIG_PATH = ROOT / "config.json"
 RAW_ITEMS_PATH = ROOT / "raw_items.json"
 CLASSIFY_CACHE_PATH = ROOT / "classify_cache.json"
+DATA_PATH = ROOT / "docs" / "data.json"
 
 
 def load_config():
@@ -69,6 +73,25 @@ def main():
     relevantes = [c for c in classified if c["relevante"]]
     print(f"Clasificados: {len(classified)} ({cache_hits} desde cache), relevantes: {len(relevantes)}")
     print_errors(errors, since=errors_before)
+
+    print("== Fase 4: dedup + scoring ==")
+    groups = group_events(relevantes)
+    events = build_events(groups, config.get("recency_half_life_hours", 48))
+    print(f"Eventos agrupados: {len(events)} (de {len(relevantes)} items relevantes)")
+
+    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    output = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "sources": {
+            "google_news": len(news_items),
+            "bluesky": len(bluesky_items),
+            "mastodon": len(mastodon_items),
+        },
+        "errors": errors,
+        "events": events,
+    }
+    DATA_PATH.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Guardado en {DATA_PATH}")
 
 
 if __name__ == "__main__":
