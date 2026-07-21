@@ -12,6 +12,14 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
+      - name: Rechazar dispatch manual fuera de main
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        run: |
+          echo "Este workflow commitea docs/data.json a la rama en la que corre."
+          echo "Dispáralo manualmente desde 'main' (Actions -> Run workflow -> Branch: main),"
+          echo "si no, el refresh queda en una rama que Pages no sirve."
+          exit 1
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
