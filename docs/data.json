@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-21T00:31:11.149584+00:00",
+  "generated_at": "2026-07-21T00:34:14.480044+00:00",
   "demo": true,
   "demo_note": "Datos de ejemplo generados localmente porque el sandbox de desarrollo bloquea el egress a news.google.com / bsky / mastodon (ver README). El workflow de GitHub Actions corre pipeline.py con internet real y sobrescribe este archivo con datos en vivo.",
   "sources": {
@@ -19,19 +19,19 @@
         {
           "fuente": "El Tiempo",
           "url": "https://example.com/n1",
-          "fecha": "Tue, 21 Jul 2026 09:00:00 GMT",
+          "fecha": "Mon, 20 Jul 2026 22:00:00 GMT",
           "origen": "google_news"
         },
         {
           "fuente": "Portafolio",
           "url": "https://example.com/n2",
-          "fecha": "Tue, 21 Jul 2026 11:15:00 GMT",
+          "fecha": "Mon, 20 Jul 2026 20:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 2,
-      "fecha_mas_reciente": "2026-07-21T11:15:00+00:00",
-      "score": 5.4931,
+      "fecha_mas_reciente": "2026-07-20T22:00:00+00:00",
+      "score": 5.2929,
       "id": 1
     },
     {
@@ -44,19 +44,19 @@
         {
           "fuente": "Caracol Radio",
           "url": "https://example.com/n3",
-          "fecha": "Tue, 21 Jul 2026 06:00:00 GMT",
+          "fecha": "Mon, 20 Jul 2026 18:00:00 GMT",
           "origen": "google_news"
         },
         {
           "fuente": "@transportecol",
           "url": "https://bsky.app/profile/transportecol/post/2",
-          "fecha": "2026-07-21T08:30:00.000Z",
+          "fecha": "2026-07-20T20:30:00.000Z",
           "origen": "bluesky"
         }
       ],
       "n_fuentes": 2,
-      "fecha_mas_reciente": "2026-07-21T08:30:00+00:00",
-      "score": 2.1972,
+      "fecha_mas_reciente": "2026-07-20T20:30:00+00:00",
+      "score": 2.0718,
       "id": 2
     },
     {
@@ -69,13 +69,13 @@
         {
           "fuente": "El Universal",
           "url": "https://example.com/n5",
-          "fecha": "Tue, 21 Jul 2026 02:00:00 GMT",
+          "fecha": "Mon, 20 Jul 2026 14:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-21T02:00:00+00:00",
-      "score": 2.0794,
+      "fecha_mas_reciente": "2026-07-20T14:00:00+00:00",
+      "score": 1.7851,
       "id": 3
     },
     {
@@ -88,13 +88,13 @@
         {
           "fuente": "@puertosmx",
           "url": "https://mastodon.social/@puertosmx/1",
-          "fecha": "2026-07-20T20:00:00.000Z",
+          "fecha": "2026-07-19T20:00:00.000Z",
           "origen": "mastodon"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-20T20:00:00+00:00",
-      "score": 1.9481,
+      "fecha_mas_reciente": "2026-07-19T20:00:00+00:00",
+      "score": 1.3765,
       "id": 4
     },
     {
@@ -109,13 +109,13 @@
         {
           "fuente": "@logisticacol",
           "url": "https://bsky.app/profile/logisticacol/post/1",
-          "fecha": "2026-07-21T13:00:00.000Z",
+          "fecha": "2026-07-20T23:00:00.000Z",
           "origen": "bluesky"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-21T13:00:00+00:00",
-      "score": 1.3863,
+      "fecha_mas_reciente": "2026-07-20T23:00:00+00:00",
+      "score": 1.3552,
       "id": 5
     },
     {
@@ -128,13 +128,13 @@
         {
           "fuente": "Reforma",
           "url": "https://example.com/n4",
-          "fecha": "Mon, 20 Jul 2026 15:00:00 GMT",
+          "fecha": "Sun, 19 Jul 2026 15:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-20T15:00:00+00:00",
-      "score": 1.2082,
+      "fecha_mas_reciente": "2026-07-19T15:00:00+00:00",
+      "score": 0.8537,
       "id": 6
     },
     {
@@ -149,13 +149,13 @@
         {
           "fuente": "La República",
           "url": "https://example.com/n6",
-          "fecha": "Sun, 19 Jul 2026 10:00:00 GMT",
+          "fecha": "Sat, 18 Jul 2026 10:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-19T10:00:00+00:00",
-      "score": 0.7948,
+      "fecha_mas_reciente": "2026-07-18T10:00:00+00:00",
+      "score": 0.5616,
       "id": 7
     }
   ]

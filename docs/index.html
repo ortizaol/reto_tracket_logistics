@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Radar de Disrupciones — Colombia ↔ México</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>🚨 Radar de Disrupciones</h1>
+        <p class="subtitle">Logística Colombia ↔ México — noticias y redes agrupadas y rankeadas por severidad</p>
+      </div>
+      <div class="updated" id="updated">Cargando…</div>
+    </header>
+
+    <div id="demo-banner"></div>
+    <div id="error-banner"></div>
+
+    <div class="filters">
+      <div class="filter-group" id="tipo-filters">
+        <span class="filter-label">Tipo</span>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Región</span>
+        <select class="region-select" id="region-select">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <span class="count" id="count"></span>
+    </div>
+
+    <div class="grid" id="grid"></div>
+    <div class="empty-state" id="empty-state" hidden>No hay eventos que coincidan con los filtros.</div>
+
+    <footer class="bottom">
+      Datos generados por <code>pipeline.py</code> ·
+      <a href="https://github.com/ortizaol/reto_tracket_logistics" target="_blank" rel="noopener">código fuente</a>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -20,17 +20,17 @@ ROOT = Path(__file__).parent.parent
 DATA_PATH = ROOT / "docs" / "data.json"
 
 SAMPLE_RAW_ITEMS = [
-    {"titulo": "Paro portuario en Buenaventura paraliza las exportaciones hacia México", "fuente": "El Tiempo", "url": "https://example.com/n1", "fecha": "Tue, 21 Jul 2026 09:00:00 GMT", "origen": "google_news"},
-    {"titulo": "Paro portuario en Buenaventura paraliza exportaciones hacia México, dice gremio", "fuente": "Portafolio", "url": "https://example.com/n2", "fecha": "Tue, 21 Jul 2026 11:15:00 GMT", "origen": "google_news"},
-    {"titulo": "Sindicato confirma que continúa el paro en el puerto de Buenaventura", "fuente": "@logisticacol", "url": "https://bsky.app/profile/logisticacol/post/1", "fecha": "2026-07-21T13:00:00.000Z", "origen": "bluesky"},
-    {"titulo": "Bloqueo en la vía Buga-Buenaventura cumple 30 horas, camiones varados", "fuente": "Caracol Radio", "url": "https://example.com/n3", "fecha": "Tue, 21 Jul 2026 06:00:00 GMT", "origen": "google_news"},
-    {"titulo": "Bloqueo en la vía Buga-Buenaventura cumple 30 horas y varados camiones", "fuente": "@transportecol", "url": "https://bsky.app/profile/transportecol/post/2", "fecha": "2026-07-21T08:30:00.000Z", "origen": "bluesky"},
-    {"titulo": "Congestión portuaria en Manzanillo retrasa despachos hacia Colombia", "fuente": "Reforma", "url": "https://example.com/n4", "fecha": "Mon, 20 Jul 2026 15:00:00 GMT", "origen": "google_news"},
-    {"titulo": "Puerto de Manzanillo reporta demoras por alta demanda de contenedores", "fuente": "@puertosmx", "url": "https://mastodon.social/@puertosmx/1", "fecha": "2026-07-20T20:00:00.000Z", "origen": "mastodon"},
-    {"titulo": "Huracán se aproxima a Veracruz; navieras evalúan retrasos preventivos", "fuente": "El Universal", "url": "https://example.com/n5", "fecha": "Tue, 21 Jul 2026 02:00:00 GMT", "origen": "google_news"},
-    {"titulo": "Maersk anuncia recargo por congestión en rutas Colombia-México", "fuente": "La República", "url": "https://example.com/n6", "fecha": "Sun, 19 Jul 2026 10:00:00 GMT", "origen": "google_news"},
-    {"titulo": "Cierre temporal del puerto de Cartagena por mantenimiento programado", "fuente": "El Universal Cartagena", "url": "https://example.com/n7", "fecha": "Fri, 17 Jul 2026 08:00:00 GMT", "origen": "google_news"},
-    {"titulo": "El precio del café colombiano sube en la bolsa de Nueva York", "fuente": "Bloomberg", "url": "https://example.com/n8", "fecha": "Tue, 21 Jul 2026 07:00:00 GMT", "origen": "google_news"},
+    {"titulo": "Paro portuario en Buenaventura paraliza las exportaciones hacia México", "fuente": "El Tiempo", "url": "https://example.com/n1", "fecha": "Mon, 20 Jul 2026 22:00:00 GMT", "origen": "google_news"},
+    {"titulo": "Paro portuario en Buenaventura paraliza exportaciones hacia México, dice gremio", "fuente": "Portafolio", "url": "https://example.com/n2", "fecha": "Mon, 20 Jul 2026 20:00:00 GMT", "origen": "google_news"},
+    {"titulo": "Sindicato confirma que continúa el paro en el puerto de Buenaventura", "fuente": "@logisticacol", "url": "https://bsky.app/profile/logisticacol/post/1", "fecha": "2026-07-20T23:00:00.000Z", "origen": "bluesky"},
+    {"titulo": "Bloqueo en la vía Buga-Buenaventura cumple 30 horas, camiones varados", "fuente": "Caracol Radio", "url": "https://example.com/n3", "fecha": "Mon, 20 Jul 2026 18:00:00 GMT", "origen": "google_news"},
+    {"titulo": "Bloqueo en la vía Buga-Buenaventura cumple 30 horas y varados camiones", "fuente": "@transportecol", "url": "https://bsky.app/profile/transportecol/post/2", "fecha": "2026-07-20T20:30:00.000Z", "origen": "bluesky"},
+    {"titulo": "Congestión portuaria en Manzanillo retrasa despachos hacia Colombia", "fuente": "Reforma", "url": "https://example.com/n4", "fecha": "Sun, 19 Jul 2026 15:00:00 GMT", "origen": "google_news"},
+    {"titulo": "Puerto de Manzanillo reporta demoras por alta demanda de contenedores", "fuente": "@puertosmx", "url": "https://mastodon.social/@puertosmx/1", "fecha": "2026-07-19T20:00:00.000Z", "origen": "mastodon"},
+    {"titulo": "Huracán se aproxima a Veracruz; navieras evalúan retrasos preventivos", "fuente": "El Universal", "url": "https://example.com/n5", "fecha": "Mon, 20 Jul 2026 14:00:00 GMT", "origen": "google_news"},
+    {"titulo": "Maersk anuncia recargo por congestión en rutas Colombia-México", "fuente": "La República", "url": "https://example.com/n6", "fecha": "Sat, 18 Jul 2026 10:00:00 GMT", "origen": "google_news"},
+    {"titulo": "Cierre temporal del puerto de Cartagena por mantenimiento programado", "fuente": "El Universal Cartagena", "url": "https://example.com/n7", "fecha": "Thu, 16 Jul 2026 08:00:00 GMT", "origen": "google_news"},
+    {"titulo": "El precio del café colombiano sube en la bolsa de Nueva York", "fuente": "Bloomberg", "url": "https://example.com/n8", "fecha": "Mon, 20 Jul 2026 07:00:00 GMT", "origen": "google_news"},
 ]
 
 
