@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-25T03:17:29.263726+00:00",
+  "generated_at": "2026-07-25T08:14:22.346731+00:00",
   "sources": {
     "google_news": 120,
     "bluesky": 0,
@@ -12,6 +12,25 @@
     "bluesky['port strike']: HTTPError: HTTP Error 403: Forbidden"
   ],
   "events": [
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "Buenaventura",
+      "severidad": 2,
+      "resumen": "Logran acuerdo para aliviar congestión en Puerto de Buenaventura - PortalPortuario",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "PortalPortuario",
+          "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxOYlFYQ0Z2T1pDMzBHUk1MaEVpaHNwNmRkRFV4MWFnZ2ZjdXJRT0FyOTJTYkd5OUpVRE11NWlPdkFmUlpzTVJ2LWtYNE9WamNSUEpyVlpVWjd1SWZiS1NUSHhacW1TTzRVYlhDN3dIRHBtOF9fUmFfamNhNjBoVTBuXzVyTC1MeGh1ZlNXRzFmVTZGdVhWZUI4?oc=5",
+          "fecha": "Sat, 25 Jul 2026 01:48:11 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-25T01:48:11+00:00",
+      "score": 1.2633,
+      "id": 1
+    },
     {
       "tipo_evento": "congestion",
       "ubicacion": "",
@@ -28,8 +47,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-23T14:03:33+00:00",
-      "score": 0.8098,
-      "id": 1
+      "score": 0.7539,
+      "id": 2
     },
     {
       "tipo_evento": "paro",
@@ -47,8 +66,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-20T17:23:10+00:00",
-      "score": 0.3004,
-      "id": 2
+      "score": 0.2797,
+      "id": 3
     },
     {
       "tipo_evento": "paro",
@@ -68,8 +87,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-20T09:17:45+00:00",
-      "score": 0.2673,
-      "id": 3
+      "score": 0.2488,
+      "id": 4
     },
     {
       "tipo_evento": "paro",
@@ -88,7 +107,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.1733,
-      "id": 4
+      "id": 5
     },
     {
       "tipo_evento": "paro",
@@ -107,7 +126,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.1733,
-      "id": 5
+      "id": 6
     },
     {
       "tipo_evento": "paro",
@@ -126,7 +145,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-02-24T08:00:00+00:00",
       "score": 0.1733,
-      "id": 6
+      "id": 7
     },
     {
       "tipo_evento": "paro",
@@ -147,7 +166,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-26T07:00:00+00:00",
       "score": 0.1733,
-      "id": 7
+      "id": 8
     },
     {
       "tipo_evento": "paro",
@@ -166,7 +185,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-14T07:00:00+00:00",
       "score": 0.1733,
-      "id": 8
+      "id": 9
     },
     {
       "tipo_evento": "paro",
@@ -185,7 +204,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-03-16T07:00:00+00:00",
       "score": 0.1733,
-      "id": 9
+      "id": 10
     },
     {
       "tipo_evento": "paro",
@@ -206,7 +225,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2024-09-30T07:00:00+00:00",
       "score": 0.1733,
-      "id": 10
+      "id": 11
     },
     {
       "tipo_evento": "paro",
@@ -239,7 +258,7 @@
       "n_fuentes": 3,
       "fecha_mas_reciente": "2026-07-09T07:00:00+00:00",
       "score": 0.1386,
-      "id": 11
+      "id": 12
     },
     {
       "tipo_evento": "congestion",
@@ -264,7 +283,7 @@
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-07-09T18:28:16+00:00",
       "score": 0.1099,
-      "id": 12
+      "id": 13
     },
     {
       "tipo_evento": "paro",
@@ -291,25 +310,6 @@
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-05-27T07:00:00+00:00",
       "score": 0.1099,
-      "id": 13
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 3,
-      "resumen": "Se intensifica conflicto en los puertos uruguayos: paro afecta la operativa y suma tensión regional - Infobae",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Infobae",
-          "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxNRGowVW84blNpNGxOTzlYQXNwcmROUFRKMkV2NFZtWFBib0hYTl9sci1XUWlpUk9meDNZM2J1NjczWnZZRFBsUm5fb0JlbXdIRFZOMHhBU3VzbVFPdjZzTDNtMVdfQUNxWHBsTTFUNlp5UjctS3d1S1loWjVVRGJ3UnhMdEg4c1FnLWYzeVFLeDZHclp6WndkMGxrOVJLZzN4ZnRZeVNKeXNPN3JoWUVBY1l2QUNuZlN3OWFsSkFjZ2NZZzRjS2ZMa2xrZW95SGExbUZGb0sycXXSAfMBQVVfeXFMUHhreWJoSmcwNmxQQzU0cFlFUF9MMEdiODh5cFB6TW1FTmFJMHdja0tRdVNrMVRjX2Jpekt5Z1pDcTZOT3ZxQWxNeHZGdU1ZbjJtQlNuTVVpb1RVQ1RKVENuV19HdmxPdUIwMUt0UHc2RDdFLXhqR21lcXdPcVRrMk14WlhQVFZrUXdwb2RpdVI1THRWM2tWeGplMVNaTm9HOVlPYzZPNThpdVIwd3dQVWM0X0VSWjFyTXdPeUVnWlRjYjRwVjZ4X1FtaGpvX0lyMUpydTRkOWtJRDVuTmtGR3hWT3Y5VVJQLU5LMVdLTnhSaEJR?oc=5",
-          "fecha": "Fri, 19 Dec 2025 08:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2025-12-19T08:00:00+00:00",
-      "score": 0.104,
       "id": 14
     },
     {
@@ -379,35 +379,14 @@
         {
           "fuente": "La Nación",
           "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxPLVdockVYYzFrZnFyMjFDaEVGWkRBNTMtWWpPVy1sN1FNR1Jwby1wTndVX1R5V3hoRkZ1dFY5WkJ2a25IX1RpOFJtazFTcHB5cVFOaEdBMTZZMFcwX05GcFdxZ21DT1k1V1pJSlp0Ylp2Q0RFTGc4UXFvWG1YQ2lpdmNSdi14dE1HWWQ2UW9XTzRpSDI3bFozYlQ3dUxZd29YU2FyNmJSb0dPeW5fOGowa2tHQm8zcnNRaVpiXy1kMlNKWDhINlJn?oc=5",
-          "fecha": "Fri, 17 Jul 2026 11:05:00 GMT",
+          "fecha": "Fri, 17 Jul 2026 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-17T11:05:00+00:00",
-      "score": 0.097,
+      "fecha_mas_reciente": "2026-07-17T07:00:00+00:00",
+      "score": 0.0851,
       "id": 18
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Conductores de camiones y transportistas se suman a la huelga general del jueves - Portugal Resident",
-      "actores": [
-        "transportistas"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Portugal Resident",
-          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxOWlJhNUtkQXFvX1JLMGRVQkY2SzA3am1uZEp3NHpTbF95cFY1RzlZeTd1c25Ldi1EOHhDcDFBd2MxQ1VKY0ZpQm9CZjh6VEYyMW96TVBDWk9oaTYyNWZuREVhWmszcWdrTHVyNHdyUzdFU2NTUkhnMmg0WGN4SVB1NjRXYWRGQlQxQmNmUF9wZmFocS1wcy0yRkpjdnBPdzhSM3ZFUXo0a1FXZWdhdVZmbFRQTE04REt2dHduc19pM3VNM2ZSSDB4OGx2NWY?oc=5",
-          "fecha": "Thu, 16 Jul 2026 13:28:17 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-16T13:28:17+00:00",
-      "score": 0.071,
-      "id": 19
     },
     {
       "tipo_evento": "paro",
@@ -426,7 +405,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-11T09:47:41+00:00",
       "score": 0.0693,
-      "id": 20
+      "id": 19
     },
     {
       "tipo_evento": "paro",
@@ -445,7 +424,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-10T07:00:00+00:00",
       "score": 0.0693,
-      "id": 21
+      "id": 20
     },
     {
       "tipo_evento": "paro",
@@ -464,7 +443,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-02-04T08:00:00+00:00",
       "score": 0.0693,
-      "id": 22
+      "id": 21
     },
     {
       "tipo_evento": "paro",
@@ -483,7 +462,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-15T07:00:00+00:00",
       "score": 0.0693,
-      "id": 23
+      "id": 22
     },
     {
       "tipo_evento": "paro",
@@ -502,7 +481,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-01-31T08:00:00+00:00",
       "score": 0.0693,
-      "id": 24
+      "id": 23
     },
     {
       "tipo_evento": "paro",
@@ -524,7 +503,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-09T22:55:00+00:00",
       "score": 0.0693,
-      "id": 25
+      "id": 24
     },
     {
       "tipo_evento": "paro",
@@ -544,6 +523,27 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-09T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 25
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "No habrá paro: Unión Portuaria alcanza acuerdo con gobierno de Kast - PortalPortuario",
+      "actores": [
+        "gobierno"
+      ],
+      "fuentes": [
+        {
+          "fuente": "PortalPortuario",
+          "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPb0dKM21LR05YN1JZczF0eTRDcVZRVEtlRFAyVDFJc3c2WWJmTWlWQklOQUdmX1EtQ184WUF0Tk9KVm04dlJiM0ctVkJRUE9ZbFBBY1ZLdnhGZzV6WFB1WGJvT1BsMmx6RlY1U3JPUVNjSTR1dnI3OEtSMmlYN1JQSy1TSG5DMWxubUxiMTlVTnM5QVNv?oc=5",
+          "fecha": "Tue, 16 Jun 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.0693,
       "id": 26
     },
@@ -758,25 +758,6 @@
     },
     {
       "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Congestión portuaria y mal tiempo obligan a Kambara Kisen a reestructurar rotaciones en Asia - PortalPortuario",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "PortalPortuario",
-          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxQZkYzZlk0SWRJVWF2by1waS1GMlhfaC1TWlhkdWZXblkyay1ySWFJSmE0dkpWd09JbWNEWUdtNERrWFNQdWNNWUFMal9sb3FkLWtDUi1tOGVZNnRiOU5vQlpad0RmXzc5VXRteW9fSWc0SGp5MG5tTmVLQlp2Y3FTWlBVemU1VVlLTkthWEl2NXJPMnEySlQwYnFEbVIwWkpHVTdOZzBLYWdQQl83aGdYVlF6RTZFMFN3bHNBOQ?oc=5",
-          "fecha": "Mon, 16 Mar 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-03-16T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 38
-    },
-    {
-      "tipo_evento": "congestion",
       "ubicacion": "Buenaventura",
       "severidad": 2,
       "resumen": "Récord en Buenaventura: crecimiento del 20 % y congestión portuaria | El País Cali - elpais.com.co",
@@ -792,7 +773,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-03-02T08:00:00+00:00",
       "score": 0.0693,
-      "id": 39
+      "id": 38
     },
     {
       "tipo_evento": "congestion",
@@ -811,7 +792,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-22T07:00:00+00:00",
       "score": 0.0693,
-      "id": 40
+      "id": 39
     },
     {
       "tipo_evento": "paro",
@@ -832,7 +813,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 41
+      "id": 40
     },
     {
       "tipo_evento": "paro",
@@ -851,7 +832,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 42
+      "id": 41
     },
     {
       "tipo_evento": "paro",
@@ -872,7 +853,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 43
+      "id": 42
     },
     {
       "tipo_evento": "paro",
@@ -891,7 +872,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 44
+      "id": 43
     },
     {
       "tipo_evento": "paro",
@@ -910,7 +891,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-05T08:18:48+00:00",
       "score": 0.0693,
-      "id": 45
+      "id": 44
     },
     {
       "tipo_evento": "paro",
@@ -930,6 +911,27 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-11T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 45
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "¿En qué quedó el paro de transportistas de hoy 2 de junio en Lima y Callao? Lo último que se sabe - Infobae",
+      "actores": [
+        "transportistas"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Infobae",
+          "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxQakprMGxxak05aGdQVTJRRmNXVFdVS21PdWUzck5ZQlIxMnB2ZG9HbnFNeGFhTHBqY2dWS1hHUVAxVVdjalB2T29aWUFJVElseHVBM0FUVl9YdlRLOU9WNVpud2hrZDlmYnlfX0J2LXpsbkN3YUJqRDRySUx3Q1o3VFBzc2VGTDg4RDVLWkttcF9kcVQtNjd0VjIxLVpBZkFDMGI3VUpMU1o5N2M2Q1ZUUkZUbWYxSmdDYVVJdGVhRDJrcW5RYm1INk01RHR0elZMd1Vfb1Zhbkd5VDTSAfYBQVVfeXFMUEpMdlhtRDcwZWo3Y3E0T2dlQm1teUl3WkFKLVRKUFd2YktNVUJhQVVEYzZRS3JjUlMwUUluYmNrZlBKTjgwVzR6dU9qbFF6WmdPNk14QWJwci14d3RZR19naWxzRURDR3lCX3pxSWxodkJmeGNiNzZMZ0ZRVWViQUFDMGxVUVZld3RhbU9DalFOVjZLUFQ4STZaZ3FrVHA2ZGU4SmdzbDFTSWpBMXpkdEh1ZDlOTU1GQVk5RzhVdW9GODZrenVoOEFybFRLYmhKVXpQTGNQSExTTUFLME5RZDVpLU9EMmlpdURhWDBnVS1xRkNqVGp3?oc=5",
+          "fecha": "Tue, 02 Jun 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-06-02T07:00:00+00:00",
       "score": 0.0693,
       "id": 46
     },
@@ -1013,27 +1015,6 @@
       "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Port Congestion Chittagong, Bangladesh - Hapag-Lloyd",
-      "actores": [
-        "Hapag-Lloyd"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Hapag-Lloyd",
-          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNZEJOc250SldJQ0pqazVjUEFfX2lWS1dQak1Ldng3QVVIZTBhZlQ1Ti1CVkZVYnU0SmpyZzUzS2tCRGhndjdISlVtOWJSOUdEX19YY081VTE3QjRWTVhlakNXOGtwd1dHZ1VFQkQzVnY4YjBZVkNtbjlHamE0S1RJOXZFWUNZU1pIRVgydk9xYWQxV0U3Z3RoNk05bTRxT1FrMlhlajI0alU3d2Z5TjZTeS1xckc4bGhmenRiMnBCTHMwZGZiUkJ0MmxOdnY?oc=5",
-          "fecha": "Mon, 07 Jul 2025 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2025-07-07T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 51
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
       "resumen": "Digitalización de accesos y trazabilidad de camiones emergen como claves para descongestionar puertos y ciudades - Mundo Marítimo",
       "actores": [],
       "fuentes": [
@@ -1047,7 +1028,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-01T03:56:40+00:00",
       "score": 0.0693,
-      "id": 52
+      "id": 51
     },
     {
       "tipo_evento": "congestion",
@@ -1066,7 +1047,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 53
+      "id": 52
     },
     {
       "tipo_evento": "congestion",
@@ -1087,7 +1068,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 54
+      "id": 53
     },
     {
       "tipo_evento": "congestion",
@@ -1106,26 +1087,45 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-07T07:00:00+00:00",
       "score": 0.0693,
-      "id": 55
+      "id": 54
     },
     {
-      "tipo_evento": "naviera",
+      "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Maersk alerta sobre presión operativa y productividad reducida en puerto de Montevideo - Montevideo Portal",
+      "resumen": "Port Congestion Chittagong, Bangladesh - Hapag-Lloyd",
       "actores": [
-        "Maersk"
+        "Hapag-Lloyd"
       ],
       "fuentes": [
         {
-          "fuente": "Montevideo Portal",
-          "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxNQmRNZ3QxYXg3RGZXeUxrSnZzajVJWmJXVmZDYkJGY2R4aXVCUU9wSllONkJmOTRtYXlmQXJvQzJ1X3lwdVlMZDdUWVpZWmxHS3prTVlQTEJZdGdyUGp0enVITEI5cVRPZFUxSFk5cTM3eVJ4QkdrbHhXRW04czF4cmtsalphbUw4cDhhTnBKbkJTN3dwV3FEY0xQMEI5NF8wMDJscEFyRFB5VUJ6R1ZnYUtKUzVUMnJPVkNqNkMyQzBjR0lTZ3hyT0VYdk1yOFnSAfMBQVVfeXFMTTV3MlZhcFlSX2VINUY3bmtUdVR2VEJpUjJWT1h6dmdUZnlPcUY5YldNOXNrOXlPeGN6ZVZoTW52Tm9lRWJ5NjhqSWVTVWhyTXFoV05WWnFVMW9zcjllNTJBRnlCS0dCMTI5WEYtWV8xeTd4cG0tSjA1RXluTE9EMU1JQ1A2QUFSeDRERW93ZGZqRzBINzRUaUJ5em5HSlFUa1UxRVVrUW8zbERDS0Z1aXVQUkhtRUduazQyTEdIQTBoTEZjYzRBV3Z5Q3ExbDEzbzNaanhnZTNiVUprQkpLaU43OXR4YThjZTVwbWhQaXBaYjJV?oc=5",
-          "fecha": "Mon, 17 Nov 2025 08:00:00 GMT",
+          "fuente": "Hapag-Lloyd",
+          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNZEJOc250SldJQ0pqazVjUEFfX2lWS1dQak1Ldng3QVVIZTBhZlQ1Ti1CVkZVYnU0SmpyZzUzS2tCRGhndjdISlVtOWJSOUdEX19YY081VTE3QjRWTVhlakNXOGtwd1dHZ1VFQkQzVnY4YjBZVkNtbjlHamE0S1RJOXZFWUNZU1pIRVgydk9xYWQxV0U3Z3RoNk05bTRxT1FrMlhlajI0alU3d2Z5TjZTeS1xckc4bGhmenRiMnBCTHMwZGZiUkJ0MmxOdnY?oc=5",
+          "fecha": "Mon, 07 Jul 2025 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2025-11-17T08:00:00+00:00",
+      "fecha_mas_reciente": "2025-07-07T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 55
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Puerto de San Antonio se prepara para eventual congestión portuaria antes de completar primera etapa de Puerto Exterior - PortalPortuario",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "PortalPortuario",
+          "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNaGFEV3NtVDI3Z0ZuczBFdl96SHMxeDlXUVpEWXphRFVaRlRtUzd2Z3JEWmoyNEZ4WjFYdy1SOU5CM0FIdlVFZDJkWFdTTXNxeHRXN0NQX2daS00xakpPSlVEa3hSeWVDY1NhUXd5NXdDdVRUd3cyMlRkVnYyR081T0QxbWlMQUpkYk83LUtKMEtmUVVxWkdxdjJpTVVueElVRzBiYU5mcHBCTWFfbmtMbzhiUEwwQk1VMkcxNDRmUXBqTUhzM1paTlNZVWJiTFM0NXRuZF8yRlhzUV8tNk5ibw?oc=5",
+          "fecha": "Tue, 17 Mar 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-03-17T07:00:00+00:00",
       "score": 0.0693,
       "id": 56
     },
