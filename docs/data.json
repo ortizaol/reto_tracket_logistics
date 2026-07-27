@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-26T19:19:11.782019+00:00",
+  "generated_at": "2026-07-27T03:39:31.514896+00:00",
   "sources": {
     "google_news": 120,
     "bluesky": 0,
@@ -12,6 +12,25 @@
     "bluesky['port strike']: HTTPError: HTTP Error 403: Forbidden"
   ],
   "events": [
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "La PSP tiene más de 20 años y ninguna razón para mover ‘Counter-Strike’. Un desarrollador ha decidido intentarlo - Xataka",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Xataka",
+          "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQZERLQjRmWjlpbmRJakx1c3BBRmhoLVl5dVlxcXdVRmRGVEp4QWszM3Myang0ekY3Z0tiZjE2ajZnUG9pRjU0WTh0blNucmtCb0gxazdTQ0NLUTczbU5jclBWT2w4aDR6bzhNRFJtTDhaM2JOVV91UkpmRk4zaXpPYllCeGE1Q2lMcEtLdjQ5cmg1a0VXcy1BWjdmeG9yRFYyQ0hfNkNUOVdULUJFZWsxeWU1QjlrVzFjQzJJVmhrVGYydEFjMng2c9IBzgFBVV95cUxPLVRGUElaNGNQNktGeXBhN0FyOThjbU1Ubzg2aVJKNzN4QzhnOUNPREVIT0pDdmtnVVc1TEN1LUZfVFZuRXQ3MUF5M05pYTJkRU0tZGZCRzZVSW51Tk1Oc2JpS0VaZWh0QXl5WUxoLVg2VWtaOTJnek11MmI0TzgzR3ktN1lMSkxLQXZIRmhuRElVd3pfV3o5cnk4R1Y5S0tUdDJVRGJSaHVOWC1nUUNDRkdsLWgwYVR3SElaV2ZWY3c5WGltZDYwSk1NcmowZw?oc=5",
+          "fecha": "Sun, 26 Jul 2026 19:00:27 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-26T19:00:27+00:00",
+      "score": 1.2235,
+      "id": 1
+    },
     {
       "tipo_evento": "congestion",
       "ubicacion": "",
@@ -28,8 +47,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-23T14:03:33+00:00",
-      "score": 0.4543,
-      "id": 1
+      "score": 0.4027,
+      "id": 2
     },
     {
       "tipo_evento": "congestion",
@@ -47,8 +66,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-23T13:22:29+00:00",
-      "score": 0.4498,
-      "id": 2
+      "score": 0.3988,
+      "id": 3
     },
     {
       "tipo_evento": "paro",
@@ -67,7 +86,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.1733,
-      "id": 3
+      "id": 4
     },
     {
       "tipo_evento": "paro",
@@ -86,7 +105,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.1733,
-      "id": 4
+      "id": 5
     },
     {
       "tipo_evento": "paro",
@@ -105,7 +124,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-02-24T08:00:00+00:00",
       "score": 0.1733,
-      "id": 5
+      "id": 6
     },
     {
       "tipo_evento": "paro",
@@ -126,7 +145,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-26T07:00:00+00:00",
       "score": 0.1733,
-      "id": 6
+      "id": 7
     },
     {
       "tipo_evento": "paro",
@@ -145,7 +164,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-03-16T07:00:00+00:00",
       "score": 0.1733,
-      "id": 7
+      "id": 8
     },
     {
       "tipo_evento": "paro",
@@ -164,7 +183,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-14T07:00:00+00:00",
       "score": 0.1733,
-      "id": 8
+      "id": 9
     },
     {
       "tipo_evento": "paro",
@@ -185,7 +204,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2024-09-30T07:00:00+00:00",
       "score": 0.1733,
-      "id": 9
+      "id": 10
     },
     {
       "tipo_evento": "paro",
@@ -203,28 +222,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-20T17:23:10+00:00",
-      "score": 0.1685,
-      "id": 10
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Los transportistas de combustible fijaron el 17 de mayo como fecha para una huelga nacional. - Portugal Resident",
-      "actores": [
-        "transportistas"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Portugal Resident",
-          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxPdzhaamNlRE56M0dxTmxDc2k2OU0tZm1rckxkVHpCUnEzV1lFY0t5YjRYeTJQT2pFVkVMbVdsWEJZaVJ0UUZKWHNPcDB3VWQxc3JUZS12YTZIZEFCcHdJRUQyX0dKZGlNSjd6WDNUelhyUDhJbzdnSUxRWUtGU2dHMURoWFlwcHRTNUxwWGdaVE5TUWdMSGNlUE1ja2M1RVhwOEVJaWRtb1MwLUtkWEtFSHpZdTM5VV81X0VUTEFUbTFQYWh6ZHRvMkVB?oc=5",
-          "fecha": "Mon, 20 Jul 2026 09:17:45 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-20T09:17:45+00:00",
-      "score": 0.1499,
+      "score": 0.1494,
       "id": 11
     },
     {
@@ -261,6 +259,27 @@
       "id": 12
     },
     {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Los transportistas de combustible fijaron el 17 de mayo como fecha para una huelga nacional. - Portugal Resident",
+      "actores": [
+        "transportistas"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Portugal Resident",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxPdzhaamNlRE56M0dxTmxDc2k2OU0tZm1rckxkVHpCUnEzV1lFY0t5YjRYeTJQT2pFVkVMbVdsWEJZaVJ0UUZKWHNPcDB3VWQxc3JUZS12YTZIZEFCcHdJRUQyX0dKZGlNSjd6WDNUelhyUDhJbzdnSUxRWUtGU2dHMURoWFlwcHRTNUxwWGdaVE5TUWdMSGNlUE1ja2M1RVhwOEVJaWRtb1MwLUtkWEtFSHpZdTM5VV81X0VUTEFUbTFQYWh6ZHRvMkVB?oc=5",
+          "fecha": "Mon, 20 Jul 2026 09:17:45 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-20T09:17:45+00:00",
+      "score": 0.1329,
+      "id": 13
+    },
+    {
       "tipo_evento": "congestion",
       "ubicacion": "Panamá",
       "severidad": 2,
@@ -283,7 +302,7 @@
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-07-09T07:00:00+00:00",
       "score": 0.1099,
-      "id": 13
+      "id": 14
     },
     {
       "tipo_evento": "paro",
@@ -310,7 +329,7 @@
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-05-27T07:00:00+00:00",
       "score": 0.1099,
-      "id": 14
+      "id": 15
     },
     {
       "tipo_evento": "paro",
@@ -329,7 +348,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-09T07:00:00+00:00",
       "score": 0.104,
-      "id": 15
+      "id": 16
     },
     {
       "tipo_evento": "paro",
@@ -348,7 +367,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-30T12:57:59+00:00",
       "score": 0.104,
-      "id": 16
+      "id": 17
     },
     {
       "tipo_evento": "congestion",
@@ -367,26 +386,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-04-18T07:00:00+00:00",
       "score": 0.104,
-      "id": 17
+      "id": 18
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Paro portuario y sus efectos: alertan por impacto regional - Diario Concepción",
+      "resumen": "Paro portuario y sus efectos: alertan por impacto en el Biobío - TVU | Televisión Universidad de Concepción",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "Diario Concepción",
-          "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxNRFg2ZUZPZ2JWalZpcW5vd0ZaR2UtSW5JbVVNQ19ZNnJnZi1ya0syN29pc19YOUFsbGdQeDF5bFpIUkpoRmttXzg1RmRVUzdmQ0xzWWVYMDFndTFQQkQwekNpRS1NeXJ1OThkOTRiU05Va1ZNS2U4cHFDM096QVRlYjlyUmRYZzhRNTkyd1pFS1Q2QdIBmgFBVV95cUxNWm1FSVhWTEQya0RUZmlUampLVGRoR2tSV2tLaGJXdVlKck1Iakkza2tSNXBWVTIxWGE1dTROWGNFTVcyVWFQYmM4WWFWc3ppY2ZubjJfdzg3QVdBU0ZYaDQ0Ym5JVW1neGF3d2NrdlN4dXgxWlpBZ21BYjl0bEhmSE1idGphQlVXTDE2QTl6b2JYcnktdlF3MmVB?oc=5",
-          "fecha": "Sat, 11 Jul 2026 09:47:41 GMT",
+          "fuente": "TVU | Televisión Universidad de Concepción",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNaE9ncWkyQlhrRVZYR2R6UjgwTjBXVzRIU1pINHJUa0MyTWVIODVST2ItX2o4eXlMakFPQ1RabWVCNXNock4zV244Y3lhVk1oVEdpdWpQZkJjU0VPV0JKVWJLZVJ5bUtwcG94VzBNdkxHTk40WUptWU9iMm9LRkVKQVFmMExMeHhpQnI0TFdmcjBHU0xKMDR5YzJYekFOUUZfRXlHR25R?oc=5",
+          "fecha": "Sat, 11 Jul 2026 15:40:53 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-11T09:47:41+00:00",
+      "fecha_mas_reciente": "2026-07-11T15:40:53+00:00",
       "score": 0.0693,
-      "id": 18
+      "id": 19
     },
     {
       "tipo_evento": "paro",
@@ -405,7 +424,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-10T07:00:00+00:00",
       "score": 0.0693,
-      "id": 19
+      "id": 20
     },
     {
       "tipo_evento": "paro",
@@ -424,7 +443,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-02-04T08:00:00+00:00",
       "score": 0.0693,
-      "id": 20
+      "id": 21
     },
     {
       "tipo_evento": "paro",
@@ -443,7 +462,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-15T07:00:00+00:00",
       "score": 0.0693,
-      "id": 21
+      "id": 22
     },
     {
       "tipo_evento": "paro",
@@ -462,7 +481,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-01-31T08:00:00+00:00",
       "score": 0.0693,
-      "id": 22
+      "id": 23
     },
     {
       "tipo_evento": "paro",
@@ -484,7 +503,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-09T22:55:00+00:00",
       "score": 0.0693,
-      "id": 23
+      "id": 24
     },
     {
       "tipo_evento": "paro",
@@ -505,7 +524,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-09T07:00:00+00:00",
       "score": 0.0693,
-      "id": 24
+      "id": 25
     },
     {
       "tipo_evento": "paro",
@@ -526,7 +545,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.0693,
-      "id": 25
+      "id": 26
     },
     {
       "tipo_evento": "bloqueo",
@@ -545,7 +564,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-09T07:00:00+00:00",
       "score": 0.0693,
-      "id": 26
+      "id": 27
     },
     {
       "tipo_evento": "bloqueo",
@@ -564,7 +583,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-09T07:00:00+00:00",
       "score": 0.0693,
-      "id": 27
+      "id": 28
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Cali enfrenta bloqueos y cierres en principales vías por paro convocado por transportadores - LaRepublica.co",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "LaRepublica.co",
+          "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNUXVfV3dXT3B3MlF3WDZrY0RzT2ViMTBmVjJhd2lKdkhaYTNtclFIZkxTaUI4RW1OTzVEUlZOTDdfWFI5Rk9EUlhTQTk4ZXhwSWhmNXlPU1l4NS1PckQybVc5TVpTTkUzQk1JbWR3ckpDd0dMT3VpSFFNVFdkbURJTnE3Rkc0SHk1ZVM3UzMzcURFcGZNQm9OMF9OOFpYMnR0N2tBdUVNWS1uaFNPcFFCb1Y5aWtyX3VwamdHV0ludEs0ZU13ZHpnatIByAFBVV95cUxPQTR1bnFoanpqVDFKcjV0dDVNM1hvQU41RTVuLTAzMVJmLUVCVmJQMjl3MFdPZXBYYmtsNjhHczZKNXpJWFF2NXRGbEpkbXBXMU1Tdmsyei10b0doWDhKUUR2NmxSMlNybFRSMFZ0WGlNR0JnbEYzejM0YVpGV3hQeTJCUmlLR3hGUC14cTdJdHM2N3c2alNINTFHYkx4YkdURF9SeV83d0hLREFFY1dhRW10ZndoVE90Q0hPV3F5SUk0SlUwd25fZw?oc=5",
+          "fecha": "Thu, 21 May 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 29
     },
     {
       "tipo_evento": "bloqueo",
@@ -583,7 +621,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-12T07:00:00+00:00",
       "score": 0.0693,
-      "id": 28
+      "id": 30
     },
     {
       "tipo_evento": "bloqueo",
@@ -602,7 +640,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 29
+      "id": 31
     },
     {
       "tipo_evento": "bloqueo",
@@ -621,7 +659,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-26T07:00:00+00:00",
       "score": 0.0693,
-      "id": 30
+      "id": 32
     },
     {
       "tipo_evento": "bloqueo",
@@ -640,7 +678,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-13T07:00:00+00:00",
       "score": 0.0693,
-      "id": 31
+      "id": 33
     },
     {
       "tipo_evento": "bloqueo",
@@ -659,7 +697,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-23T07:00:00+00:00",
       "score": 0.0693,
-      "id": 32
+      "id": 34
     },
     {
       "tipo_evento": "paro",
@@ -677,44 +715,6 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-11T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 33
-    },
-    {
-      "tipo_evento": "bloqueo",
-      "ubicacion": "Buenaventura",
-      "severidad": 2,
-      "resumen": "¿Por qué está cerrada la vía Buenaventura y cuánto dinero está perdiendo el país por el bloqueo? - Portafolio.co",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Portafolio.co",
-          "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxNNWdjUGpwYWFsdXBGYVdGaS1NOFhZUWtEQ0JxRmQ1RTdrempTbjBRaENyYmItQm9jZ0o5allNVS10QjB6TUVlcmpJTGxIMVVOOXMxWjBqY3V0N1drWUV5bU4zckllX0ZSbUhMRjg5RUNBSm04aTlVaEFSV3NfTTdDUmhxanRTVEFHOHJBYjBPaUozTnFfY2N6RTBqNEFSY193THQ0Uy02SDFJSjk1TFY2WEVtU0ptSU1hQkhhWFNja2NKS3hQUEJacjhVMi1mZ29NVGdud3N4SFNHZDRNd3fSAeMBQVVfeXFMTjBNZ1Yya1VGNXk1djdPYlR2cmltaDllSFNtNi1GSW9wTEhYd0xkSTMyMUllQTlaZXB4Q3paRlRvOU55aDI0Q05QeGNfeXFCa2dSb01vOURUak5oNUtmQ3FqZ0ppazQ2NVp2Zm5WZDdTZllxYVh4c19SVi1VUkZNUHdUZlY4b1R5ZGd4dHVVa0o3RDliamE2ajlWVnZxYXAtczlXalFpOUh3WFJVcDNGQlpWOURZUkhoUkU0alhjNEJRWmZBNmFfNU1JT3VoVjhOOVVULTdHdjlHWHZvRkZnSHlaVjA?oc=5",
-          "fecha": "Sat, 23 May 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-05-23T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 34
-    },
-    {
-      "tipo_evento": "bloqueo",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Así fue la jornada de bloqueos del 9 de abril en varios puntos del país por el incremento del impuesto predial - Infobae",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Infobae",
-          "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxPRVhGRlc0V2VmUjhzcE1leFJEX0FKVnA0LVZwYTd5Z2dRRGdDUlFaMTlVdWZMNHBMMUQ2bU1oUFEzMV9IUk1PQmgxUHFGT2c5dnpjMlFwVGJSSTRYZG9HS0NXN0FwUklLa0dYSHg1eXpzV2pQYU1DbHp4VXFPclRLRTc3NV81ZGxJRTRIYW1MbGx2SUNKMTVHM2I2VXF5NGFxeUZBd09iWFpkWjM0MTBXNTUxejhWclZsY1gwZlJnTm9ON2Z0czB4eDFIV3FGU1lKM3JwTGc0aFEzNGo5ajFyb1B4cGItWGhwOXpJ0gGGAkFVX3lxTE9ra2NyZ011dXJhc21vQmdlb2RmVm9mM2tYT2N3R2JpZXU0Z0pNdkZfNW16cjB3eVFMNjZUSUhVU2ZkSWkwX1pJZHg3QS1RLXpkNThFTXpFQlBHSGVFU0o4aG53WU40NmRVaG1Qd0F2U3FTdFRBRkQ3N0FMYnVWbkRHd0dtSE5CenM5clJYV0l2OEd0andlOWhOWXJfOG9qTUtBMXBJd3Z2QlFIaG1aZHlpdzFVV0Z0SFVEdmt2aXU1VTd3cnlONmtUbFdBdkE2Q09SdncwZGRIS0pKNWtUeUJzeHhveFFDMlBLYzJVWlhwNC0ySzJlRWxVSmtNTml4TjVxYXh6MWc?oc=5",
-          "fecha": "Thu, 09 Apr 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-04-09T07:00:00+00:00",
       "score": 0.0693,
       "id": 35
     },
@@ -779,18 +779,18 @@
       "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Congestión portuaria y mal tiempo obligan a Kambara Kisen a reestructurar rotaciones en Asia - PortalPortuario",
+      "resumen": "FNE advierte riesgos para la competencia ante un contexto de congestión persistente en Valparaíso - PortalPortuario",
       "actores": [],
       "fuentes": [
         {
           "fuente": "PortalPortuario",
-          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxQZkYzZlk0SWRJVWF2by1waS1GMlhfaC1TWlhkdWZXblkyay1ySWFJSmE0dkpWd09JbWNEWUdtNERrWFNQdWNNWUFMal9sb3FkLWtDUi1tOGVZNnRiOU5vQlpad0RmXzc5VXRteW9fSWc0SGp5MG5tTmVLQlp2Y3FTWlBVemU1VVlLTkthWEl2NXJPMnEySlQwYnFEbVIwWkpHVTdOZzBLYWdQQl83aGdYVlF6RTZFMFN3bHNBOQ?oc=5",
-          "fecha": "Mon, 16 Mar 2026 07:00:00 GMT",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNeEU5MWRjdjJqcXBqV1U2anllcEVUWGViQlNMbVl0YWszUE5VV0c2eEpDQmdXRmZFTjN3SC1fUDNyd3UyTk9sNzhkWGdYMXFxUmpSdnFKS1hfY09vVG85am1LWGEzTkxPcjlUYlFTM1BZLUpvMHA4WnlCbFBQaFpGTU5xaHMyRGV1T2xTa1VBbWdscHRkckJzbjF4LWJRMERTSlpKa1FSUl84T2pJTVVIQU9NNW1scVNEb0JlMkpFTQ?oc=5",
+          "fecha": "Fri, 05 Jun 2026 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-03-16T07:00:00+00:00",
+      "fecha_mas_reciente": "2026-06-05T07:00:00+00:00",
       "score": 0.0693,
       "id": 39
     },
@@ -996,25 +996,6 @@
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Chile's Port Union Declares \"State of Alert\" Amid Government Compliance Failures, Preparing for National Strike - elciudadano.com",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "elciudadano.com",
-          "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxORzkyZFZKVkdJOGN3RENqdkF5c0J0LTJxVVA1UnRvQ040YkRGOEgtSHVSWVd6M182VkpaeFlKRU42S0pmYUl5VWtVaFRhdTZUTnBfVENtUmVDVkVReUFveFFnSi1OWm5QdW1mY1AxYkJVaUlyUWk4NEp5ZnZFYkpwOEVxbTlidmIyaDRsWnRNNnkySUtzLThETEFncy12ODFuOGdTc0NNOUVqX1VwOEJtc1BURm8xakQ5QzVQQ0xTQ2FoMUdDeXN3UldwMUZxM0g3OUFaQllfMVdoazktdFZrcWpyNnZucUJq?oc=5",
-          "fecha": "Wed, 08 Apr 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-04-08T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 50
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
       "resumen": "Magnitude 6.0 earthquake strikes near Port Vila, Shefa Province, Vanuatu - Volcano Discovery",
       "actores": [],
       "fuentes": [
@@ -1027,6 +1008,25 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T04:13:31+00:00",
+      "score": 0.0693,
+      "id": 50
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Counter Strike VR este fin de semana para Meta Quest y PICO - Real o Virtual",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Real o Virtual",
+          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPWU1zOGw4bjFsX3JlbGxCV2ZCdTFacmJuMExYb3J0Z2s5WkJ1d0xVZ0tIQW1XNUpVb1MyUWgwQ0VTTjJGLXQ0bWlLUzl0X19ib3UteGJudzRHYVFZN2hrX0JKMi04V0Rkc1o4eC1Oa1M0NFZJeTR1RHQzNnl2M1Z4N2VlYXFnVnlkeUJfMm8tQnBuZG1ZRVRZcA?oc=5",
+          "fecha": "Fri, 09 Jan 2026 08:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-01-09T08:00:00+00:00",
       "score": 0.0693,
       "id": 51
     },
@@ -1053,25 +1053,6 @@
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Counter Strike VR este fin de semana para Meta Quest y PICO - Real o Virtual",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Real o Virtual",
-          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPWU1zOGw4bjFsX3JlbGxCV2ZCdTFacmJuMExYb3J0Z2s5WkJ1d0xVZ0tIQW1XNUpVb1MyUWgwQ0VTTjJGLXQ0bWlLUzl0X19ib3UteGJudzRHYVFZN2hrX0JKMi04V0Rkc1o4eC1Oa1M0NFZJeTR1RHQzNnl2M1Z4N2VlYXFnVnlkeUJfMm8tQnBuZG1ZRVRZcA?oc=5",
-          "fecha": "Fri, 09 Jan 2026 08:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-01-09T08:00:00+00:00",
-      "score": 0.0693,
-      "id": 53
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
       "resumen": "Huelga en Port Aventura: cientos de trabajadores protestan para conseguir un \"convenio digno\" - Onda Cero",
       "actores": [],
       "fuentes": [
@@ -1085,7 +1066,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-04-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 54
+      "id": 53
     },
     {
       "tipo_evento": "congestion",
@@ -1106,7 +1087,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-07-07T07:00:00+00:00",
       "score": 0.0693,
-      "id": 55
+      "id": 54
     },
     {
       "tipo_evento": "congestion",
@@ -1125,26 +1106,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-01T03:56:40+00:00",
       "score": 0.0693,
-      "id": 56
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "FNE advierte riesgos para la competencia ante un contexto de congestión persistente en Valparaíso - PortalPortuario",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "PortalPortuario",
-          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNeEU5MWRjdjJqcXBqV1U2anllcEVUWGViQlNMbVl0YWszUE5VV0c2eEpDQmdXRmZFTjN3SC1fUDNyd3UyTk9sNzhkWGdYMXFxUmpSdnFKS1hfY09vVG85am1LWGEzTkxPcjlUYlFTM1BZLUpvMHA4WnlCbFBQaFpGTU5xaHMyRGV1T2xTa1VBbWdscHRkckJzbjF4LWJRMERTSlpKa1FSUl84T2pJTVVIQU9NNW1scVNEb0JlMkpFTQ?oc=5",
-          "fecha": "Fri, 05 Jun 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-06-05T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 57
+      "id": 55
     },
     {
       "tipo_evento": "congestion",
@@ -1165,7 +1127,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 58
+      "id": 56
     },
     {
       "tipo_evento": "congestion",
@@ -1184,7 +1146,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-07T07:00:00+00:00",
       "score": 0.0693,
-      "id": 59
+      "id": 57
     },
     {
       "tipo_evento": "naviera",
@@ -1205,7 +1167,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-11-17T08:00:00+00:00",
       "score": 0.0693,
-      "id": 60
+      "id": 58
     },
     {
       "tipo_evento": "naviera",
@@ -1226,7 +1188,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-06-06T07:00:00+00:00",
       "score": 0.0693,
-      "id": 61
+      "id": 59
     },
     {
       "tipo_evento": "congestion",
@@ -1245,7 +1207,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-03-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 62
+      "id": 60
     }
   ]
 }
