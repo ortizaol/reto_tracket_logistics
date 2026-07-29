@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T08:48:49.369446+00:00",
+  "generated_at": "2026-07-29T14:22:30.421787+00:00",
   "sources": {
     "google_news": 120,
     "bluesky": 0,
@@ -12,6 +12,25 @@
     "bluesky['port strike']: HTTPError: HTTP Error 403: Forbidden"
   ],
   "events": [
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "El alza de los precios del bunker y la congestión portuaria debilitarían la esperada caída de las tarifas spot - Mundo Marítimo",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Mundo Marítimo",
+          "url": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxNcXNiVTBvVG5Wb3QzWEZLa0xfeWpPb0huQzdweFhsb05pVk9CRTQ5cGhtd3NpMFgtZEpnT2hPTGZTQTdXNDYzTWk1Q0pHbnBHbXN5bnExZ3lWMGxMUXBLMi1zZVk1UTFfTGtLa2xYQU5qMHhKeTY5TXNtdG9BZFdTQzc4NFRtbEgzSEFDSElXaXN2VUdLX3F0VDlMNzUxWlNqRngtZ0JSNjVtdHR1ZVVLZ1RGZlRkc3YyMFdpMzRKdXhyaGpfcE9ERExvTHE1Vk9naEVFd3NBYUlRZEkzaFgxdm1n?oc=5",
+          "fecha": "Wed, 29 Jul 2026 12:49:22 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-29T12:49:22+00:00",
+      "score": 1.3556,
+      "id": 1
+    },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
@@ -28,8 +47,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-26T19:00:27+00:00",
-      "score": 0.5679,
-      "id": 1
+      "score": 0.524,
+      "id": 2
     },
     {
       "tipo_evento": "paro",
@@ -62,7 +81,7 @@
       "n_fuentes": 3,
       "fecha_mas_reciente": "2026-07-13T20:50:17+00:00",
       "score": 0.3466,
-      "id": 2
+      "id": 3
     },
     {
       "tipo_evento": "congestion",
@@ -80,26 +99,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-25T01:48:11+00:00",
-      "score": 0.3132,
-      "id": 3
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "¿Congestión post-Tifón? Shanghai y Ningbo siguen bajo presión tras cierres preventivos - MasContainer",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "MasContainer",
-          "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPOERlcjVFWnRENjRvRzJ3blgxNGNFZ0R6M05kSFFQcWxDNGtOdVJaNGtQZC03Z0sxcWNQYkJSYUtvaV93UV9VLVFHcWdfcjZTQ1VHWm10TlVSTUhjbGJPYWtsdHFQaEJZLWFwRnZxb0V6S3JEaDhaMXdhaVdFQTMzWXIwakZWNU1JX1owcWN3?oc=5",
-          "fecha": "Thu, 23 Jul 2026 14:03:33 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-23T14:03:33+00:00",
-      "score": 0.1869,
+      "score": 0.289,
       "id": 4
     },
     {
@@ -241,27 +241,21 @@
     },
     {
       "tipo_evento": "congestion",
-      "ubicacion": "Panamá",
+      "ubicacion": "",
       "severidad": 2,
-      "resumen": "Panamá | COEL pide acelerar estrategia logística ante congestión portuaria y retos de conectividad - DPL News",
+      "resumen": "¿Congestión post-Tifón? Shanghai y Ningbo siguen bajo presión tras cierres preventivos - MasContainer",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "DPL News",
-          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxORVVodUZUbVFWeHluVm9TVllBUVJUV1dydG1BVWFSQ0Zyb0JVUTcxQ3ZIUWRXbk1BZ0JaRnAzbU45c2ZaSW5uVkx1Rks4eXd3VEtXSWFwdVhsWUNmTzhPU1kzc1VyV2g2cHhERkFjWjlRSHRQamJJNlNPY3NYZExPVjdSNTJwTFFRT21OQjhtel9NZWh5X3hVQ2RPVDlDUDIzSWlhSlJpWE9kQS1nTUZEVUFDYmJOeUFB?oc=5",
-          "fecha": "Thu, 09 Jul 2026 07:00:00 GMT",
-          "origen": "google_news"
-        },
-        {
-          "fuente": "La Prensa Panamá",
-          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQdWdaM0hjUENhSE5BdXllMUVtTXFpdzJReHZ4NnVxbVJVYWUyMS1NMm9qQ1FxQU9oZU1OYVlfLTYxQWltWGVOVmM0QjVMckY4eS0yWmgxQWZwUEFxUDBtYVcyMFJpY1puQ2pWZlJxZUZtbi0tTzVkVE1sNUU2Vm9fQmtkekZOZFlLdDRIaFRBWWtNRG9DcTQ3M0xiQ0FHSUdmeE5QeHJmQ1k5dmtWZXBQd3h1ZHJJMF9SQTlDbkIxSQ?oc=5",
-          "fecha": "Thu, 09 Jul 2026 07:00:00 GMT",
+          "fuente": "MasContainer",
+          "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPOERlcjVFWnRENjRvRzJ3blgxNGNFZ0R6M05kSFFQcWxDNGtOdVJaNGtQZC03Z0sxcWNQYkJSYUtvaV93UV9VLVFHcWdfcjZTQ1VHWm10TlVSTUhjbGJPYWtsdHFQaEJZLWFwRnZxb0V6S3JEaDhaMXdhaVdFQTMzWXIwakZWNU1JX1owcWN3?oc=5",
+          "fecha": "Thu, 23 Jul 2026 14:03:33 GMT",
           "origen": "google_news"
         }
       ],
-      "n_fuentes": 2,
-      "fecha_mas_reciente": "2026-07-09T07:00:00+00:00",
-      "score": 0.1099,
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-23T14:03:33+00:00",
+      "score": 0.1725,
       "id": 12
     },
     {
@@ -390,27 +384,6 @@
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Senador Ibáñez alerta por impacto regional ante posible paro portuario y pide respuesta del Gobierno - Radio Festival",
-      "actores": [
-        "gobierno"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Radio Festival",
-          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQVXNQdXI3TV9iOHRoOVdLRUY4Tk9FeEZ4Y0lUUDlxY2hHQXpyX2c0dlB6M2x0VXZucUFoQmxjbWpqSzVDckxBWlZGd2I4eUdsbjVaRXNUS09walNPU2REX1FfT2xuZG5JV1ZEQ2lBakR1enJ2ejFZVWlNRzlBdTBqcG1uUWtqbzc2REEtaFdaSGdUbWpLM3R2VXhyaGRoeXJ6RFE3cTNhaVVQa1dzZ2VSanlZWlRhWU16Qk9HSDhEdnFONmV3c04wUGRB?oc=5",
-          "fecha": "Thu, 09 Apr 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-04-09T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 19
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
       "resumen": "Trabajadores portuarios no logran acuerdo con el Gobierno y este viernes se mantiene el paro en todo el país - Diario Financiero",
       "actores": [
         "gobierno",
@@ -426,6 +399,27 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-09T22:55:00+00:00",
+      "score": 0.0693,
+      "id": 19
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Senador Ibáñez alerta por impacto regional ante posible paro portuario y pide respuesta del Gobierno - Radio Festival",
+      "actores": [
+        "gobierno"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Radio Festival",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQVXNQdXI3TV9iOHRoOVdLRUY4Tk9FeEZ4Y0lUUDlxY2hHQXpyX2c0dlB6M2x0VXZucUFoQmxjbWpqSzVDckxBWlZGd2I4eUdsbjVaRXNUS09walNPU2REX1FfT2xuZG5JV1ZEQ2lBakR1enJ2ejFZVWlNRzlBdTBqcG1uUWtqbzc2REEtaFdaSGdUbWpLM3R2VXhyaGRoeXJ6RFE3cTNhaVVQa1dzZ2VSanlZWlRhWU16Qk9HSDhEdnFONmV3c04wUGRB?oc=5",
+          "fecha": "Thu, 09 Apr 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-04-09T07:00:00+00:00",
       "score": 0.0693,
       "id": 20
     },
@@ -699,6 +693,25 @@
     },
     {
       "tipo_evento": "congestion",
+      "ubicacion": "Panamá",
+      "severidad": 2,
+      "resumen": "COEL pide acelerar estrategia logística ante congestión portuaria y retos de conectividad - La Prensa Panamá",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "La Prensa Panamá",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQdWdaM0hjUENhSE5BdXllMUVtTXFpdzJReHZ4NnVxbVJVYWUyMS1NMm9qQ1FxQU9oZU1OYVlfLTYxQWltWGVOVmM0QjVMckY4eS0yWmgxQWZwUEFxUDBtYVcyMFJpY1puQ2pWZlJxZUZtbi0tTzVkVE1sNUU2Vm9fQmtkekZOZFlLdDRIaFRBWWtNRG9DcTQ3M0xiQ0FHSUdmeE5QeHJmQ1k5dmtWZXBQd3h1ZHJJMF9SQTlDbkIxSQ?oc=5",
+          "fecha": "Thu, 09 Jul 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-07-09T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 35
+    },
+    {
+      "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
       "resumen": "Conflicto en Medio Oriente tensiona tarifas y congestión marítima global - Agenda Logística",
@@ -713,25 +726,6 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-03-25T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 35
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "Buenaventura",
-      "severidad": 2,
-      "resumen": "Récord en Buenaventura: crecimiento del 20 % y congestión portuaria | El País Cali - elpais.com.co",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "elpais.com.co",
-          "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNUUM3WlN4WG9zSk9na0doeG9zd3JZSzZXMm80TlFBSHU4c3FHSVFzNk16NFYzTFRad0NTNVpwM1dyTEh5aWt3d19mYTRyanVzQ3JFYVlnblNlYW82SU1tank1N21TNjZzdktVYjZ0bFl0M1hZSVVxYVhSRXZXT3p4YWlpVzNHakJDRGs2R3ppNUhEd0lXMDRMOHJiZjNGWXpKb0ptYVlfYm1zQmJ0cUE4eWlUblhXSU9WZW9ydjQ2UkVQZ9IBxwFBVV95cUxNSHZreDBxSUlrelk1czVuVlhfYjZJbGxLVjJaRHhpWUxlZGhwaWNhaWFDSS10TW50dmxEU0xHQUhsUE41blJSLWZ5M1lDWHVvb245VW5yLTdoVUJOMl9xQmlqc05EdGRTNGl1UmFiRE12LTlQaVN2LWlSRnA2VkhqcW10aF9KLWdPakp6X1E0Qmd5QkdUVFdYVFd6dElkUGxJdi1RNkh2TVhvYWVvVU5FUkRUQU9OTG1GUlhzclZZTUt0ckZCUnJR?oc=5",
-          "fecha": "Mon, 02 Mar 2026 08:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-03-02T08:00:00+00:00",
       "score": 0.0693,
       "id": 36
     },
@@ -901,20 +895,20 @@
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Transportistas de carga pesada anuncian paro general en Honduras - Infobae",
+      "resumen": "UGT aplaza la huelga de transportistas al 22 de junio por la visita del papa León XIV: \"No es el momento\" - Infobae",
       "actores": [
         "transportistas"
       ],
       "fuentes": [
         {
           "fuente": "Infobae",
-          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNLWlISDh2S1VCUHNPbWRabmFwVlJqLU5oYUU5Zm8tWHlPeGh4bjh3dVktUmY2YXludjc0dzM5dFFzSW50THgwVzhZODVha3Z5Yy1GVzlxUVNvUmJNVUFySnhUSXgxSEY5a3VpU2NUQ19SenNzSjlIRGE2b0NPQ1BBNmJESl9XamZjRjJ5STBlc2ZWSmRiczFjRE1xNFRQejM2MTZTcWhKeU13MlN3UnfSAcgBQVVfeXFMTWctTG0zcElyMEx5VUU0eWQ5MDJONXdmUGhlQzk1UlpFaGxaVkp6bkYyYmZWdUhTWm83U1VObHhTbjRraXlCTUJyb1phSEVPZUNxNmxXRDVTTVdBTGJZeHdGb0lTWXY3OHZoTm42UU1CZllMN056OGJNNnB1eFMwb09KeHl5TXV6b1IwajJNaXp1YW1ma2hhQjVyVHk0N1gtSDNMakVPWEVQeFFCaHRMV09DbjBHdlQwdnBVX1Z4RTFsYU9rcDVoVk0?oc=5",
-          "fecha": "Sun, 24 May 2026 07:00:00 GMT",
+          "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxNZVB6N1g5YXhOTktoaXNsc0JxOVNzZWVEWEVPWDZzQWwtUnp6Njd2TFpVbEFzcXBYajlCZjFfdWZFeHhZcldzckRHRFhwZ2FrY2NTNVNNWHdKNmt1TkhnZ0h3RUNLWGt2dC11ZVY0Skt6clREMVJqRWg5VDZXZGl5TzJRWFRBY1hfQTFfZmRmc3c1d3BSMGUteDVWaF9IX0p1cGpnZ3lzUnU0emUxcEp4NDlHMW05RFFMOEVIU2dlUjhUS1BmUG93NmtwOHlmcURLZENtQkdTMkNlMFlLTTdpU2kwNzYxV0ozWXM40gGGAkFVX3lxTFBtOG5zOTN5U0otZTFobUk5dC1ULXJTbmJlUGJQREVNNmFSTzdHcHhIU1F0aDczb2ZzcXp2SG1MOFpqdzczLThQOG1hODdjVVVmaDV2SnpHN2tDNW5oaElzVTNsczZkZU01bE9vT3JfQ3JYTmJPaXVXb3I1ZDZMYi0wUFdQVUFMWkNfX283S1BBN1N6LVVFdTFDZXQ4RUd0OVRYLXlRUzBmRDh0R2k5MDBlWmhJYnN5Z3EzWkhCa1BBZW5XWDhQSVc1Mzk0eDZGOFR4WGJ6Y0RKVzhMNVJzczRmS2dvUUVQc1o4ekhzYkgydzdIT3pnaUhNNTIxdnpqNHpvbTlBRXc?oc=5",
+          "fecha": "Wed, 03 Jun 2026 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-05-24T07:00:00+00:00",
+      "fecha_mas_reciente": "2026-06-03T07:00:00+00:00",
       "score": 0.0693,
       "id": 45
     },
@@ -1017,6 +1011,27 @@
       "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
+      "resumen": "Port Congestion Chittagong, Bangladesh - Hapag-Lloyd",
+      "actores": [
+        "Hapag-Lloyd"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Hapag-Lloyd",
+          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNZEJOc250SldJQ0pqazVjUEFfX2lWS1dQak1Ldng3QVVIZTBhZlQ1Ti1CVkZVYnU0SmpyZzUzS2tCRGhndjdISlVtOWJSOUdEX19YY081VTE3QjRWTVhlakNXOGtwd1dHZ1VFQkQzVnY4YjBZVkNtbjlHamE0S1RJOXZFWUNZU1pIRVgydk9xYWQxV0U3Z3RoNk05bTRxT1FrMlhlajI0alU3d2Z5TjZTeS1xckc4bGhmenRiMnBCTHMwZGZiUkJ0MmxOdnY?oc=5",
+          "fecha": "Mon, 07 Jul 2025 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2025-07-07T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 51
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
       "resumen": "FNE advierte riesgos para la competencia ante un contexto de congestión persistente en Valparaíso - PortalPortuario",
       "actores": [],
       "fuentes": [
@@ -1030,7 +1045,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 51
+      "id": 52
     },
     {
       "tipo_evento": "congestion",
@@ -1051,7 +1066,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 52
+      "id": 53
     },
     {
       "tipo_evento": "congestion",
@@ -1070,45 +1085,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-07T07:00:00+00:00",
       "score": 0.0693,
-      "id": 53
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Port Congestion Chittagong, Bangladesh - Hapag-Lloyd",
-      "actores": [
-        "Hapag-Lloyd"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Hapag-Lloyd",
-          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNZEJOc250SldJQ0pqazVjUEFfX2lWS1dQak1Ldng3QVVIZTBhZlQ1Ti1CVkZVYnU0SmpyZzUzS2tCRGhndjdISlVtOWJSOUdEX19YY081VTE3QjRWTVhlakNXOGtwd1dHZ1VFQkQzVnY4YjBZVkNtbjlHamE0S1RJOXZFWUNZU1pIRVgydk9xYWQxV0U3Z3RoNk05bTRxT1FrMlhlajI0alU3d2Z5TjZTeS1xckc4bGhmenRiMnBCTHMwZGZiUkJ0MmxOdnY?oc=5",
-          "fecha": "Mon, 07 Jul 2025 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2025-07-07T07:00:00+00:00",
-      "score": 0.0693,
       "id": 54
     },
     {
-      "tipo_evento": "congestion",
+      "tipo_evento": "naviera",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Puerto de San Antonio se prepara para eventual congestión portuaria antes de completar primera etapa de Puerto Exterior - PortalPortuario",
-      "actores": [],
+      "resumen": "Maersk alerta sobre presión operativa y productividad reducida en puerto de Montevideo - Montevideo Portal",
+      "actores": [
+        "Maersk"
+      ],
       "fuentes": [
         {
-          "fuente": "PortalPortuario",
-          "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNaGFEV3NtVDI3Z0ZuczBFdl96SHMxeDlXUVpEWXphRFVaRlRtUzd2Z3JEWmoyNEZ4WjFYdy1SOU5CM0FIdlVFZDJkWFdTTXNxeHRXN0NQX2daS00xakpPSlVEa3hSeWVDY1NhUXd5NXdDdVRUd3cyMlRkVnYyR081T0QxbWlMQUpkYk83LUtKMEtmUVVxWkdxdjJpTVVueElVRzBiYU5mcHBCTWFfbmtMbzhiUEwwQk1VMkcxNDRmUXBqTUhzM1paTlNZVWJiTFM0NXRuZF8yRlhzUV8tNk5ibw?oc=5",
-          "fecha": "Tue, 17 Mar 2026 07:00:00 GMT",
+          "fuente": "Montevideo Portal",
+          "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxNQmRNZ3QxYXg3RGZXeUxrSnZzajVJWmJXVmZDYkJGY2R4aXVCUU9wSllONkJmOTRtYXlmQXJvQzJ1X3lwdVlMZDdUWVpZWmxHS3prTVlQTEJZdGdyUGp0enVITEI5cVRPZFUxSFk5cTM3eVJ4QkdrbHhXRW04czF4cmtsalphbUw4cDhhTnBKbkJTN3dwV3FEY0xQMEI5NF8wMDJscEFyRFB5VUJ6R1ZnYUtKUzVUMnJPVkNqNkMyQzBjR0lTZ3hyT0VYdk1yOFnSAfMBQVVfeXFMTTV3MlZhcFlSX2VINUY3bmtUdVR2VEJpUjJWT1h6dmdUZnlPcUY5YldNOXNrOXlPeGN6ZVZoTW52Tm9lRWJ5NjhqSWVTVWhyTXFoV05WWnFVMW9zcjllNTJBRnlCS0dCMTI5WEYtWV8xeTd4cG0tSjA1RXluTE9EMU1JQ1A2QUFSeDRERW93ZGZqRzBINzRUaUJ5em5HSlFUa1UxRVVrUW8zbERDS0Z1aXVQUkhtRUduazQyTEdIQTBoTEZjYzRBV3Z5Q3ExbDEzbzNaanhnZTNiVUprQkpLaU43OXR4YThjZTVwbWhQaXBaYjJV?oc=5",
+          "fecha": "Mon, 17 Nov 2025 08:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-03-17T07:00:00+00:00",
+      "fecha_mas_reciente": "2025-11-17T08:00:00+00:00",
       "score": 0.0693,
       "id": 55
     },
@@ -1156,18 +1152,18 @@
       "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Bolivia: ASP-B suspende solicitudes de desconsolidación de contenedores por congestión en Terminal Portuario Arica - PortalPortuario",
+      "resumen": "Puerto de San Antonio se prepara para eventual congestión portuaria antes de completar primera etapa de Puerto Exterior - PortalPortuario",
       "actores": [],
       "fuentes": [
         {
           "fuente": "PortalPortuario",
-          "url": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxPY1F6ODZSVTlKeVJWbXB2SWhXNVlUSXZjNmczUWlTQTdsZXdHYkVIMmNQTHBoNHh6N09yNHR3Y2k5SjhSQTZBMEQ1WmNSWHEyX0lSV3hNM3lvYXlXRWFqeEpheEJaNHAxZ25tSFB0Q0NvQW5ENko0Y3F0Yld1Sl9Oa3RXdDhKWWtfNFBjMWg0MXFLVlZaSkt4cmFyYWl0R3pLTEsyR3dhMTlURHRrTE1SR2k3VHlRRDQtV0twY3ByTDQxMUVSSG9NWWdEejFpSVA2UkY1TlB2SVdUUkpV?oc=5",
-          "fecha": "Sat, 13 Jun 2026 07:00:00 GMT",
+          "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNaGFEV3NtVDI3Z0ZuczBFdl96SHMxeDlXUVpEWXphRFVaRlRtUzd2Z3JEWmoyNEZ4WjFYdy1SOU5CM0FIdlVFZDJkWFdTTXNxeHRXN0NQX2daS00xakpPSlVEa3hSeWVDY1NhUXd5NXdDdVRUd3cyMlRkVnYyR081T0QxbWlMQUpkYk83LUtKMEtmUVVxWkdxdjJpTVVueElVRzBiYU5mcHBCTWFfbmtMbzhiUEwwQk1VMkcxNDRmUXBqTUhzM1paTlNZVWJiTFM0NXRuZF8yRlhzUV8tNk5ibw?oc=5",
+          "fecha": "Tue, 17 Mar 2026 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-06-13T07:00:00+00:00",
+      "fecha_mas_reciente": "2026-03-17T07:00:00+00:00",
       "score": 0.0693,
       "id": 58
     },
