@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-22T06:48:50.283751+00:00",
+  "generated_at": "2026-08-22T12:49:37.299001+00:00",
   "sources": {
     "google_news": 120,
     "bluesky": 0,
@@ -34,7 +34,7 @@
       ],
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-08-21T03:19:28+00:00",
-      "score": 1.4773,
+      "score": 1.3545,
       "id": 1
     },
     {
@@ -55,7 +55,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-21T15:39:25+00:00",
-      "score": 1.1138,
+      "score": 1.0211,
       "id": 2
     },
     {
@@ -76,7 +76,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-19T19:00:31+00:00",
-      "score": 0.8768,
+      "score": 0.8038,
       "id": 3
     },
     {
@@ -95,7 +95,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-20T19:40:04+00:00",
-      "score": 0.8345,
+      "score": 0.7651,
       "id": 4
     },
     {
@@ -116,7 +116,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-20T15:40:45+00:00",
-      "score": 0.7878,
+      "score": 0.7223,
       "id": 5
     },
     {
@@ -137,7 +137,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-20T05:04:36+00:00",
-      "score": 0.676,
+      "score": 0.6198,
       "id": 6
     },
     {
@@ -158,8 +158,29 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-19T22:30:20+00:00",
-      "score": 0.6148,
+      "score": 0.5636,
       "id": 7
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "En Perú anuncian paro de transportistas contra inseguridad ciudadana - laradiodelsur.com.ve",
+      "actores": [
+        "transportistas"
+      ],
+      "fuentes": [
+        {
+          "fuente": "laradiodelsur.com.ve",
+          "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPeFR1NkZRWkdkWTJlQWpoRnpuU0lZU0NDQ2JnR0lPM1pLUG5uRnIxU0dyQlBRUWowU0ZuZnB5SVZGLVJVbGtXRUt0VzR5dDUya2xkMFpQQ1lnaWM4a3VPVVktZDBLZFVIeWpESG5fUDZQaUdrUXBVMk1VXzNHVTliUEJ4WkMwWXJSZGxvMHpMOUdZZWMxSjZnbHI0YXRWenpkOW5LRw?oc=5",
+          "fecha": "Wed, 19 Aug 2026 21:53:34 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-08-19T21:53:34+00:00",
+      "score": 0.5587,
+      "id": 8
     },
     {
       "tipo_evento": "congestion",
@@ -177,8 +198,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-19T16:28:35+00:00",
-      "score": 0.5635,
-      "id": 8
+      "score": 0.5167,
+      "id": 9
     },
     {
       "tipo_evento": "paro",
@@ -198,8 +219,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-18T23:34:00+00:00",
-      "score": 0.4414,
-      "id": 9
+      "score": 0.4047,
+      "id": 10
     },
     {
       "tipo_evento": "bloqueo",
@@ -217,8 +238,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-18T03:24:00+00:00",
-      "score": 0.3299,
-      "id": 10
+      "score": 0.3025,
+      "id": 11
     },
     {
       "tipo_evento": "naviera",
@@ -236,8 +257,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-18T01:44:06+00:00",
-      "score": 0.3221,
-      "id": 11
+      "score": 0.2953,
+      "id": 12
     },
     {
       "tipo_evento": "bloqueo",
@@ -255,26 +276,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-17T22:27:48+00:00",
-      "score": 0.3072,
-      "id": 12
-    },
-    {
-      "tipo_evento": "bloqueo",
-      "ubicacion": "Santa Marta",
-      "severidad": 2,
-      "resumen": "“En Colombia los problemas no se solucionan bloqueando las vías”: De La Espriella ordenó levantar bloqueo en vía Barranquilla-Santa Marta - larazon.co",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "larazon.co",
-          "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxQREJWMGRHaWlLLWlhaUozZE00S18xSUZsY1Q3NzUwSnFqR29jenhFVXJidEZzN0FIYzlrNi1lRWZtc0plSXFEYy11TWlqcXVrRFZkUUtZUjBiM0toVFBUaUtRUVVmbWJ6eG1jLXJpU2pCaXZ5Z2hUT25GRHRGY2prbHgtTUlBaGhFWnlsNUliRVdEbGtJQTZOWGxWRUs0Ui1Lc0JrNW1jTEJwQXRYMkU1LUk4Tk1teUNpNll3RThfemNWZHFGNnFXUzhUeWk3V3phMjlTZFNrNkFQZEx1b1FzclQ3MnJHQ2hPR0E?oc=5",
-          "fecha": "Mon, 17 Aug 2026 20:38:34 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-08-17T20:38:34+00:00",
-      "score": 0.2992,
+      "score": 0.2817,
       "id": 13
     },
     {
@@ -303,6 +305,25 @@
       "id": 14
     },
     {
+      "tipo_evento": "bloqueo",
+      "ubicacion": "Santa Marta",
+      "severidad": 2,
+      "resumen": "“En Colombia los problemas no se solucionan bloqueando las vías”: De La Espriella ordenó levantar bloqueo en vía Barranquilla-Santa Marta - larazon.co",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "larazon.co",
+          "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxQREJWMGRHaWlLLWlhaUozZE00S18xSUZsY1Q3NzUwSnFqR29jenhFVXJidEZzN0FIYzlrNi1lRWZtc0plSXFEYy11TWlqcXVrRFZkUUtZUjBiM0toVFBUaUtRUVVmbWJ6eG1jLXJpU2pCaXZ5Z2hUT25GRHRGY2prbHgtTUlBaGhFWnlsNUliRVdEbGtJQTZOWGxWRUs0Ui1Lc0JrNW1jTEJwQXRYMkU1LUk4Tk1teUNpNll3RThfemNWZHFGNnFXUzhUeWk3V3phMjlTZFNrNkFQZEx1b1FzclQ3MnJHQ2hPR0E?oc=5",
+          "fecha": "Mon, 17 Aug 2026 20:38:34 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-08-17T20:38:34+00:00",
+      "score": 0.2743,
+      "id": 15
+    },
+    {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 5,
@@ -319,7 +340,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.1733,
-      "id": 15
+      "id": 16
     },
     {
       "tipo_evento": "paro",
@@ -340,27 +361,6 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2024-09-30T07:00:00+00:00",
       "score": 0.1733,
-      "id": 16
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Fin del paro de transportistas en Ucayali: Autoridades anunciaron subsidio para conductores - Infobae",
-      "actores": [
-        "transportistas"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Infobae",
-          "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxQLWw3R2NlWDRhVEh3eHFWMjNkY3NTOEN2NDJqNS1VU1pEX2VDYzhtSlpPc1BXcWtKM3FoMHd5alJ3SnY5b1ZoNTBwTVZ5LWpiM3N0bGxDTWdSMERmRm9jV3ZSbGFNY0d5TWF6cmM3SENDUnNkVXVZbDNiS3hOWkZtSWpvTnc5cUxIZkhua3ljT21tWTcxWWhtTW9MT3FXejJJZ1BBTGRCRjN2bnBIS1dORmdOelJTelV0TGpsX2g0UnJXVGFFVlhvbTVrb9IB5gFBVV95cUxPLTFpOE5oWklfcV9nejRMLXVOWmNLOU9ta1YtOUliRlFOU2NGZnFuYXZ4bUQtbjF3a185c3JmaUp6TlVqTTZnYUx1OWlsNm1YWEhrUEdPcFpOQUhhc29RSmhqWmN1UzJtdkN5VW53YzQwSjloRkZoVHpwbzdSRXdDY2pWTDVhaGVJSlRlNUY2Y2w1YmZYaTh4WUhPTmxhRU9tSkZ5b3NfLVQySklUQjg4Q09nWU9TQlF5OVkzWHcydXY2TTMyRWR5Y09IMFRySkFVclZtMVZ0Qkp5SWdKamhRd2JtWHB6UQ?oc=5",
-          "fecha": "Sat, 15 Aug 2026 01:38:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-08-15T01:38:00+00:00",
-      "score": 0.1137,
       "id": 17
     },
     {
@@ -434,27 +434,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-14T19:42:59+00:00",
-      "score": 0.1044,
+      "score": 0.0957,
       "id": 20
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 3,
-      "resumen": "Puerto de Rotterdam experimenta retrasos y congestión - Portal Frutícola",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Portal Frutícola",
-          "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE9KSGFRQXJJQmZJNFRuLXZ0RXNMbGtqSkh4WjRpdWE2bGJ4MUJVSXBIYXRINm5sZzFEUGt3b0JLT3h4cXNWUDdQVFZoTmNjdVBVbUhqVFdtU3lpYXF0VmFGTkk5MG5XbHZRN251NEx3MDJqLVpVOGVVN2tiQ1E0dVU?oc=5",
-          "fecha": "Fri, 18 Apr 2025 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2025-04-18T07:00:00+00:00",
-      "score": 0.104,
-      "id": 21
     },
     {
       "tipo_evento": "paro",
@@ -473,7 +454,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 22
+      "id": 21
     },
     {
       "tipo_evento": "paro",
@@ -494,7 +475,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 23
+      "id": 22
     },
     {
       "tipo_evento": "paro",
@@ -515,7 +496,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 24
+      "id": 23
     },
     {
       "tipo_evento": "paro",
@@ -534,7 +515,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-03T07:00:00+00:00",
       "score": 0.0693,
-      "id": 25
+      "id": 24
     },
     {
       "tipo_evento": "paro",
@@ -555,7 +536,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 26
+      "id": 25
     },
     {
       "tipo_evento": "paro",
@@ -574,7 +555,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-03T07:00:00+00:00",
       "score": 0.0693,
-      "id": 27
+      "id": 26
     },
     {
       "tipo_evento": "paro",
@@ -593,7 +574,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-05T02:00:12+00:00",
       "score": 0.0693,
-      "id": 28
+      "id": 27
     },
     {
       "tipo_evento": "paro",
@@ -612,7 +593,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 29
+      "id": 28
     },
     {
       "tipo_evento": "bloqueo",
@@ -631,7 +612,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 30
+      "id": 29
     },
     {
       "tipo_evento": "bloqueo",
@@ -650,26 +631,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-26T07:00:00+00:00",
       "score": 0.0693,
-      "id": 31
-    },
-    {
-      "tipo_evento": "bloqueo",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Alertas de atentados y bloqueos en vías: el balance de seguridad para la segunda vuelta - El Espectador",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "El Espectador",
-          "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxOLTM4Ni0wcVR1NHNUVnBQQ0hWR0dGT3U4NXpVVHYtTFdHQ25rUkhlYnktRldHSnh3YUtlT05wZWRPbmlOQ2ZQZll3cXAzVUxJaDFVVWQ1WXNoWGRLNDlJUVhfTFJMekx5cjFLZHRtcndHS1hPdmltMmMyb1Ywb3prSDJOWnFZVlJHR0NBN2tlQzVyZGVQa1BZazVLYmhjVzB5Wm5iZUo4RTdPVDh1dGlhMnI3R0U3VHdqSEd1SGdOb2xqbTZITmhiSkVUeUViZEtoNVItZ9IB6AFBVV95cUxPR28wY1MzQ0VqaXRpZ19sWS1HZUhFUWpORW81YzFBOGNseXh5MGFrc2ZJQlVQUFVxX2lYbGlnYWJsUFI0YUN1akRiLXZTb29LNmFFRHYyRE9iUjdvcGRWckRWWUFaWGk2WHBjSnh6ZXo3R2JjOU9iSFd5ZDdKN1lTRl8yQUVpaU12QmlJVnlIOFRvVzRhTnBHM3dKQ092ZjU1dVY4M0xiNXRiVHNFV2hJNEFPSU5XT2tTWFBpeHdTdVdCZXRqdjZPV3VkLXNYUXJhVjA5bjBZdUxKTXU2WkVacUh0U0VCX1FV?oc=5",
-          "fecha": "Tue, 16 Jun 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 32
+      "id": 30
     },
     {
       "tipo_evento": "bloqueo",
@@ -690,7 +652,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-28T07:00:00+00:00",
       "score": 0.0693,
-      "id": 33
+      "id": 31
     },
     {
       "tipo_evento": "bloqueo",
@@ -709,7 +671,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-29T07:00:00+00:00",
       "score": 0.0693,
-      "id": 34
+      "id": 32
     },
     {
       "tipo_evento": "bloqueo",
@@ -728,7 +690,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-12T07:00:00+00:00",
       "score": 0.0693,
-      "id": 35
+      "id": 33
     },
     {
       "tipo_evento": "bloqueo",
@@ -747,7 +709,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-23T07:00:00+00:00",
       "score": 0.0693,
-      "id": 36
+      "id": 34
     },
     {
       "tipo_evento": "bloqueo",
@@ -766,7 +728,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-09T07:00:00+00:00",
       "score": 0.0693,
-      "id": 37
+      "id": 35
     },
     {
       "tipo_evento": "bloqueo",
@@ -785,7 +747,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-23T07:00:00+00:00",
       "score": 0.0693,
-      "id": 38
+      "id": 36
     },
     {
       "tipo_evento": "congestion",
@@ -804,7 +766,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-29T22:27:47+00:00",
       "score": 0.0693,
-      "id": 39
+      "id": 37
     },
     {
       "tipo_evento": "congestion",
@@ -823,7 +785,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-09T07:00:00+00:00",
       "score": 0.0693,
-      "id": 40
+      "id": 38
     },
     {
       "tipo_evento": "congestion",
@@ -842,7 +804,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-12T07:00:00+00:00",
       "score": 0.0693,
-      "id": 41
+      "id": 39
     },
     {
       "tipo_evento": "congestion",
@@ -861,7 +823,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-13T07:00:00+00:00",
       "score": 0.0693,
-      "id": 42
+      "id": 40
     },
     {
       "tipo_evento": "congestion",
@@ -880,7 +842,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-03-06T08:00:00+00:00",
       "score": 0.0693,
-      "id": 43
+      "id": 41
     },
     {
       "tipo_evento": "congestion",
@@ -899,7 +861,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-22T07:00:00+00:00",
       "score": 0.0693,
-      "id": 44
+      "id": 42
     },
     {
       "tipo_evento": "congestion",
@@ -918,7 +880,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-03-26T07:00:00+00:00",
       "score": 0.0693,
-      "id": 45
+      "id": 43
     },
     {
       "tipo_evento": "paro",
@@ -937,7 +899,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 46
+      "id": 44
     },
     {
       "tipo_evento": "paro",
@@ -958,7 +920,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 47
+      "id": 45
     },
     {
       "tipo_evento": "paro",
@@ -979,7 +941,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 48
+      "id": 46
     },
     {
       "tipo_evento": "paro",
@@ -998,7 +960,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 49
+      "id": 47
     },
     {
       "tipo_evento": "paro",
@@ -1019,7 +981,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-27T07:00:00+00:00",
       "score": 0.0693,
-      "id": 50
+      "id": 48
     },
     {
       "tipo_evento": "paro",
@@ -1038,7 +1000,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-08T07:00:00+00:00",
       "score": 0.0693,
-      "id": 51
+      "id": 49
     },
     {
       "tipo_evento": "paro",
@@ -1057,7 +1019,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T04:13:31+00:00",
       "score": 0.0693,
-      "id": 52
+      "id": 50
     },
     {
       "tipo_evento": "paro",
@@ -1076,7 +1038,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 53
+      "id": 51
     },
     {
       "tipo_evento": "paro",
@@ -1095,7 +1057,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-26T19:17:41+00:00",
       "score": 0.0693,
-      "id": 54
+      "id": 52
     },
     {
       "tipo_evento": "paro",
@@ -1113,6 +1075,46 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-01-09T08:00:00+00:00",
+      "score": 0.0693,
+      "id": 53
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Huelga en Port Aventura: cientos de trabajadores protestan para conseguir un \"convenio digno\" - Onda Cero",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Onda Cero",
+          "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxOc1hLMW0zckw0Ukxub0pNSEt1VXRfX1pucklTS2xjNzdoWERuSWxjUXd5SU0zYjBKbmZjM09TdFlBbmlHaVRXcWpEb1RqaWM3QkZQT1lCcmNiVWNKVnNJVGhSYnNkYlVxTTloMEs2UWhrM1FaT0p1czdTbjJPWGlNTy1uRExySm5ibThJRjNENTBIWTg1RFUyT0toS0RFRzltNnd3SUJQM2diNFV3d2t3NUFTUzBtV3RoMVN4RlRsa0wtOW1ULWJTd0UtdnZlZExwT3l3Njd0LXBuVFVxLTJqcGhQTDFQNzlmdEtCTtIB7AFBVV95cUxNVDBiYnRsS3M5V2wtNlhRTTNoTFJhaE5BbDNJWk54U2NFeHR4QlRCTHlZNmtBNnBRZWY5UGZOazBHd3FNS0w4QVB2Rk91bnBnWUYxNmllZm1rMTJ6OHoyNkpXaTZQSlg4bVdHb0dUbGlwNTdnMi02X2cwNEVyY3JPNWpKc0ZSYW9xSVpsRVhoSUNpRzJTU2xIYXEyZkdhZHdUUVBTTzFaMXhrbUJ1VzktNk1Yb2w1a2pGMldwQlRORHpfUG9fVFhTcDF0ajY5RFFmaVpWUmhHc3pES1NFVnNiUlZoZzdEZ2tvZ1Y5bg?oc=5",
+          "fecha": "Sat, 19 Apr 2025 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2025-04-19T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 54
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Port Congestion Chittagong, Bangladesh - Hapag-Lloyd",
+      "actores": [
+        "Hapag-Lloyd"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Hapag-Lloyd",
+          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNZEJOc250SldJQ0pqazVjUEFfX2lWS1dQak1Ldng3QVVIZTBhZlQ1Ti1CVkZVYnU0SmpyZzUzS2tCRGhndjdISlVtOWJSOUdEX19YY081VTE3QjRWTVhlakNXOGtwd1dHZ1VFQkQzVnY4YjBZVkNtbjlHamE0S1RJOXZFWUNZU1pIRVgydk9xYWQxV0U3Z3RoNk05bTRxT1FrMlhlajI0alU3d2Z5TjZTeS1xckc4bGhmenRiMnBCTHMwZGZiUkJ0MmxOdnY?oc=5",
+          "fecha": "Mon, 07 Jul 2025 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2025-07-07T07:00:00+00:00",
       "score": 0.0693,
       "id": 55
     },
@@ -1139,20 +1141,18 @@
       "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Port Congestion Chittagong, Bangladesh - Hapag-Lloyd",
-      "actores": [
-        "Hapag-Lloyd"
-      ],
+      "resumen": "Congestión en puerto de Rotterdam genera impactos logísticos y legales a exportadores de Latinoamérica - Portal Frutícola",
+      "actores": [],
       "fuentes": [
         {
-          "fuente": "Hapag-Lloyd",
-          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNZEJOc250SldJQ0pqazVjUEFfX2lWS1dQak1Ldng3QVVIZTBhZlQ1Ti1CVkZVYnU0SmpyZzUzS2tCRGhndjdISlVtOWJSOUdEX19YY081VTE3QjRWTVhlakNXOGtwd1dHZ1VFQkQzVnY4YjBZVkNtbjlHamE0S1RJOXZFWUNZU1pIRVgydk9xYWQxV0U3Z3RoNk05bTRxT1FrMlhlajI0alU3d2Z5TjZTeS1xckc4bGhmenRiMnBCTHMwZGZiUkJ0MmxOdnY?oc=5",
-          "fecha": "Mon, 07 Jul 2025 07:00:00 GMT",
+          "fuente": "Portal Frutícola",
+          "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPTUpOcjVVX2FRV3hkUVQ3aGNYOVRxdWd1TUVpZUQ5ODBULXBwMHVQd0gzQ3FHT2ZrS0lDbnJrQUJhTzgyeGV6dmxQZUhGdmV0S0R0ZmhwYUVwQnJzT3pMbksyaWlwQ1IzN0VLby1vUUdfNEZjOUJNdzhQNzRyNEg1OEJFaERRWlV1d2pIQ2xTWQ?oc=5",
+          "fecha": "Tue, 22 Apr 2025 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2025-07-07T07:00:00+00:00",
+      "fecha_mas_reciente": "2025-04-22T07:00:00+00:00",
       "score": 0.0693,
       "id": 57
     },
