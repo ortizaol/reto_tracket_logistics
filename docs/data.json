@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-18T10:56:17.353249+00:00",
+  "generated_at": "2026-09-18T16:10:49.356407+00:00",
   "sources": {
     "google_news": 120,
     "bluesky": 0,
@@ -12,6 +12,27 @@
     "bluesky['port strike']: HTTPError: HTTP Error 403: Forbidden"
   ],
   "events": [
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "No se ha confirmado una huelga nacional de camioneros en EE. UU. para el 1 de octubre; el diésel está a $6.285 - TechStock²",
+      "actores": [
+        "camioneros"
+      ],
+      "fuentes": [
+        {
+          "fuente": "TechStock²",
+          "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxQQ0lTZWNDSXh5N3p0TjQzMlhaMy1tR0dXQnd3TzAxZUczWm1QNWVWaDBnWmZ1alZTRFQtZF9lN0pHcUtkcVlZamNUWW5yU3huVFFJWHBoTlRaV29ULUFfLU9BVjR6X2Y1UUZXUGpaYUVCSG5nU2xoYzYyaW9NY0ZreXAzbkZOcS1tdldwSU5lYjlWV1FpTlkxbU45eDF6ZGNscThlR2FteF90VE0zZzZrWEFyb3VZeDBaZUFESnNDUER5SkhfX0E?oc=5",
+          "fecha": "Fri, 18 Sep 2026 10:57:07 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-09-18T10:57:07+00:00",
+      "score": 1.2855,
+      "id": 1
+    },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
@@ -30,8 +51,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-17T23:16:00+00:00",
-      "score": 1.1713,
-      "id": 1
+      "score": 1.0859,
+      "id": 2
     },
     {
       "tipo_evento": "congestion",
@@ -49,8 +70,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-16T05:52:52+00:00",
-      "score": 0.6443,
-      "id": 2
+      "score": 0.5974,
+      "id": 3
     },
     {
       "tipo_evento": "paro",
@@ -84,7 +105,7 @@
       "n_fuentes": 3,
       "fecha_mas_reciente": "2026-08-25T07:00:00+00:00",
       "score": 0.3466,
-      "id": 3
+      "id": 4
     },
     {
       "tipo_evento": "congestion",
@@ -102,8 +123,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-14T03:27:07+00:00",
-      "score": 0.3111,
-      "id": 4
+      "score": 0.2884,
+      "id": 5
     },
     {
       "tipo_evento": "paro",
@@ -122,7 +143,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-27T07:00:00+00:00",
       "score": 0.1733,
-      "id": 5
+      "id": 6
     },
     {
       "tipo_evento": "paro",
@@ -141,17 +162,17 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-09T07:00:00+00:00",
       "score": 0.1733,
-      "id": 6
+      "id": 7
     },
     {
       "tipo_evento": "bloqueo",
       "ubicacion": "",
       "severidad": 5,
-      "resumen": "Bloqueo comunitario paraliza la Troncal del Oriente en el Magdalena - ELHERALDO.CO",
+      "resumen": "Bloqueo comunitario paraliza la Troncal del Oriente en el Magdalena - elheraldo.co",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "ELHERALDO.CO",
+          "fuente": "elheraldo.co",
           "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOSDJvc0U4Nno1UkZRbWNwdkp5M00wRXRsWlFnUElVTU1GclJqZ2ZreXIyTTFhRXpFR2d0cWhudmtXQklFSjJnUlQ5VnZJRWJCZFQwbnV5QTB3OUxTeEpWWGZBWEpuOTQ3UnpEaEVEeEpwRzBXLVJKWUhHdEFzdmVVNGRXZ2NkTC1GMFg3Ym5DV1llZm92Q2hLcWFhVHpQNGxiT09Rd0ltcUt0Nk1HRGlPQjJBWdIBzgFBVV95cUxPbVJINW9SNnBlWklZZGswbDdiMkF1dUlIU3h6WXR5LUNKOHRGNE56bEZzSkpHd2RmZHVFbjdtYy1CeHNObGEzdV9TMy16WklLOE9renl5a0V3T1A4R3dKV0xtekhrcmNZcmNCQU5SUEQ2U0hZdTJzdV9uR3RzbHpmM2xGcmloOUFSODg4MDRaSkc0cEZWWlNMRDc5S2ZUbFZJaElreXZXbXdOdEJuWWdmcmdXTUp1NnEwQ3VaOTJBcFZlZU5MdEtnSzBjM2pzQQ?oc=5",
           "fecha": "Sat, 15 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -160,7 +181,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-15T07:00:00+00:00",
       "score": 0.1733,
-      "id": 7
+      "id": 8
     },
     {
       "tipo_evento": "paro",
@@ -179,28 +200,78 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-14T07:00:00+00:00",
       "score": 0.1733,
-      "id": 8
+      "id": 9
     },
     {
-      "tipo_evento": "paro",
+      "tipo_evento": "congestion",
       "ubicacion": "",
-      "severidad": 5,
-      "resumen": "Trabajadores portuarios en EEUU se declaran en huelga: qué puertos se paralizan y cuál sería el impacto en los consumidores - Univision",
-      "actores": [
-        "trabajadores portuarios"
-      ],
+      "severidad": 3,
+      "resumen": "La congestión portuaria bate récords y pone en evidencia la falta de colaboración en el transporte marítimo - Asociacion Peruana de Agentes Maritimos",
+      "actores": [],
       "fuentes": [
         {
-          "fuente": "Univision",
-          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQWWRLMmJqWTVnRVNxbjdQai1EMUNSbjVtUXVUMmR6UHdudmZ2cTYwbW5mRUgtY2pMQ2V5b1VmX0FUZzRuX213c2JQSm5iOFB6dEk5QVZuTHFCUlNmampmUmJwanBQaGZjMEowM2hNSHlSdE0xLXIzbFVWdGliYTlLa0lucm00OThPZnZ6S2VJUkhfcVFFcWNhTUhNY3N6bzZWQlZ3dUVqVVhqX2JEN3ZWV19lbmg1RGlF?oc=5",
-          "fecha": "Tue, 01 Oct 2024 06:02:36 GMT",
+          "fuente": "Asociacion Peruana de Agentes Maritimos",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQN2dmN2s3RHlxZS1rLVFBeGRSa2pjU0tOc21SejIxd3J6d1liNVZwcWNjUWxCcTBiMTAtbFF0Tko2dGZHNjFhWUNjZlY3czZZd2FkZE9jbjV6eDg4WV9ralhNVTllNWpVaWNKN0tHNWoxXzhsLWVCS3VpQU4xczk3Nk4zXzNPRE9FZTYyelRZU09tWW5Da2xaUEtkcTZFMENoelB1NUpmZGN6eGZkVVMybTlxbm92bTlyLVRTaTlZcFBZOVMzVHRBOUtB?oc=5",
+          "fecha": "Thu, 10 Sep 2026 01:53:00 GMT",
+          "origen": "google_news"
+        },
+        {
+          "fuente": "Asociacion Peruana de Agentes Maritimos",
+          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQSUVzOFE0cUxaMlBNcW1COGZYYzg3Ym5jUVV5a3M0VTdfbWE5RUczT3h3Nk1xak91dDVHVFBxTUdvb0ZabTdzVlBDbGhISEpqamJDS2pnQUd5WGNvY3lrLXUxdFJKYzB0RlJvNVVWTWhwel9malFSQ1BoUHJaN1hTZzJ4RWl6bkNYOU1pZ3hJRFMtemRlYjhKMFF5WGI5aWxFaFl3M21kaXBmWm5wMFZZYw?oc=5",
+          "fecha": "Thu, 27 Aug 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 2,
+      "fecha_mas_reciente": "2026-09-10T01:53:00+00:00",
+      "score": 0.1676,
+      "id": 10
+    },
+    {
+      "tipo_evento": "naviera",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Ucrania volvió a golpear la base naval de Novorossiysk y alcanzó al menos tres buques de la Flota del Mar Negro - Zona Militar",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Zona Militar",
+          "url": "https://news.google.com/rss/articles/CBMi5wFBVV95cUxOVlVnQ3dueFZHRVNFMlI1UTJjcVFPdUdfaFBSdUwzeW1VZkozZEJBTTdjeUpBamlhaGRlVXdzOWs0ODZHWnVENko4aHhEWVlUSHZqSVZMV1N6RXNDU1JGWnFRYk92MFpyckpxUUVhUFRfSkUzNkVnWW9CTk1XY2ItdTVneDFic1FUQkN4bW9OQnh3UUFRTi1lYmtiaVNVRmNGR0ZRRXpjZWhxUG9RNlBlLWJaRWhDWkJZYzVkR01XSmJnWkVDSmFpaDVzV3VydnhBMDlodmQ1UkhQeVVvNzhJVGNUM18xSGM?oc=5",
+          "fecha": "Fri, 11 Sep 2026 13:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2024-10-01T06:02:36+00:00",
-      "score": 0.1733,
-      "id": 9
+      "fecha_mas_reciente": "2026-09-11T13:00:00+00:00",
+      "score": 0.117,
+      "id": 11
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Paro portuario: el Gobierno alcanzó un acuerdo para destrabar el conflicto y se reactivarán los servicios - Infobae",
+      "actores": [
+        "gobierno"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Infobae",
+          "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPR3lrLVZUMG9ZTkJNSlNjS0ZUT0t0U3VPVThLbTZTNkxZa3pKeG9wdmdPbWdreUpsNzVYdUVxT3FkWE5FemxpaEcxR3NGSThURWdqbDdXNm5MY2J4WDN1eVJBODRLSkF2OHRjNW9USk1UYlpzOG5qZmFqSlZSZGtWdDlPcExNY0wwa19PbzhLWUF3R2oyazR1WUpsMWpkamxjT0dOQnh2UndsMHBhbTU0Qm43RklCVUlseC1uRWVOSEF5MjVKaTFIcnowWWtYM2lmUS1tME9lcGdiU0hnTWFOcWlJUzHSAf8BQVVfeXFMUHRwck5WaHFsWjh3NUk0bUwza1JtTExuNlBoTVdHenUyOUpTNzZZeHRPRFdQSjVTM0dmdmFBS3piR2xESHFjVEV6TzM2Njhoc3RYcVFBbm5oY2tQN1ZHLWppTFNaMXB4WFk4ZWcwczBHcGdGZmdsLVNlX3p6c2Fkd211Q0hKcDU2QlNhMlAwUUVONXQ4LVlNWC1YTWhHSThoV0tIVmdocmFka1NNZlpuZXdQRXpoUDBIdG5ERGVPbVJHNXNmRkhRR0tXVHVZaDE1aWRqZUFMbGxscG9GNlJNMjN3bHI1TXpqcjJCLVJmRDlJUzBtenp5UXBzd0RiMlQ0?oc=5",
+          "fecha": "Tue, 04 Aug 2026 07:00:00 GMT",
+          "origen": "google_news"
+        },
+        {
+          "fuente": "AgroLatam",
+          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxONkZzQ1BDNE1Id3dFczdMZ2NydWRfVTZmeVlWX1dTc1FDdDFTQW42b3RhajlXV0Zfa0dwRWFYZXBzbzZaN2k5bkRuLWdjODllV1JTbFVoS3ZvNm1JZjIyN2Y2dzBXQm50VE1ybHNWRHNVYmlwamY0aFlKbkJ4NXhsczRIUDlONDdHSVhYRTJ5aHdUU3FzQ3ZKb09vWmRhMzl1UVg3SFZKLWRzVHdxZ2c?oc=5",
+          "fecha": "Tue, 04 Aug 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 2,
+      "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
+      "score": 0.1099,
+      "id": 12
     },
     {
       "tipo_evento": "congestion",
@@ -225,10 +296,10 @@
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-09-04T07:00:00+00:00",
       "score": 0.1099,
-      "id": 10
+      "id": 13
     },
     {
-      "tipo_evento": "congestion",
+      "tipo_evento": "clima",
       "ubicacion": "",
       "severidad": 2,
       "resumen": "China | Congestión portuaria global marca récord histórico: El impacto del temporal en China sobre la cadena logística y los fletes en Chile - Portal Innova",
@@ -250,7 +321,32 @@
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-08-26T07:00:00+00:00",
       "score": 0.1099,
-      "id": 11
+      "id": 14
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "La congestión portuaria roza los máximos alcanzados en 2022 por la pandemia de covid - cadenadesuministro.es",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "cadenadesuministro.es",
+          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOU0w5RjQybnhYS2lMWkh0TksxZVB6dUN2T2tMdTVENHJMQU9uaUU2dWRHU0w1RXFGSHY5M1VlS2Z0d2xjUzJCbmJRU3VUNnNNMjRkSVhBMURzNFlEQkU2Wkd1WFZKRlJ0TFg4VmFVUGlhMU1iN202ejhfeGI3WTc2U3U0TEpJZVZ2Ym90NjhLNHloczhlMUhvVmtYSkJ3Z2VjY1dkS1d5MExScnRMYzNnZ3dtMHpNYktrUmZRcGRWaUlpRk0?oc=5",
+          "fecha": "Tue, 08 Sep 2026 07:20:00 GMT",
+          "origen": "google_news"
+        },
+        {
+          "fuente": "cadenadesuministro.es",
+          "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNZ0RqQmhBdzNIbV8zVnc5OTAzN0pKb3c0cDZHb3M3aHRxNllGV0ZUWkVqcjFsQ2xUSFVNeFh5RzhqWGRlM21Za2h0c3R2QnVTb0Z2ZnhpSy1UcjB4UDk4OVo4Qko3YloxNTA4cUt1TnBTYUdtX1VlQzg0UnNmS2RtdXB1cHRuWVRTSDNOZHRnM0ZPTlhFcm91SzNnd3c4RkxVVEswVi15Y3IzeHhaRHF2eGlOQTRmQWNRMGdXTlVVRXh1aEVUR3IxWS1aT0JuZ0xxbFNiMW9vWGJoQQ?oc=5",
+          "fecha": "Tue, 25 Aug 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 2,
+      "fecha_mas_reciente": "2026-09-08T07:20:00+00:00",
+      "score": 0.1099,
+      "id": 15
     },
     {
       "tipo_evento": "paro",
@@ -269,7 +365,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-09T07:00:00+00:00",
       "score": 0.104,
-      "id": 12
+      "id": 16
     },
     {
       "tipo_evento": "bloqueo",
@@ -288,7 +384,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.104,
-      "id": 13
+      "id": 17
     },
     {
       "tipo_evento": "congestion",
@@ -307,7 +403,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-13T07:00:00+00:00",
       "score": 0.104,
-      "id": 14
+      "id": 18
     },
     {
       "tipo_evento": "congestion",
@@ -325,8 +421,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-10T10:35:32+00:00",
-      "score": 0.0862,
-      "id": 15
+      "score": 0.0799,
+      "id": 19
     },
     {
       "tipo_evento": "paro",
@@ -338,64 +434,24 @@
         {
           "fuente": "Onda Regional de Murcia | ORM",
           "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQZFNsZGctdzdqX1VNMUFFM2g2OVVSVk50eHVodHhEWnlDZm9lUHg0UF9hNDMyUWF1REZUOE9uTFpXOGM5NG16My1HMkxMb0ozR0ZZdE1xY2RONVoyeXpsQldyQ0NKbkw0Tmw3NWxZSDBxUUNyWFh6enZUSE5tWTJ2Q0NHdVhzam5lWkVjbWo1YW12M0lwaTEyOGpyZktYNFQ4djdhUGs2X21fVGd2ZGxXOVdYWQ?oc=5",
-          "fecha": "Thu, 10 Sep 2026 09:26:27 GMT",
+          "fecha": "Thu, 10 Sep 2026 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-10T09:26:27+00:00",
-      "score": 0.0848,
-      "id": 16
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "La congestión portuaria bate récords y pone en evidencia la falta de colaboración en el transporte marítimo - Asociacion Peruana de Agentes Maritimos",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Asociacion Peruana de Agentes Maritimos",
-          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQN2dmN2s3RHlxZS1rLVFBeGRSa2pjU0tOc21SejIxd3J6d1liNVZwcWNjUWxCcTBiMTAtbFF0Tko2dGZHNjFhWUNjZlY3czZZd2FkZE9jbjV6eDg4WV9ralhNVTllNWpVaWNKN0tHNWoxXzhsLWVCS3VpQU4xczk3Nk4zXzNPRE9FZTYyelRZU09tWW5Da2xaUEtkcTZFMENoelB1NUpmZGN6eGZkVVMybTlxbm92bTlyLVRTaTlZcFBZOVMzVHRBOUtB?oc=5",
-          "fecha": "Thu, 10 Sep 2026 01:53:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-10T01:53:00+00:00",
-      "score": 0.076,
-      "id": 17
+      "fecha_mas_reciente": "2026-09-10T07:00:00+00:00",
+      "score": 0.0759,
+      "id": 20
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Paro portuario: el Gobierno alcanzó un acuerdo para destrabar el conflicto y se reactivarán los servicios - Infobae",
-      "actores": [
-        "gobierno"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Infobae",
-          "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPR3lrLVZUMG9ZTkJNSlNjS0ZUT0t0U3VPVThLbTZTNkxZa3pKeG9wdmdPbWdreUpsNzVYdUVxT3FkWE5FemxpaEcxR3NGSThURWdqbDdXNm5MY2J4WDN1eVJBODRLSkF2OHRjNW9USk1UYlpzOG5qZmFqSlZSZGtWdDlPcExNY0wwa19PbzhLWUF3R2oyazR1WUpsMWpkamxjT0dOQnh2UndsMHBhbTU0Qm43RklCVUlseC1uRWVOSEF5MjVKaTFIcnowWWtYM2lmUS1tME9lcGdiU0hnTWFOcWlJUzE?oc=5",
-          "fecha": "Tue, 04 Aug 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 18
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Por qué se levantó el paro portuario y qué cambia con la baja de costos del 20% - Perfil",
+      "resumen": "Por qué se levantó el paro portuario y qué cambia con la baja de costos del 20% - perfil.com",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "Perfil",
+          "fuente": "perfil.com",
           "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPMG5wWVNaTkZBalpwWVczai1SYVhvcmdLWi1mMUtuUWpKcTY4RXB3aGVWS05PVzJlSVVIY3RFWERfRzNOMmFPbFY2TkFMNTBBMnJLbzNKZkVxLUJxTFplZ1l2NDdMVHVHZXpYN3ByakFRdkhaRlJ6YUIxMlR3VDkyTWFxQ2JiM0tZT2tCVk53MEczOEJMTzNlci01cGlrTHhkaDlLWDNPSjgyYlJ2Z09IbVROYy1EaklFcWFXNHhWRHJaN1VQ0gHKAUFVX3lxTE41VERFT3lqaUM3dVRYUXh3aTZRS2FrZ0otQ0Z4c0FtMFZoNmJHWWNhMm9UdEk4TXFEcGFXbU1TcnZXYlJFM2ExelZCalpuejk3N0IxLTdJUlM4alJidUJDTFZTUjB3bHNhMnJ3ZHptU3l0UUp1WlVvTW5Yd3hvMl9SQWY3bG9uWDBHT2pCZ2Z5dkhTU0xJN3JTV3hSZ1lpc18xVVdVS1R6M1VodktkOXE0UDhjeTUtUU5GZE5MYzMta0g4Qktvb0FlNGc?oc=5",
           "fecha": "Tue, 04 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -404,19 +460,19 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 19
+      "id": 21
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Paro portuario: El Gobierno acordó una rebaja del 20% en las tarifas - Yahoo",
+      "resumen": "Paro portuario: El Gobierno acordó una rebaja del 20% en las tarifas - es-us.noticias.yahoo.com",
       "actores": [
         "gobierno"
       ],
       "fuentes": [
         {
-          "fuente": "Yahoo",
+          "fuente": "es-us.noticias.yahoo.com",
           "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQdDhQWm5iRTh0UW9xZF9BSlRYd193eUpXQUczeDNtR1BldFM1RzlzNHR0a21JZ1hZX25ra3MwQVItRGFVN2U1SUktU3lLdHNSWGR3ZDB4c2xFZzZoNkUwMVRpX1I2Skl0Z0xNTVpTbDh1NkpEWFkySFN2R1BqU1RmZWRsODZSSHQwQkxuRGNfdUxycnoz?oc=5",
           "fecha": "Tue, 04 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -425,7 +481,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 20
+      "id": 22
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Se levantó el paro portuario y vuelven a operar las exportaciones agroindustriales - Agritotal",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Agritotal",
+          "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNSkgwQ3U1V09kcGJOVldULTh5RTJlSGgySHUxYzBOZlduQ2RuVHNURFVnUENxZ012aEpHZkVNTFNBXzdUZm9faV9hRmV5dzZUdGIxaTBXd0tPS1didGp0OTVCUXBPZWtiRjYxZ09PeFBGelQtRGlqWVExQnRDekpjRUlUS3MxQ0xWejYxR2dUZ2l0WnRFZmZ6eFlmN1V4cTY0VzVkYW5iUmxQTkc0dzREUUVGbFFkSWYzVmZF?oc=5",
+          "fecha": "Tue, 04 Aug 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 23
     },
     {
       "tipo_evento": "paro",
@@ -446,19 +521,19 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-29T07:00:00+00:00",
       "score": 0.0693,
-      "id": 21
+      "id": 24
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Se levantó el paro portuario: el Gobierno acordó con los prácticos y comienza a normalizarse la actividad - qznoticias.com",
+      "resumen": "Se levantó el paro portuario: el Gobierno acordó con los prácticos y comienza a normalizarse la actividad - QZ | Noticias",
       "actores": [
         "gobierno"
       ],
       "fuentes": [
         {
-          "fuente": "qznoticias.com",
+          "fuente": "QZ | Noticias",
           "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxPNkNlMllOZWtxTXJvaDROSnZRUzVmcWxTdm9wSWhiX25Ma2Nnb2tkbkQ5WlNaRzM3aDU4TTBMRlNoZ05rTHZPZkVOaE9ZdlBoUWF3S2Uwd3BTUFlWUDZ1TjBCUUQ0MVUxcV83VEJWZFg2TkEwcnRQLU01MV8xb2xZc21uM3dDTjZIZ2V4RlNYb3NTRGtWNFMtOEZVOFUxc0psRFRobFBqRFoydTBrZDJSeGg1TnNIWU04SkFiNGRXSzFOR29kYl92WC14RmFERndNaEdCcWVR?oc=5",
           "fecha": "Tue, 04 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -467,17 +542,17 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 22
+      "id": 25
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Nuevo paro en el Puerto de Montevideo frena la principal terminal de contenedores - Ambito",
+      "resumen": "Nuevo paro en el Puerto de Montevideo frena la principal terminal de contenedores - ambito.com",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "Ambito",
+          "fuente": "ambito.com",
           "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQSUFBajlmYmlKbmMza3hCbmRfS1h4YUJENWI3MklHS1MzSmlMbTNwV1UwZV9ERldwOTJ3WXREVURYZGZqOTFCdVV2TktsSDlLRl9uUmdpTXd1RklZQVFrcm1rZ2RrdjBBVGhWTld1bHZFUVh6cDh5T09xQUpLOUVNOGx5MGQtU1prU3NtT3Fzc0QtR2Vub0M1NGY4dkdReWltRTM2NG9KQkM1Slo1TTlqNHB30gG3AUFVX3lxTFBRNHowR0lvS3lYTDlGU3BIUTBUQ0RJaUYtWmpXc25xYV9QQVFIVURtSkFidE5sZzJsZGlqZlUyLVJURnNfVEQzRUpCWURtVFNfcVU1SjRjUk9yc0IxTG9vV3h6Q3R6VjR6WHBmR19xOFRlYWQ0MmpNN2tXU25GSFk4eEpQUC1OVVczQXRCVEtlVzBDa1hlc0prbXgyeDlxVzZOYzVNOFQtaFNnS2dqRUxJbFQxajJXbw?oc=5",
           "fecha": "Wed, 02 Sep 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -486,7 +561,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-02T07:00:00+00:00",
       "score": 0.0693,
-      "id": 23
+      "id": 26
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "El paro de prácticos, pilotos y baqueanos golpea al comercio internacional argentino - laizquierdadiario.com",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "laizquierdadiario.com",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOV2FDcnBzd3E4TnFyaGFKWGs3R3hTcGd2LVBwaXo1Y0k1UVZzdGhvUTJFWHVxVXM4WkVOX1MxQTI4VERCdm4yMW9XYzduVTRZQV9LMEJWbzNPWGpscTh6OFltRWhJS1VDT3p0SlQ5QjBUQksxM1oySXlzSEthSkJsVy1vVFNNaGZOOWV5RGFadWxRQmQtdk5yODRsOHFwekJEaDU3MHpMZU9wV1JXQ3pPY19iN1ZtVlNS0gHAAUFVX3lxTE93WlZvNzFSNzJXZER1T1RCdkwwdHlISmI2UnJTZ3ctaGI5bDNUYmlUVlJvQS1tN3FQRERDMTdrTXNCRTZUcE4xYXpUellSNk8zRHE4TklwZEs1UFNDaG9LUG15VERVUXdmRzVuOXlsVVZVT2pUNmg1VjNELWNQSHhxVkpjc0RZdjFEOFliUVRRSHBhZWdieHN2U1d0Nnp3TUJfYVh0dlU0cTlRUGRuVDdOTVp4RFlLUjVfYW51OW1nVg?oc=5",
+          "fecha": "Tue, 04 Aug 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 27
     },
     {
       "tipo_evento": "paro",
@@ -505,7 +599,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-11T07:00:00+00:00",
       "score": 0.0693,
-      "id": 24
+      "id": 28
     },
     {
       "tipo_evento": "paro",
@@ -526,50 +620,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-03T07:00:00+00:00",
       "score": 0.0693,
-      "id": 25
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "No habrá paro: Unión Portuaria alcanza acuerdo con gobierno de Kast - PortalPortuario",
-      "actores": [
-        "gobierno"
-      ],
-      "fuentes": [
-        {
-          "fuente": "PortalPortuario",
-          "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPb0dKM21LR05YN1JZczF0eTRDcVZRVEtlRFAyVDFJc3c2WWJmTWlWQklOQUdmX1EtQ184WUF0Tk9KVm04dlJiM0ctVkJRUE9ZbFBBY1ZLdnhGZzV6WFB1WGJvT1BsMmx6RlY1U3JPUVNjSTR1dnI3OEtSMmlYN1JQSy1TSG5DMWxubUxiMTlVTnM5QVNv?oc=5",
-          "fecha": "Tue, 16 Jun 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 26
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Paro de advertencia de trabajadores portuarios por diferencias con el Gobierno - Agenda Logística",
-      "actores": [
-        "gobierno",
-        "trabajadores portuarios"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Agenda Logística",
-          "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxOZUdhYkowWEV4a1JqMVVJLXgzT1p1RmtLQmczVUJzSkhEUmMwTi1ncWdSRkpzeFlRcVBVMFlsMTJBUEItbGlIcmE4RmRYT0I0R1pWQlA3bnhMcGhUR1pQQmU5R1hWT0h6WGx3ZGY5UFU0NXo2YzVNWjV6cWtRYi1PLXlQRWVsalZYeVZkOTdGX2FxTnlVMEdDRlJLQUF3c21RdG4zbVNpOHBJUkpIRWhMdVFfc0ZTMENjZ0JDMVk0RDVFNFRrMzNna0FFSVJiV2FiQUk4aGVpTWlXcXVIT2h5Qw?oc=5",
-          "fecha": "Fri, 10 Jul 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-10T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 27
+      "id": 29
     },
     {
       "tipo_evento": "paro",
@@ -588,7 +639,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-03T07:00:00+00:00",
       "score": 0.0693,
-      "id": 28
+      "id": 30
     },
     {
       "tipo_evento": "bloqueo",
@@ -607,7 +658,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-09T07:00:00+00:00",
       "score": 0.0693,
-      "id": 29
+      "id": 31
     },
     {
       "tipo_evento": "paro",
@@ -626,7 +677,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 30
+      "id": 32
     },
     {
       "tipo_evento": "bloqueo",
@@ -645,7 +696,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-13T07:00:00+00:00",
       "score": 0.0693,
-      "id": 31
+      "id": 33
     },
     {
       "tipo_evento": "bloqueo",
@@ -664,7 +715,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.0693,
-      "id": 32
+      "id": 34
     },
     {
       "tipo_evento": "bloqueo",
@@ -683,7 +734,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 33
+      "id": 35
     },
     {
       "tipo_evento": "paro",
@@ -702,7 +753,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-11T07:00:00+00:00",
       "score": 0.0693,
-      "id": 34
+      "id": 36
     },
     {
       "tipo_evento": "bloqueo",
@@ -721,7 +772,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-23T07:00:00+00:00",
       "score": 0.0693,
-      "id": 35
+      "id": 37
     },
     {
       "tipo_evento": "bloqueo",
@@ -740,7 +791,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-17T07:00:00+00:00",
       "score": 0.0693,
-      "id": 36
+      "id": 38
     },
     {
       "tipo_evento": "bloqueo",
@@ -759,26 +810,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 37
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Congestión en Shanghai deja esperas de hasta 11 días y golpea las rutas hacia América Latina - MasContainer",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "MasContainer",
-          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQT0t5eHh2MVJCckFoRGFVZjJuMXd1eDJJU2FKMGtSM3pQOU5YZ2FGeW9ic2tzamszSzBLZ1hPNFgzeGVjd3dhOHBSeVM3N3NNQXdZT1hHbVFnWnZ5eV9DZGxha2p5My1iSW5GQkRRVWxQLVNQdWZxWi12UkV0MEtROFhOQUMza1J0RG1Fd2QwaXJfN1RaYXd1VE1sOUgxWnFlcTc4U01KaHN4NGh2cUk4aG1Sd3V5Tms0b0E?oc=5",
-          "fecha": "Fri, 28 Aug 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-08-28T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 38
+      "id": 39
     },
     {
       "tipo_evento": "congestion",
@@ -797,26 +829,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-05T02:16:45+00:00",
       "score": 0.0693,
-      "id": 39
+      "id": 40
     },
     {
       "tipo_evento": "congestion",
-      "ubicacion": "Buenaventura",
+      "ubicacion": "",
       "severidad": 2,
-      "resumen": "Mintransporte vuelve a Buenaventura para evaluar medidas para contrarrestar la congestión portuaria - Caracol Radio",
+      "resumen": "Congestión en Shanghai deja esperas de hasta 11 días y golpea las rutas hacia América Latina - MasContainer",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "Caracol Radio",
-          "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxPSmRvOHQzdHBsS3JBQmVYcVFndHZHc0E1SjBmYWxvMGx3YjlBa3hobTJqbUFod0o2dVA0Rk9aS05ucU80Tnk3ZDQxdWNVeVRfLXJjQjhaeU1RREgtYzNINFhaRktVcF9uY3VHdVctTHJtZXBFdXlLb0pCMVV4MDFQd2h2NnpMOXlnS2FwVWh1RVJvNVpwb3NUMGgwbTZscF9FYnU2Sk9waUdkZ0cwZ1R4T2MzeHZEZ0I0LWNXUHcyRjQ0UGVqMnVJTndLdC16X2vSAeMBQVVfeXFMT2RESVk1M2EtUENseFVpeDMzN0lYcFp6V2hjemxVWmNza05UajhNSURkR2RPRHBQd1RyZUlxdTBEZzFRQ1FrYUJCZ3VZWkE2OVd4TWZTOE1UUFZaU0xEMF90bEFlaEhjSlhPRUxlSUlJM25TRG44Q3BwOUlORXQ4Y0V0VmVMSzBQaGFZcnRyaWg3dTRJSERoLWFvNldDN0IzdlotaGVZWmx1V3p5ZUNNQ0JGalNMVXpiMENKYlFhUkRYRHdzdlR3NWJub2xzU1pDbU94dlFlOXl0bFVyenhaX1VHODA?oc=5",
-          "fecha": "Wed, 18 Feb 2026 08:00:00 GMT",
+          "fuente": "MasContainer",
+          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQT0t5eHh2MVJCckFoRGFVZjJuMXd1eDJJU2FKMGtSM3pQOU5YZ2FGeW9ic2tzamszSzBLZ1hPNFgzeGVjd3dhOHBSeVM3N3NNQXdZT1hHbVFnWnZ5eV9DZGxha2p5My1iSW5GQkRRVWxQLVNQdWZxWi12UkV0MEtROFhOQUMza1J0RG1Fd2QwaXJfN1RaYXd1VE1sOUgxWnFlcTc4U01KaHN4NGh2cUk4aG1Sd3V5Tms0b0E?oc=5",
+          "fecha": "Fri, 28 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-02-18T08:00:00+00:00",
+      "fecha_mas_reciente": "2026-08-28T07:00:00+00:00",
       "score": 0.0693,
-      "id": 40
+      "id": 41
     },
     {
       "tipo_evento": "congestion",
@@ -834,25 +866,6 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-28T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 41
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Efecto dominó: La congestión portuaria se expande y empieza a ahogar al comercio mundial - MasContainer",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "MasContainer",
-          "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNYURGSnk5NmRTX01mck5DcDVDYjlMRURLVUVfQ0tqSS1sZG9KR3lMYTJqS2dYaVBadEN5UzhvQ2MwckRDNVRkZURnZHJuSVFNUnZ1ZXM1UFUwYWp6WVBKSXFoYThlMFhDa0l4bEo4RkxnTG9qTVcyX3hoOWZVei1vU1p5UjZ0NU5YZE01cHlWX2VXa01XcHQ0am1FWUVIWExKRUlvWFJWN1FCeW1lSjRHV0tVVQ?oc=5",
-          "fecha": "Thu, 26 Mar 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-03-26T07:00:00+00:00",
       "score": 0.0693,
       "id": 42
     },
@@ -876,25 +889,6 @@
       "id": 43
     },
     {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "La congestión portuaria global atrapa a más de 4 millones de TEUs - cadenadesuministro.es",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "cadenadesuministro.es",
-          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOU0w5RjQybnhYS2lMWkh0TksxZVB6dUN2T2tMdTVENHJMQU9uaUU2dWRHU0w1RXFGSHY5M1VlS2Z0d2xjUzJCbmJRU3VUNnNNMjRkSVhBMURzNFlEQkU2Wkd1WFZKRlJ0TFg4VmFVUGlhMU1iN202ejhfeGI3WTc2U3U0TEpJZVZ2Ym90NjhLNHloczhlMUhvVmtYSkJ3Z2VjY1dkS1d5MExScnRMYzNnZ3dtMHpNYktrUmZRcGRWaUlpRk0?oc=5",
-          "fecha": "Tue, 08 Sep 2026 07:20:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-08T07:20:00+00:00",
-      "score": 0.0693,
-      "id": 44
-    },
-    {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
@@ -911,7 +905,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-26T07:00:00+00:00",
       "score": 0.0693,
-      "id": 45
+      "id": 44
     },
     {
       "tipo_evento": "paro",
@@ -930,7 +924,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-08T07:00:00+00:00",
       "score": 0.0693,
-      "id": 46
+      "id": 45
     },
     {
       "tipo_evento": "paro",
@@ -951,19 +945,19 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-27T07:00:00+00:00",
       "score": 0.0693,
-      "id": 47
+      "id": 46
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Gobierno logra, con concesiones, detener huelga de transporte urbano - Prensa Latina",
+      "resumen": "Gobierno logra, con concesiones, detener huelga de transporte urbano - prensa-latina.cu",
       "actores": [
         "gobierno"
       ],
       "fuentes": [
         {
-          "fuente": "Prensa Latina",
+          "fuente": "prensa-latina.cu",
           "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOY2djV0dKWkJZSjQwRDYtVWNibmZsQy1uY0FfODc3ODkyNE1wN3V0dkpoWTBKMVNzWEN5WVZaeklJaE1YbkM5SW90WjhPN25saHh3ZTl3MjJzc1dJOVdDTzVJSS1CbW01SWU0VDhicXBlYlJWMDQyZnF5UnExbUp3YnQwendNTmdOMzF6Q2VjQkNEWFdud240SFpVUnR1MUJSTDJPNExPMUVqRUU?oc=5",
           "fecha": "Mon, 24 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -972,7 +966,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-24T07:00:00+00:00",
       "score": 0.0693,
-      "id": 48
+      "id": 47
     },
     {
       "tipo_evento": "paro",
@@ -994,7 +988,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-24T14:26:55+00:00",
       "score": 0.0693,
-      "id": 49
+      "id": 48
     },
     {
       "tipo_evento": "paro",
@@ -1015,7 +1009,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 50
+      "id": 49
     },
     {
       "tipo_evento": "paro",
@@ -1034,28 +1028,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 51
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Camioneros de Brasil realizan paro por medida sobre precio del flete - Prensa Latina",
-      "actores": [
-        "camioneros"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Prensa Latina",
-          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxORGFOUGpna3NKRl82aWVHemJzcG5iSE83N043NHh5NmhBdm1rWUpYVVIxWU5XUE1Edm1TZzlQU3hYMHp1T0xMTm1NRmdIR0RnWkFWWlk0SXF5dXlYVzgxcWZOclZjd3BhcldsWjMtNmZkdHRwQkNaQkdha1pRaHlGS1NPQy1NUFAxMm9JWXlSemY1TmJ6LUtHU3lSVTAzR2RTdUNsQmJNYjVuaUprUUE?oc=5",
-          "fecha": "Mon, 13 Jul 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-13T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 52
+      "id": 50
     },
     {
       "tipo_evento": "paro",
@@ -1076,7 +1049,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-22T07:00:00+00:00",
       "score": 0.0693,
-      "id": 53
+      "id": 51
     },
     {
       "tipo_evento": "paro",
@@ -1095,17 +1068,17 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-08T07:00:00+00:00",
       "score": 0.0693,
-      "id": 54
+      "id": 52
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Magnitude 6.0 earthquake strikes near Port Vila, Shefa Province, Vanuatu - VolcanoDiscovery",
+      "resumen": "Magnitude 6.0 earthquake strikes near Port Vila, Shefa Province, Vanuatu - Volcano Discovery",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "VolcanoDiscovery",
+          "fuente": "Volcano Discovery",
           "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNWTVZVVgzT2Z1QVBVODFJZXBpUjI3UDl5eEtfYmNVSWN6NE9POE9RZVdvM2dLZXVhXzN3RWwtWFo5UjFKYk5sRVlwM0ZqZ3Vvbk9sZjBLM01yQWt5ekZma3I4T2xKNUpCdEVLTVQ4d3NKY3RmUjFhd0l2Rlo5UGtEZ2t6c1VYdHVQZ1RIcjEtanc0ZXJRd2JYMGh5RHpqa2t2R2VaLXl3UkUzeFhZd0dhQ00xVHVnYmdTTl9TdDlrYWkxa1Z5OC1GTQ?oc=5",
           "fecha": "Tue, 19 May 2026 04:13:31 GMT",
           "origen": "google_news"
@@ -1114,7 +1087,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T04:13:31+00:00",
       "score": 0.0693,
-      "id": 55
+      "id": 53
     },
     {
       "tipo_evento": "paro",
@@ -1133,7 +1106,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-01T20:43:39+00:00",
       "score": 0.0693,
-      "id": 56
+      "id": 54
     },
     {
       "tipo_evento": "paro",
@@ -1152,7 +1125,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2022-03-18T07:00:00+00:00",
       "score": 0.0693,
-      "id": 57
+      "id": 55
     },
     {
       "tipo_evento": "paro",
@@ -1171,7 +1144,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-01-09T08:00:00+00:00",
       "score": 0.0693,
-      "id": 58
+      "id": 56
     },
     {
       "tipo_evento": "paro",
@@ -1190,7 +1163,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-04-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 59
+      "id": 57
     },
     {
       "tipo_evento": "paro",
@@ -1209,7 +1182,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-26T07:00:00+00:00",
       "score": 0.0693,
-      "id": 60
+      "id": 58
     },
     {
       "tipo_evento": "congestion",
@@ -1228,7 +1201,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-31T07:00:00+00:00",
       "score": 0.0693,
-      "id": 61
+      "id": 59
     },
     {
       "tipo_evento": "congestion",
@@ -1247,7 +1220,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-10T07:00:00+00:00",
       "score": 0.0693,
-      "id": 62
+      "id": 60
     },
     {
       "tipo_evento": "congestion",
@@ -1266,7 +1239,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-13T07:00:00+00:00",
       "score": 0.0693,
-      "id": 63
+      "id": 61
     },
     {
       "tipo_evento": "bloqueo",
@@ -1285,7 +1258,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-23T07:00:00+00:00",
       "score": 0.0693,
-      "id": 64
+      "id": 62
     },
     {
       "tipo_evento": "bloqueo",
@@ -1304,7 +1277,28 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-22T07:00:00+00:00",
       "score": 0.0693,
-      "id": 65
+      "id": 63
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Port Congestion Chittagong, Bangladesh - Hapag-Lloyd",
+      "actores": [
+        "Hapag-Lloyd"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Hapag-Lloyd",
+          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNZEJOc250SldJQ0pqazVjUEFfX2lWS1dQak1Ldng3QVVIZTBhZlQ1Ti1CVkZVYnU0SmpyZzUzS2tCRGhndjdISlVtOWJSOUdEX19YY081VTE3QjRWTVhlakNXOGtwd1dHZ1VFQkQzVnY4YjBZVkNtbjlHamE0S1RJOXZFWUNZU1pIRVgydk9xYWQxV0U3Z3RoNk05bTRxT1FrMlhlajI0alU3d2Z5TjZTeS1xckc4bGhmenRiMnBCTHMwZGZiUkJ0MmxOdnY?oc=5",
+          "fecha": "Mon, 07 Jul 2025 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2025-07-07T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 64
     },
     {
       "tipo_evento": "congestion",
@@ -1323,26 +1317,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-04-12T07:00:00+00:00",
       "score": 0.0693,
-      "id": 66
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Tarifas spot se mantienen elevadas, mientras la congestión en los puertos asiáticos condiciona el mercado - Mundo Marítimo",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Mundo Marítimo",
-          "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOTmE1S25nMzc3ckFIUlhFQVI4TzdDTUFOak83UE92U3hIS1lqckRzUXE4bWRxLXdBaUhXb2cwMzRDMW8zbkUtSkNscWpBc0tQSGxOSXh0S2ZFMlhBdjM5dmlsZ3hEN2ZhTUtiZFJ3QVhVMkc4OHFKUldYYU9LZE04RGZJRjlkNnd5ckhrNWJHamxBQ1pNN2lzNnFtUC1rM3drMjBtSFpPWnFGSWgxRlZNUm12Vk9rZ3Q4dzR2ZzV3bWIzbzgzclFxSm9lSDRzVnk1aFlXWDBNd1FRZw?oc=5",
-          "fecha": "Mon, 31 Aug 2026 04:02:57 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-08-31T04:02:57+00:00",
-      "score": 0.0693,
-      "id": 67
+      "id": 65
     },
     {
       "tipo_evento": "congestion",
@@ -1361,7 +1336,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-04-22T07:00:00+00:00",
       "score": 0.0693,
-      "id": 68
+      "id": 66
     }
   ]
 }
