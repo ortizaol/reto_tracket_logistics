@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T04:17:36.723256+00:00",
+  "generated_at": "2026-09-22T11:18:31.917118+00:00",
   "sources": {
     "google_news": 120,
     "bluesky": 0,
@@ -12,31 +12,6 @@
     "bluesky['port strike']: HTTPError: HTTP Error 403: Forbidden"
   ],
   "events": [
-    {
-      "tipo_evento": "clima",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Acapulco cierra el puerto a embarcaciones menores por huracán “Polo” - Medios OBSON",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Aristegui Noticias",
-          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNTjMxOWRxZURHLXlheVJKeUthZ2s3Z2wwczlJdVhjQm4wRWxYelVXT0dVNGFERnJSS1JDdGRuaWtUbDN6NFlFVmplR0hUVlpZS2NVOGZqTnJrVFJkbURiZE1CUDNldDJCZzFzMl9wUXR3NUJDak11Q0tOa05JODFPQTJrMmxoWnNJZkE?oc=5",
-          "fecha": "Tue, 22 Sep 2026 00:53:00 GMT",
-          "origen": "google_news"
-        },
-        {
-          "fuente": "Medios OBSON",
-          "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNWm9mNFAwNndldjREOFMyb2ljQVZYREZYZ0JreDlvYTBnU01PMGpqNFdRZ3EwUDg0RFIxc2llbUljUVkza1diWk84aGdleC1XalZMQ19mbmdDTkNzMnJESjlhdjlhaVBtQkNVY0dBOFBjVVRocm1fa0NreUxJZXdMVm5obnMtRXdDUGU0cVZYalNDbzRGbDN4c2lLNUtMVVFMcHhMOQ?oc=5",
-          "fecha": "Tue, 22 Sep 2026 03:41:10 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 2,
-      "fecha_mas_reciente": "2026-09-22T03:41:10+00:00",
-      "score": 2.178,
-      "id": 1
-    },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
@@ -57,12 +32,18 @@
           "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxQSnZYTm9jNzJEZ0F5WWgwdWpzdHVCOHhuaUN5WlliSXpwZXhOcldTN3ZMUWwxMjMzeGV3dW5ST3lCMUYzZUpaeUgxcWRCX2hrcnZtMkMyVEpzeGJYZXdTSkpWTE1BZHl1QjMzSHlXcmY1bTI1bDB4WTdLYWtrN1QyT2ZpWi1aZmlKdTd6dlpNZk9samY5NE80d00yYkZNQThCOWxVVU1jWlAxeXRiejkwaWNiR0JheUU1TnJZQVVSYjJsR0daZTdBTzktRnZsVzVINWZ3NFZFMkVCeEHSAeABQVVfeXFMUGM1NWdKcWYwN3ZyV0E4eUNiQkpEWG1pN2lRUVc0MTh6VHdWMTI4WktzRDMzVjNpbm8wekxMMnFaamlTQXhRVVRuUDZCRFJZcnI2aXBoOEEwZC1zdS1JMkE0MzZfNHA5aVpPVXNZUFZYdTRoS3JDWGJRbW4wUWY0NXlxcDdiSW4zZzIyd0Y0aGlnN0t2UmF1S0REYXdGZGVxV0R5T3pUZUxsNUI4YXpxMXdEMmRMTFNObzVMNWRxUjNVeW1td2RYWFJHeWJpOG1jNWdMWWZxZGZhS2RiSHlXM3Q?oc=5",
           "fecha": "Fri, 18 Sep 2026 17:46:00 GMT",
           "origen": "google_news"
+        },
+        {
+          "fuente": "Montevideo Portal",
+          "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxOVlc1Q29xYlJQUVF6NHB0dFBwYW9KRm5FRmcxQm1FcDh2MXRpbnZIYTNpUnhsWkZSVVhkSWwtQUUtNUZXSmVvU1NVVk1WREhESVkwQk1OclFEZ3h1X2tlcW44ZmdDSHhlRVJ2V2xieU9WQ3o2YzRrLTJpcUYzaXJsOHJ0YnlZX3A4YmxTVUd2c1ZsTkN6WGVVYjFNbXV3SnVwSk10OWZmVm9oQmU4WGNyRF9NcFlTWVZVUGZNMmxGMzhpN0JFZG1YNFN1aUJyb3M50gH0AUFVX3lxTE95ZXEtYmlzbjNXVnF4b0VCSTZEN01FVkFvajVoUWRIT1ZqSEJUT0pmMjVJclU5WF9YMnN5NWtaNWFsREZQeWZrdkZPTWt3SnI5LXo0VFFsWFlsMEdKc1BHYjhYSmROTlViNzMtWGUyVUV0bWxCbkhnOGtONDFIVnA3NEpPVm9VcFpaMEV1cHBlUmU4aFBjYXRzcDJ5ZVd0Z19UajRtZnZDSl84TVA0T1ZiU052eVBQRXh5aXhVWXU0RU1vUlRzRkhYT3ZlV2VGelVGdDZicjFGcGVOMGNMUXJNbS1EenJNRzJQejY4NnpSTFpLelU?oc=5",
+          "fecha": "Fri, 18 Sep 2026 18:17:00 GMT",
+          "origen": "google_news"
         }
       ],
-      "n_fuentes": 2,
+      "n_fuentes": 3,
       "fecha_mas_reciente": "2026-09-21T17:35:33+00:00",
-      "score": 1.8826,
-      "id": 2
+      "score": 2.1467,
+      "id": 1
     },
     {
       "tipo_evento": "paro",
@@ -86,8 +67,8 @@
       ],
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-09-21T17:19:19+00:00",
-      "score": 1.8753,
-      "id": 3
+      "score": 1.6946,
+      "id": 2
     },
     {
       "tipo_evento": "congestion",
@@ -103,7 +84,7 @@
           "origen": "google_news"
         },
         {
-          "fuente": "El Canal Marítimo y Logístico",
+          "fuente": "diarioelcanal.com",
           "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNMVRmYzVTOFVwSnN2QzFUVEdpVlRMcXE1YURSZG1USkhBODg0WUJkMFEtLXpFNXNzQjdtNXBVcnZLM2MyWDBoYVlYNU5UVXhvU29sSk1wczhvdmhlU3JLNTBFbG8zQTNmRkRNaVpfczBkaXg2VEowR3RFMV9pVHJGS1pSdXM1QWkwSVJRSmhGbVBOeEU?oc=5",
           "fecha": "Thu, 27 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -111,84 +92,84 @@
       ],
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-09-21T02:29:44+00:00",
-      "score": 1.5139,
-      "id": 4
-    },
-    {
-      "tipo_evento": "clima",
-      "ubicacion": "México",
-      "severidad": 2,
-      "resumen": "Alerta por Huracán “Polo” en México: Semar anuncia cierre de puertos en Guerrero y Michoacán; se esperan olas de 3 a 3.7 metros l RECOMENDACIONES - Eje Central",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Eje Central",
-          "url": "https://news.google.com/rss/articles/CBMikAJBVV95cUxOZE15N0I4ZWtWc012M3lGWGQ2NUFVY2dYZXd6T1ROUGJySC1UdHExQ0pyck5EZUJEWk5OSndoMF8zQ2tYeDczRGRkRE5UYWRDbTh6SmZRQTVXX1NlYTNCZTJqelRSbUVUY1o1RjE1VFpkUWRjTjktUGlKN0swUVYyZTIzdjRGY3FKb1VEVzJNMG9idldtakZUVlpjQTBmOHpoSUV6ck8yMDR6eDUxTXE5M2Z2dC12bnFxc25tLTNFV1hCbThrYnVZTS15c0d5T1MwQUdfdHUyZVN1R0tlbUx1VFpqd0xVWHJGb3pUZGxmTFZwdFc1bF9DVmJZNm0yUXYzRHg3ZWdmRDEzMTNERnoweQ?oc=5",
-          "fecha": "Tue, 22 Sep 2026 03:22:38 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-22T03:22:38+00:00",
-      "score": 1.3681,
-      "id": 5
+      "score": 1.368,
+      "id": 3
     },
     {
       "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "La congestión portuaria en Asia alienta el retorno de los armadores al Mar Rojo - El Mercantil",
+      "resumen": "La congestión portuaria en Asia alienta el retorno de los armadores al Mar Rojo - Asociación de Cargadores de España",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "El Mercantil",
-          "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOVWdrTXhNYmFWZVMzd01Md1h2eF9qZHpPMGJLbzMwMnJmNDdWaEdSU0drV0lJZFdFcTl2eGtOT3d3WmZRMzFtY19XY1lwbUxvWUY0SzVUTE9Wc3JoZTl1OC1rOWlhQ2dkal80UllPX1dSQnhXZmdVRFpWY3hwaXhqVlhrQXN3ZklZOWZ0NjhFLS15bHF6aUtBcEZfX3RYMTUxVTYwblpyVzhFc25lRXJRbGJTc2hwUQ?oc=5",
-          "fecha": "Tue, 22 Sep 2026 03:10:00 GMT",
+          "fuente": "Asociación de Cargadores de España",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZXhFaFA1RmtadmlwazFwdDdXa1JOY3JXT2F5Qmp2WDRHRVZreEZxWTd4OXNhTDM1NHdXalFSSExqMEJTSDkwamRIRExGcm53d25EMktaUDl5V2t5T2NVdW5PbmVZQmkyVUh6WW1nR3VKdElHR0hQOGpSclpTZkRNTUk1R0NUT2hDeWktdHhpcTJnclNJOXp4NlNPdGpzemtES19Nc2s3eEZpNnY5ajhjQXNaV1RiRmRFWXIwYi1aUQ?oc=5",
+          "fecha": "Tue, 22 Sep 2026 08:35:29 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-22T03:10:00+00:00",
-      "score": 1.3639,
+      "fecha_mas_reciente": "2026-09-22T08:35:29+00:00",
+      "score": 1.3329,
+      "id": 4
+    },
+    {
+      "tipo_evento": "clima",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Huracán Polo de categoría 2 provoca cierre de puertos y suspensión de clases en Guerrero - TV4 Noticias Guanajuato",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "TV4 Noticias Guanajuato",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPTXJ4WlRvVDM0bFpkVE9iLXdSd21NSjdab0JxeHhRWURzblBGcl94N2dmSnljUExoV29uTW5vV2t6eWpvZEtHTXdZZmM5ZUlQdHBpaW5qajRvV3U2X2ZUSGt0V2VIaFFvT2lPZDI5Yi1QTVBKR0lNM0c1M0lOdVpGMTN2SllCdw?oc=5",
+          "fecha": "Tue, 22 Sep 2026 03:28:02 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-09-22T03:28:02+00:00",
+      "score": 1.2379,
+      "id": 5
+    },
+    {
+      "tipo_evento": "clima",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Acapulco cierra puerto por huracán 'Polo' - aristeguinoticias.com",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "aristeguinoticias.com",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNTjMxOWRxZURHLXlheVJKeUthZ2s3Z2wwczlJdVhjQm4wRWxYelVXT0dVNGFERnJSS1JDdGRuaWtUbDN6NFlFVmplR0hUVlpZS2NVOGZqTnJrVFJkbURiZE1CUDNldDJCZzFzMl9wUXR3NUJDak11Q0tOa05JODFPQTJrMmxoWnNJZkE?oc=5",
+          "fecha": "Tue, 22 Sep 2026 00:53:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-09-22T00:53:00+00:00",
+      "score": 1.1925,
       "id": 6
     },
     {
       "tipo_evento": "clima",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Huracán Polo de categoría 1 provoca cierre de puertos y suspensión de clases en Guerrero - TV4 Noticias Guanajuato",
+      "resumen": "Cierra Capitanía de Puerto la navegación por paso del huracán “Polo” cerca de las costas guerrerenses - elsoldechilpancingo.mx",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "TV4 Noticias Guanajuato",
-          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPTXJ4WlRvVDM0bFpkVE9iLXdSd21NSjdab0JxeHhRWURzblBGcl94N2dmSnljUExoV29uTW5vV2t6eWpvZEtHTXdZZmM5ZUlQdHBpaW5qajRvV3U2X2ZUSGt0V2VIaFFvT2lPZDI5Yi1QTVBKR0lNM0c1M0lOdVpGMTN2SllCdw?oc=5",
-          "fecha": "Tue, 22 Sep 2026 02:59:53 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-22T02:59:53+00:00",
-      "score": 1.3606,
-      "id": 7
-    },
-    {
-      "tipo_evento": "clima",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Cierra Capitanía de Puerto la navegación por paso del huracán “Polo” cerca de las costas guerrerenses - El Sol de Chilpancingo",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "El Sol de Chilpancingo",
+          "fuente": "elsoldechilpancingo.mx",
           "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPQUQwMWxYSXRQWi1oZkc0MV9rNENZbWVXTzRSWlFvZmwxdGwzT1dDamlheVNBa0o3cnpvTkJQSnhHaFFjeDF1TWhjMUxMdTZiSHNvNVJBdk9MZndPTkZjenNBSzNrd2plY0lxeUxsWGdTWkVjaktCanJ6RnVJZmhWOWVDZVNaRkN5NUc2LVBIdzJEOFJ6RVYxb0V6S1N3SlByMFFkVnIwTjF0dTRZeEttWjZRVTc2Q3lyTWFjN3A4M0pZa3ZVY0RkbDMtQnlMbi0yWkVCeHYxMUliSFpuOThr?oc=5",
-          "fecha": "Mon, 21 Sep 2026 22:18:47 GMT",
+          "fecha": "Mon, 21 Sep 2026 22:19:20 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-21T22:18:47+00:00",
-      "score": 1.2716,
-      "id": 8
+      "fecha_mas_reciente": "2026-09-21T22:19:20+00:00",
+      "score": 1.1492,
+      "id": 7
     },
     {
       "tipo_evento": "paro",
@@ -206,8 +187,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T21:53:30+00:00",
-      "score": 1.2639,
-      "id": 9
+      "score": 1.1421,
+      "id": 8
     },
     {
       "tipo_evento": "paro",
@@ -225,29 +206,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T18:14:56+00:00",
-      "score": 1.1991,
-      "id": 10
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "“Tirando leña al fuego\": presidente del sindicato portuario contra Gandini por paro - Montevideo Portal",
-      "actores": [
-        "sindicato"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Montevideo Portal",
-          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxPXzc4QjlUdk9yQ0lqaUJpbFBMLUlodFVvdVZITVJHbEIzRW01eDY4M3ZHVkY3OW4tajdoWnpZSW9CRTdwbk9oNGVOZEpXSnhHTzZmYW9qMTZ4VEh3Y3VQRFJOR0hRcGF1dXBwekZGNkY1Yzl2b0dPdlFPQzlFek1VVmZmcVQ0VHFtMk9mcmJYclgwbzhBMGg2aVBRQjNWQjM0bnRoUm0tTmhMUmlPNTljVC1aSWVhUGs5Rm50ZS1zaVBpZzJvMlVVSVV30gHuAUFVX3lxTE4tNVQtTmlmRUg0SGJrU2pmTzVRRWk4cldrZUZ1Y3ZsdmthSFRPUy1NaUZqOUVqSmExYkY5b0ZNVFFnYUVKYS0yVGRvVkpaWkZRaExydVNkc2JfalNhaGdHYXJhOEZfRC1LWG8wM0M0UVl5NFNTRy1BRGFkYTU3RExabW9BZXh4d3pSWS01LTVpMjJWR0ZHdkhyLXhabHRaZGphek4yamxxQWI1ZjZzd0tmUlcxUnJiSXlzTUwwUjRmelpZdTV6OTIxejRpb3lxWFFrT296bHRYOG82Q1pnbzNaQWVBdGt4OHNYLVZwY2c?oc=5",
-          "fecha": "Mon, 21 Sep 2026 17:18:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-21T17:18:00+00:00",
-      "score": 1.1828,
-      "id": 11
+      "score": 1.0836,
+      "id": 9
     },
     {
       "tipo_evento": "paro",
@@ -267,8 +227,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T17:02:45+00:00",
-      "score": 1.1785,
-      "id": 12
+      "score": 1.0649,
+      "id": 10
     },
     {
       "tipo_evento": "paro",
@@ -288,8 +248,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T14:55:41+00:00",
-      "score": 1.143,
-      "id": 13
+      "score": 1.0329,
+      "id": 11
     },
     {
       "tipo_evento": "paro",
@@ -307,8 +267,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T14:03:00+00:00",
-      "score": 1.1286,
-      "id": 14
+      "score": 1.0198,
+      "id": 12
     },
     {
       "tipo_evento": "paro",
@@ -326,8 +286,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T13:37:01+00:00",
-      "score": 1.1215,
-      "id": 15
+      "score": 1.0135,
+      "id": 13
     },
     {
       "tipo_evento": "paro",
@@ -345,8 +305,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T07:24:37+00:00",
-      "score": 1.0254,
-      "id": 16
+      "score": 0.9266,
+      "id": 14
     },
     {
       "tipo_evento": "paro",
@@ -364,27 +324,27 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T06:33:00+00:00",
-      "score": 1.0127,
-      "id": 17
+      "score": 0.9152,
+      "id": 15
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Ukrainian USV strikes Russian support vessel Nefrit in Sochi - Data Portuaria",
+      "resumen": "Ukrainian Navy strikes Russian offshore support vessel in Sochi - dataportuaria.com",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "Data Portuaria",
-          "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPN3JOVnBjanQ5TTRqOGI5QjZRYjM1bXpFS0NHY1dtaUxIQ25EcGxaMGgzeHdJZkctUDVhYmFTVEpIeTdEOXpMalNSNE5TUXhySWJVbEZqMVAtZ01XVk9PZFlMb3E1Z3JHcl9DcXRjNU5EMVR0akpvSTQ5ZnV1bDBoNEh6VU1aeVd5b0xnSGlhRWNQWFQzWHRKWjZtU0pWaW9ISG4xa2RUcTBOcnloWllTMlpSVC1zY0h1UmhF?oc=5",
-          "fecha": "Sun, 20 Sep 2026 01:55:17 GMT",
+          "fuente": "dataportuaria.com",
+          "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPdEsxR1VzVU1rTkE5czF2VHNXa0U2UUdqeTNGYUFsZ0F2MGlac0VvMDJ4SDFQcU9PYUpTWWpQeDYtREsyX29ick5Zb2ZadjBiMWNoTm9oZFhucVBYNGhyM1dibVNuZmxtY2dMY0MwS0M4ZWo5WU5mNzlLQnVlcXNuZGlXa3Z5ejNmbEtpRkNqblg5cE5HT3IzRmZlT2hmT2FvU0lTTEJhTDlsQU1oLVYtOXlfbk1WaDM4U0dZ?oc=5",
+          "fecha": "Sun, 20 Sep 2026 01:55:27 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-20T01:55:17+00:00",
-      "score": 0.6698,
-      "id": 18
+      "fecha_mas_reciente": "2026-09-20T01:55:27+00:00",
+      "score": 0.6053,
+      "id": 16
     },
     {
       "tipo_evento": "paro",
@@ -402,8 +362,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-19T18:15:00+00:00",
-      "score": 0.5996,
-      "id": 19
+      "score": 0.5418,
+      "id": 17
     },
     {
       "tipo_evento": "paro",
@@ -423,8 +383,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-19T07:01:03+00:00",
-      "score": 0.5098,
-      "id": 20
+      "score": 0.4607,
+      "id": 18
     },
     {
       "tipo_evento": "paro",
@@ -442,8 +402,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-18T19:09:49+00:00",
-      "score": 0.4296,
-      "id": 21
+      "score": 0.3882,
+      "id": 19
     },
     {
       "tipo_evento": "paro",
@@ -463,8 +423,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-18T10:57:07+00:00",
-      "score": 0.3816,
-      "id": 22
+      "score": 0.3448,
+      "id": 20
     },
     {
       "tipo_evento": "paro",
@@ -489,17 +449,17 @@
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-02-24T08:00:00+00:00",
       "score": 0.2747,
-      "id": 23
+      "id": 21
     },
     {
       "tipo_evento": "bloqueo",
       "ubicacion": "",
       "severidad": 5,
-      "resumen": "Bloqueo comunitario paraliza la Troncal del Oriente en el Magdalena - elheraldo.co",
+      "resumen": "Bloqueo comunitario paraliza la Troncal del Oriente en el Magdalena - ELHERALDO.CO",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "elheraldo.co",
+          "fuente": "ELHERALDO.CO",
           "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOSDJvc0U4Nno1UkZRbWNwdkp5M00wRXRsWlFnUElVTU1GclJqZ2ZreXIyTTFhRXpFR2d0cWhudmtXQklFSjJnUlQ5VnZJRWJCZFQwbnV5QTB3OUxTeEpWWGZBWEpuOTQ3UnpEaEVEeEpwRzBXLVJKWUhHdEFzdmVVNGRXZ2NkTC1GMFg3Ym5DV1llZm92Q2hLcWFhVHpQNGxiT09Rd0ltcUt0Nk1HRGlPQjJBWdIBzgFBVV95cUxPbVJINW9SNnBlWklZZGswbDdiMkF1dUlIU3h6WXR5LUNKOHRGNE56bEZzSkpHd2RmZHVFbjdtYy1CeHNObGEzdV9TMy16WklLOE9renl5a0V3T1A4R3dKV0xtekhrcmNZcmNCQU5SUEQ2U0hZdTJzdV9uR3RzbHpmM2xGcmloOUFSODg4MDRaSkc0cEZWWlNMRDc5S2ZUbFZJaElreXZXbXdOdEJuWWdmcmdXTUp1NnEwQ3VaOTJBcFZlZU5MdEtnSzBjM2pzQQ?oc=5",
           "fecha": "Sat, 15 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -508,7 +468,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-15T07:00:00+00:00",
       "score": 0.1733,
-      "id": 24
+      "id": 22
     },
     {
       "tipo_evento": "paro",
@@ -527,17 +487,17 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.1733,
-      "id": 25
+      "id": 23
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 5,
-      "resumen": "UGT convoca una huelga indefinida en el transporte por carretera desde el 8 de junio - libertaddigital.com",
+      "resumen": "UGT convoca una huelga indefinida en el transporte por carretera desde el 8 de junio - Libertad Digital",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "libertaddigital.com",
+          "fuente": "Libertad Digital",
           "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxOZ3NyN1lqaWhjNWhRQ3dXVlF1UWw1dEpGTUU2VEdxczVPTm9sZGdseWpLc1RhMllNQ3l0ckFBMEg2T1d4OTZOR1dMWjRkZ0NGU1V2Yk1GMWxRRDUwbEI0OEtPeHA3Y0s0MlZHVFVOLURiM3BoX0ZtcGhtWFBRdWpWMkFPWHAycEFkei1IWkI4OGlfV3lEUzJrcTVlaUpQMmtOMFJYa2ZHdk5EQnZEUHFNemR2dzRrUEpkM1ptN21BeHJCTjh0SFVnajI4N01iUTJFemZVLUhOQ2pIYTTSAeYBQVVfeXFMUElMLWVVNjJCRzJPVF9sWkJXdG9ubEpoVVFLYXQ0VTBfRURtN2VFSjlBM1RINThsVjBRdkE5UGU3TmJNMGFnQ3FTWXR4Y2xhYzV5ckRDYmVONER2VVNLdlBJYUoxa3dnM2N0cmNpckR1ODVJbHpZU3RxNGNVSGc4Tk5pUTBsRHQ3cnVKR1BpYTVpcXRfLVZ3cUJEUXFBd2dzdEplR2lHQl9xVzhlc0FFWG4wQW5TaldoLXR6QjFpQkpWaVFjSWQ5aFZmeTBlUFRyY1pTek5KNEljMTZYa1R4cHR6cTdYOGc?oc=5",
           "fecha": "Thu, 14 May 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -546,7 +506,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-14T07:00:00+00:00",
       "score": 0.1733,
-      "id": 26
+      "id": 24
     },
     {
       "tipo_evento": "paro",
@@ -567,7 +527,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-26T07:00:00+00:00",
       "score": 0.1733,
-      "id": 27
+      "id": 25
     },
     {
       "tipo_evento": "paro",
@@ -588,7 +548,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2024-09-30T07:00:00+00:00",
       "score": 0.1733,
-      "id": 28
+      "id": 26
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "MTC impulsa plan de coordinación contra congestión en accesos del Puerto del Callao - dataportuaria.com",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "dataportuaria.com",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNREUzRHg1cFVTLWlaVERDQ0pBT2dsOGwtTk9BQldoYUh4ekVWNmcxMFRnVWRSMlAtSi1kM3hvUmZSckEzZFZKWmxnMVJRY3NDb1BiUkphcWE1cVNkcHQ1WHVXX2JmZGNidzNOa056UksxaEUzZHdyaWZpYlhNNHE1WW9TbnNCVGNtZ1I4Y0l3UUFJdXRfZFIxVjJvY0RCSDZ5blYyMVVaYw?oc=5",
+          "fecha": "Tue, 15 Sep 2026 22:33:57 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-09-15T22:33:57+00:00",
+      "score": 0.1442,
+      "id": 27
     },
     {
       "tipo_evento": "congestion",
@@ -612,11 +591,11 @@
       ],
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-09-14T03:27:06+00:00",
-      "score": 0.1357,
-      "id": 29
+      "score": 0.1226,
+      "id": 28
     },
     {
-      "tipo_evento": "congestion",
+      "tipo_evento": "clima",
       "ubicacion": "",
       "severidad": 2,
       "resumen": "China | Congestión portuaria global marca récord histórico: El impacto del temporal en China sobre la cadena logística y los fletes en Chile - Portal Innova",
@@ -638,7 +617,7 @@
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-08-26T07:00:00+00:00",
       "score": 0.1099,
-      "id": 30
+      "id": 29
     },
     {
       "tipo_evento": "bloqueo",
@@ -657,7 +636,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-19T07:00:00+00:00",
       "score": 0.104,
-      "id": 31
+      "id": 30
     },
     {
       "tipo_evento": "bloqueo",
@@ -676,17 +655,17 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.104,
-      "id": 32
+      "id": 31
     },
     {
       "tipo_evento": "congestion",
       "ubicacion": "Manzanillo",
       "severidad": 3,
-      "resumen": "Manzanillo–Guadalajara Corridor: Transit Time Impacts and Delivery Delays - Data Portuaria",
+      "resumen": "Manzanillo–Guadalajara Corridor: Transit Time Impacts and Delivery Delays - dataportuaria.com",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "Data Portuaria",
+          "fuente": "dataportuaria.com",
           "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNaXZGUFJ6ZHlkYmRIMGQteWJDTFlVaUUtb1lsQWdtUUFWb0pxMmMyMnk0THFuaHZaR0ZWenZ5TkRSdm5LUXp5c0wzOThXdDdsM2x6X0gwQ0hyWF9zZE9jbGRhRVd0QlBTaGFtbFpBRW9iSjRMcy1QWnFndVBJNS01NjlMbmxTV291TWJpR1o3b0N1ckktZ0lkTnAwbzFhOUkwZF9CTS1Ib2tZUQ?oc=5",
           "fecha": "Thu, 13 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -695,7 +674,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-13T07:00:00+00:00",
       "score": 0.104,
-      "id": 33
+      "id": 32
     },
     {
       "tipo_evento": "bloqueo",
@@ -714,7 +693,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-17T07:00:00+00:00",
       "score": 0.0693,
-      "id": 34
+      "id": 33
     },
     {
       "tipo_evento": "paro",
@@ -733,7 +712,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 35
+      "id": 34
     },
     {
       "tipo_evento": "bloqueo",
@@ -752,7 +731,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 36
+      "id": 35
     },
     {
       "tipo_evento": "bloqueo",
@@ -771,7 +750,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 37
+      "id": 36
     },
     {
       "tipo_evento": "bloqueo",
@@ -790,7 +769,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-23T07:00:00+00:00",
       "score": 0.0693,
-      "id": 38
+      "id": 37
     },
     {
       "tipo_evento": "bloqueo",
@@ -809,7 +788,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-23T07:00:00+00:00",
       "score": 0.0693,
-      "id": 39
+      "id": 38
     },
     {
       "tipo_evento": "bloqueo",
@@ -828,7 +807,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.0693,
-      "id": 40
+      "id": 39
     },
     {
       "tipo_evento": "congestion",
@@ -847,7 +826,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 41
+      "id": 40
     },
     {
       "tipo_evento": "congestion",
@@ -866,7 +845,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-10T01:53:00+00:00",
       "score": 0.0693,
-      "id": 42
+      "id": 41
     },
     {
       "tipo_evento": "congestion",
@@ -885,7 +864,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-02-18T08:00:00+00:00",
       "score": 0.0693,
-      "id": 43
+      "id": 42
     },
     {
       "tipo_evento": "congestion",
@@ -904,7 +883,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-03-26T07:00:00+00:00",
       "score": 0.0693,
-      "id": 44
+      "id": 43
     },
     {
       "tipo_evento": "congestion",
@@ -923,7 +902,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-28T07:00:00+00:00",
       "score": 0.0693,
-      "id": 45
+      "id": 44
     },
     {
       "tipo_evento": "congestion",
@@ -942,17 +921,17 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-28T07:00:00+00:00",
       "score": 0.0693,
-      "id": 46
+      "id": 45
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Fujimori desactiva el paro del transporte con promesas de seguridad y una rebaja de multas - EL PAÍS",
+      "resumen": "Fujimori desactiva el paro del transporte con promesas de seguridad y una rebaja de multas - elpais.com",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "EL PAÍS",
+          "fuente": "elpais.com",
           "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxOaE82V0xBWkw0VjRJaGRNSWktN1lweE8zNkV4MmVScUZGODVDSHltWl8ydmxHTE1hY0FxMzlERzljUjVGUHBVcTdWWnQxalU4ZW4xMHQ4ZWN3bFVUdGwtWE1sSW5BWlVhOWJQVS11b1RZbUdPZ21FUzZ3dmVzeUdrTUJBenAtbjZlQ1ZZXzVsX3d5M0ZKY3NjNk5GdVlaSkg2V2dEVGgyU2FoWnFpRTNydThZaGhlOTkzX0pFamhZZnNzUnh3TFJGNEhnRC1GUdIB4gFBVV95cUxOS011Yk1iM3FCcElqcTdvU3B2eV9kVnNOMWFGWE1PR1VHbENlcEFFbk9nckdtNkdzMWN0NzZucEhZUDZwS3JKbFhqM2hLOWp1YmdXWkt6ekpkSmxmTWNjZkRmam0xT2NfR1g5V09aWE9yMy0zeDREdHRQNV9zdFJxQzZNZm1zbi1iMGZDMVY4amUxbW45cjEwRGtFRDdvLXhEVmJrSy04MkpsWFprOWRnY1ByTjFMTDVqdG00aEM4TU9XZ1VKczVhUHNxQVUtYUZIUUxmNlBhdmFwZFNoYWY4SXNB?oc=5",
           "fecha": "Wed, 26 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -961,7 +940,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-26T07:00:00+00:00",
       "score": 0.0693,
-      "id": 47
+      "id": 46
     },
     {
       "tipo_evento": "paro",
@@ -983,7 +962,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-23T07:00:00+00:00",
       "score": 0.0693,
-      "id": 48
+      "id": 47
     },
     {
       "tipo_evento": "paro",
@@ -1004,7 +983,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 49
+      "id": 48
     },
     {
       "tipo_evento": "paro",
@@ -1025,7 +1004,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 50
+      "id": 49
     },
     {
       "tipo_evento": "paro",
@@ -1044,7 +1023,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 51
+      "id": 50
     },
     {
       "tipo_evento": "paro",
@@ -1065,17 +1044,17 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-13T07:00:00+00:00",
       "score": 0.0693,
-      "id": 52
+      "id": 51
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Paz se enfrenta a una huelga del transporte público en Bolivia por la gasolina de mala calidad - EL PAÍS",
+      "resumen": "Paz se enfrenta a una huelga del transporte público en Bolivia por la gasolina de mala calidad - elpais.com",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "EL PAÍS",
+          "fuente": "elpais.com",
           "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxQWXU0djNFNkVGeWNxWHFGMnJzbHM1YkNYaTFYOVRXM1lVM1dQalB5bjhNNXhSRkI0U0Y0Y3o4TGZTUUdENXBWREtiXzlEZ21IYnR4eWc2VXBqekZFRy1idjJpU21QMFNpc1UzZF9aWVBRaV9ZSnNNclptUHlTcDFENUpkTG1SU21DN2RLc0xtSXliRjRWTS1oT0I4QWppb2xYS21pcUhPTzZuWUQ5dnM3VkxiRFQ5YVMyMWdJdWdSRU1iOGhtTkkyN0V0VkRiS3JyWlRN0gHnAUFVX3lxTE1RVGI0c0F3R0k3YUUyLXd6ejdFbEZhWVFrWVl1bmZ0empidjF1aWVLWkFzemh4a1FkdEZrd0NobTJTemF4V2htMkVselF3SUdwSEduOW5qVEJ3S1hCWWVvN3VCUTRSdEhWQzgxWDA3WndmQ3MtYTZSVTNCcXE0dnZUSjBCcW51ajBjcWVBUTFMOXFVX1gwRk9ISHRRYmlOeExSRnZMZTlQN3ROVFE5YkphTjlocmZ3M2RFZTVfQUxxazdPcGZuazR6b3NFRzBXYnhhelVCYWlDYl95blJ1WGNzYV9jVnNERQ?oc=5",
           "fecha": "Tue, 05 May 2026 07:00:00 GMT",
           "origen": "google_news"
@@ -1084,7 +1063,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 53
+      "id": 52
     },
     {
       "tipo_evento": "paro",
@@ -1105,7 +1084,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-25T07:00:00+00:00",
       "score": 0.0693,
-      "id": 54
+      "id": 53
     },
     {
       "tipo_evento": "paro",
@@ -1126,26 +1105,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-27T07:00:00+00:00",
       "score": 0.0693,
-      "id": 55
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Chile's Port Union Declares \"State of Alert\" Amid Government Compliance Failures, Preparing for National Strike - elciudadano.com",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "elciudadano.com",
-          "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxORzkyZFZKVkdJOGN3RENqdkF5c0J0LTJxVVA1UnRvQ040YkRGOEgtSHVSWVd6M182VkpaeFlKRU42S0pmYUl5VWtVaFRhdTZUTnBfVENtUmVDVkVReUFveFFnSi1OWm5QdW1mY1AxYkJVaUlyUWk4NEp5ZnZFYkpwOEVxbTlidmIyaDRsWnRNNnkySUtzLThETEFncy12ODFuOGdTc0NNOUVqX1VwOEJtc1BURm8xakQ5QzVQQ0xTQ2FoMUdDeXN3UldwMUZxM0g3OUFaQllfMVdoazktdFZrcWpyNnZucUJq?oc=5",
-          "fecha": "Wed, 08 Apr 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-04-08T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 56
+      "id": 54
     },
     {
       "tipo_evento": "paro",
@@ -1164,7 +1124,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-19T04:13:31+00:00",
       "score": 0.0693,
-      "id": 57
+      "id": 55
     },
     {
       "tipo_evento": "paro",
@@ -1183,7 +1143,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2024-10-01T07:00:00+00:00",
       "score": 0.0693,
-      "id": 58
+      "id": 56
     },
     {
       "tipo_evento": "paro",
@@ -1202,17 +1162,17 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-01-09T08:00:00+00:00",
       "score": 0.0693,
-      "id": 59
+      "id": 57
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Soybean crushers strike just as harvest gathers pace - Buenos Aires Times",
+      "resumen": "Soybean crushers strike just as harvest gathers pace - batimes.com.ar",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "Buenos Aires Times",
+          "fuente": "batimes.com.ar",
           "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxOTmRlbndab3R0WktJZmVkYkV5eUV1OFQ0M21sVkJaOGZMTS1vQ3FtMkZvQ3ctam5DODcwWDM4cWE3Vkt6YW1JUENYbE90LURwVE9lYnRNbW9MMHNhQTUway0zWEs1YmdSUURuS25xTTB0eHM3cVQ3SnhRQW05SWxGMHFfVVJtcF9iSEdIYldCOU5sZlNjVDdlb3UwVDlTU0M2bkVLNk1WeGdteWwydVHSAbMBQVVfeXFMTjNEeWJTWWNWcjU2RDR4RVk2bUpERHNYaWs2T2hKazBCTnpzUUxPVXBiajZnaTRhaDBOc1Z2Y2JEcks1TjlQUS1kRElURkhWTE1sYTU2eXhSSUZ0TDhDRnVCZ0VlbldubGV1dVhTd1Y3d3dRZHktblFFb2ZuSVpCczZCWTl6MnQ2RE41ekIweXQ4WTM3Uk1VMkhKemxEU3BHcXRMbXhGMWdEMURCbUtMcHk1bFU?oc=5",
           "fecha": "Mon, 29 Apr 2024 07:00:00 GMT",
           "origen": "google_news"
@@ -1221,7 +1181,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2024-04-29T07:00:00+00:00",
       "score": 0.0693,
-      "id": 60
+      "id": 58
     },
     {
       "tipo_evento": "paro",
@@ -1240,7 +1200,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-04-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 61
+      "id": 59
     },
     {
       "tipo_evento": "naviera",
@@ -1259,26 +1219,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-11T07:00:00+00:00",
       "score": 0.0693,
-      "id": 62
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Ecuadorian Banana Exports Grow in H1 2026 Despite Port Congestion - Data Portuaria",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Data Portuaria",
-          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPbHo2ampQLVdJUzg4ZVc1dnVVTW94UjRiNGUwMGhhZ3hremVqU2U5SEJkM2dlQV9zSUd2Z0tEc2dteTZHdnhfMTNZalNLSWVsR1F1dWVqVVUxZ2FUUGNRUVhWVVpfdmlPbnJaaF90Y1pKcG5LcU4zTHZ0VTRhNG9kUXJvMmZXWFppYWhOenk0bkxfdTgtWXZZWnpGWDA4WXU4REFZMm1fT0lUbmlkTVdESQ?oc=5",
-          "fecha": "Fri, 31 Jul 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-07-31T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 63
+      "id": 60
     },
     {
       "tipo_evento": "congestion",
@@ -1297,83 +1238,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-10T07:00:00+00:00",
       "score": 0.0693,
-      "id": 64
+      "id": 61
     },
     {
       "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Puerto de San Antonio se prepara para eventual congestión portuaria antes de completar primera etapa de Puerto Exterior - PortalPortuario",
+      "resumen": "Ecuadorian Banana Exports Grow in H1 2026 Despite Port Congestion - dataportuaria.com",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "PortalPortuario",
-          "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNaGFEV3NtVDI3Z0ZuczBFdl96SHMxeDlXUVpEWXphRFVaRlRtUzd2Z3JEWmoyNEZ4WjFYdy1SOU5CM0FIdlVFZDJkWFdTTXNxeHRXN0NQX2daS00xakpPSlVEa3hSeWVDY1NhUXd5NXdDdVRUd3cyMlRkVnYyR081T0QxbWlMQUpkYk83LUtKMEtmUVVxWkdxdjJpTVVueElVRzBiYU5mcHBCTWFfbmtMbzhiUEwwQk1VMkcxNDRmUXBqTUhzM1paTlNZVWJiTFM0NXRuZF8yRlhzUV8tNk5ibw?oc=5",
-          "fecha": "Tue, 17 Mar 2026 07:00:00 GMT",
+          "fuente": "dataportuaria.com",
+          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPbHo2ampQLVdJUzg4ZVc1dnVVTW94UjRiNGUwMGhhZ3hremVqU2U5SEJkM2dlQV9zSUd2Z0tEc2dteTZHdnhfMTNZalNLSWVsR1F1dWVqVVUxZ2FUUGNRUVhWVVpfdmlPbnJaaF90Y1pKcG5LcU4zTHZ0VTRhNG9kUXJvMmZXWFppYWhOenk0bkxfdTgtWXZZWnpGWDA4WXU4REFZMm1fT0lUbmlkTVdESQ?oc=5",
+          "fecha": "Fri, 31 Jul 2026 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-03-17T07:00:00+00:00",
+      "fecha_mas_reciente": "2026-07-31T07:00:00+00:00",
       "score": 0.0693,
-      "id": 65
-    },
-    {
-      "tipo_evento": "bloqueo",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Fuerte congestión en Puerto de Arica: alcanza el 120% de ocupación a raíz de bloqueos en Bolivia - BioBioChile",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "BioBioChile",
-          "url": "https://news.google.com/rss/articles/CBMikwJBVV95cUxQTzdrbVcyRjk3aW9uZWdLWHJ6MDBUdHB6ZFIwMDBBMnF2MkJlTHJKZWhlY2g5Y2FCa2w2dDNIZ280M2dNQlhZQUwyMjFRTUpjMy1BS3hiNERWZjU5US1uVW9WS2ExaVVKS2ttLUZwOTE3aGVWQ09qdUFNN2tSYTFtU2lZWTFuLXpyS2xwOGM0TWt6TXdGM0p3dldRN1RHMkhZNWZ2WFNRLUdUZUhLN3NGOFdFQVl0SmZ2M3dmUy1jNFBvZXlhTEhIUmVWeTBPRUh3OV8wRE1seEw1OWdCYjloaHFHWXNxbUFVNFVmTk5jVTJ1RDg3b2dYYmRfRnYtX2NFTUlYVGlWa3lTS3E2YUgxbk1LRQ?oc=5",
-          "fecha": "Tue, 23 Jun 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-06-23T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 66
-    },
-    {
-      "tipo_evento": "bloqueo",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Puerto Iquique activa plan para enfrentar congestión por bloqueos en Bolivia - Agenda Logística",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Agenda Logística",
-          "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxOdUZDX3ROSktmVHZ6WWZOdUNjS3RSYVQwbW5lUC1ORUREaVNVWi1lSVQxWUp3TTRiUjVQVWVjNFNOZTJQZk1TZ2VuVXd3MUEzOC1vNTJReVQ5US0zbW43ek9WYkxjbDVuNG1lT3Y2bjR6V1pZOUViMWNpVXlwMGV3MFFlSFNVc2RKck9MQUFHUm91MU9OVm9ROWtuY1hJX2hxT0xWVk9VX0p3R0dwRllTWGJJblFJdkRMMGRwZTVRc250R0xUa0pvV1lFMk5MREZUbTFTRGpBeURTTlpnY3RDRUl4aUJ0RHliUjdUOQ?oc=5",
-          "fecha": "Mon, 22 Jun 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-06-22T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 67
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Congestión en puerto de Rotterdam genera impactos logísticos y legales a exportadores de Latinoamérica - Portal Frutícola",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Portal Frutícola",
-          "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPTUpOcjVVX2FRV3hkUVQ3aGNYOVRxdWd1TUVpZUQ5ODBULXBwMHVQd0gzQ3FHT2ZrS0lDbnJrQUJhTzgyeGV6dmxQZUhGdmV0S0R0ZmhwYUVwQnJzT3pMbksyaWlwQ1IzN0VLby1vUUdfNEZjOUJNdzhQNzRyNEg1OEJFaERRWlV1d2pIQ2xTWQ?oc=5",
-          "fecha": "Tue, 22 Apr 2025 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2025-04-22T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 68
+      "id": 62
     },
     {
       "tipo_evento": "congestion",
@@ -1392,7 +1276,83 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-13T07:00:00+00:00",
       "score": 0.0693,
-      "id": 69
+      "id": 63
+    },
+    {
+      "tipo_evento": "bloqueo",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Fuerte congestión en Puerto de Arica: alcanza el 120% de ocupación a raíz de bloqueos en Bolivia - BioBioChile",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "BioBioChile",
+          "url": "https://news.google.com/rss/articles/CBMikwJBVV95cUxQTzdrbVcyRjk3aW9uZWdLWHJ6MDBUdHB6ZFIwMDBBMnF2MkJlTHJKZWhlY2g5Y2FCa2w2dDNIZ280M2dNQlhZQUwyMjFRTUpjMy1BS3hiNERWZjU5US1uVW9WS2ExaVVKS2ttLUZwOTE3aGVWQ09qdUFNN2tSYTFtU2lZWTFuLXpyS2xwOGM0TWt6TXdGM0p3dldRN1RHMkhZNWZ2WFNRLUdUZUhLN3NGOFdFQVl0SmZ2M3dmUy1jNFBvZXlhTEhIUmVWeTBPRUh3OV8wRE1seEw1OWdCYjloaHFHWXNxbUFVNFVmTk5jVTJ1RDg3b2dYYmRfRnYtX2NFTUlYVGlWa3lTS3E2YUgxbk1LRQ?oc=5",
+          "fecha": "Tue, 23 Jun 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-06-23T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 64
+    },
+    {
+      "tipo_evento": "bloqueo",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Puerto Iquique activa plan para enfrentar congestión por bloqueos en Bolivia - Agenda Logística",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Agenda Logística",
+          "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxOdUZDX3ROSktmVHZ6WWZOdUNjS3RSYVQwbW5lUC1ORUREaVNVWi1lSVQxWUp3TTRiUjVQVWVjNFNOZTJQZk1TZ2VuVXd3MUEzOC1vNTJReVQ5US0zbW43ek9WYkxjbDVuNG1lT3Y2bjR6V1pZOUViMWNpVXlwMGV3MFFlSFNVc2RKck9MQUFHUm91MU9OVm9ROWtuY1hJX2hxT0xWVk9VX0p3R0dwRllTWGJJblFJdkRMMGRwZTVRc250R0xUa0pvV1lFMk5MREZUbTFTRGpBeURTTlpnY3RDRUl4aUJ0RHliUjdUOQ?oc=5",
+          "fecha": "Mon, 22 Jun 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-06-22T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 65
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Comunidad Logística de Puerto de Iquique avanza en medidas para minimizar congestión en accesos a recinto portuario - PortalPortuario",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "PortalPortuario",
+          "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxNcGN3ajNrUUdYNFZGQ25qYnZpbVdnb05UVV9ISTNtNTJ5bG5KR2lDa0J2dExtQkc2a0RFNGdYTndZVzNBdE5wYVpGUS0wM3BOSDV2bXdBZ2gtNURWWUprQnNteG5fWmNqcUNCeHJaWEZ0c25vWHlkdVplSy1lLTFybThlU001czZyZUkwQUNBb0dSbEdwWm9uckFid3dkLXlLaHljSzhYSDhJa0VRVGpHNGxGMjNuM2NWblAzN2NfSlJOY183OG8wRjFnLU5ZOHdUU1BhcWJpQ1pqNEE?oc=5",
+          "fecha": "Sun, 12 Apr 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-04-12T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 66
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Congestión en puerto de Rotterdam genera impactos logísticos y legales a exportadores de Latinoamérica - Portal Frutícola",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Portal Frutícola",
+          "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPTUpOcjVVX2FRV3hkUVQ3aGNYOVRxdWd1TUVpZUQ5ODBULXBwMHVQd0gzQ3FHT2ZrS0lDbnJrQUJhTzgyeGV6dmxQZUhGdmV0S0R0ZmhwYUVwQnJzT3pMbksyaWlwQ1IzN0VLby1vUUdfNEZjOUJNdzhQNzRyNEg1OEJFaERRWlV1d2pIQ2xTWQ?oc=5",
+          "fecha": "Tue, 22 Apr 2025 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2025-04-22T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 67
     },
     {
       "tipo_evento": "congestion",
@@ -1411,7 +1371,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-31T04:02:57+00:00",
       "score": 0.0693,
-      "id": 70
+      "id": 68
     }
   ]
 }
