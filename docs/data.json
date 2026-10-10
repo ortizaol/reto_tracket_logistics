@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-10T12:13:40.511253+00:00",
+  "generated_at": "2026-10-10T21:25:05.860593+00:00",
   "sources": {
     "google_news": 120,
     "bluesky": 0,
@@ -12,6 +12,58 @@
     "bluesky['port strike']: HTTPError: HTTP Error 403: Forbidden"
   ],
   "events": [
+    {
+      "tipo_evento": "clima",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Anuncian cierre de puertos ante huracán Simón - Medios OBSON",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "N+",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPMGI0TUpaUHlsM0oxdG80Q2JfamQyOGtHeWVCOElQQXp3UEszeWhWaW5qWXhCcUw5Zmp3ZFI5bVE1UHM5SlA0TUFGZ2RXcWoxaXIxNjBVU0J5SEVxSGtpc1YzVTk2cDlnN1FMaGFRUFkyRlJGUVVlY0dDUW1iNXdxaDlhN05QM1d2VWZRZWp4RDZVM0ZLQlZjcGhzSVJ5clRmczlYdUdR?oc=5",
+          "fecha": "Sat, 10 Oct 2026 20:40:16 GMT",
+          "origen": "google_news"
+        },
+        {
+          "fuente": "Medios OBSON",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPV0RaNExVSUN4bXlmMWdvWTNscGtNbDhFX0lseTd1dlV1LWoybnU4dWNqbWsxc2JhV1FPR3JrbzZEVlF0eVRzM3dfRDFIZEhiLWNEdGZMOG5zTDNHUU9qNVlHck1fVl9rcUJsU1FVeTJ4Q3RsbVdVRXEyRDN4YkFrWERyZ3BnWHNp?oc=5",
+          "fecha": "Sat, 10 Oct 2026 19:30:14 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 2,
+      "fecha_mas_reciente": "2026-10-10T20:40:16+00:00",
+      "score": 2.1736,
+      "id": 1
+    },
+    {
+      "tipo_evento": "clima",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Gobierno anuncia cierre de puertos en diversas regiones del Océano Pacífico ante el huracán Simon - Al Contacto",
+      "actores": [
+        "gobierno"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Infobae",
+          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxON2hxc3lnb3czeENnYlBTVDBkVmxmYkNPOE5JQnRmRDIyamNPVXE1OC1NeHRhV3k2OTM2dXIyOVVIN0Y4VksxaV95Mld0UVVmbk13MTQ1QTBveFEtSjY5cUxzVE5lb29Bd0NOTmYwVEd1YXJ0QU02M1dIaUZTNE4wOTZfN0ltQk9udVRWT1JBSHRSWGhvbDRnc1I5TGg0aU84TmYxNXl0QnlwaGp1RHQ0M2JLTHR1MlUxR3RyRUxUUDRRVFV0OEpxRm9ZNEZtY2ZxNnc0YnZxMNIB8gFBVV95cUxQYTlMdlpLM2dqeWJHTUlQRUc5RGMxZWczOGF0U3ZHRFhhcWxITFlrRXEzYWdhekhSeXVReGlRQjZ1WlRWeDJrUTBzZldxdVpkQ2JndElBOGE4R1NaUlNUM3hMTl9sTWxsS0E4QjZTVHpqVGRMbUg4bmpXWlJXbHVwWHd1a2NyQ1hNb1dneTV0cFhwRE5ZeWwtSWVPb0RrNHlmdGVSajd2ZlF3OXZKQ2lSZUZfVFJMR0Vad1VWMXgzbnVRdmpnZVU3QkhPS1JRZ3BYU0hLT3RYTjgxRzBHNTZHdlhtbTlkdTNKQUJ6a2VYd3p1Zw?oc=5",
+          "fecha": "Sat, 10 Oct 2026 18:04:32 GMT",
+          "origen": "google_news"
+        },
+        {
+          "fuente": "Al Contacto",
+          "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxNQmJLRUMzRG1pemQzY2xOUWxMeTBYazlyOHB6ZzZCMzM1SGF0MFEwOVhxRG1Fd3JZa01rWEhoZmJGUG5uSXJqaU1hXzhZMW04Q083bXpRZmpzSm9PNUdMZlVDV0RtZ3dUTGJDT3Vkd1dyYVdRZ3UtZ0NHeVpDR2Q3YkVNWGZyZDhNUGtiSmN0MkFOVkdtR0xJcXZLWUZTRDctMzNVZW8tTlhsUkhTdXpfa2tCWEg1WU8xaEtNOWtkUDcxb2l4UEYtcDctLWpodWFSeGxlLWJB?oc=5",
+          "fecha": "Sat, 10 Oct 2026 13:21:30 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 2,
+      "fecha_mas_reciente": "2026-10-10T18:04:32+00:00",
+      "score": 2.0937,
+      "id": 2
+    },
     {
       "tipo_evento": "clima",
       "ubicacion": "México",
@@ -28,39 +80,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-08T20:44:25+00:00",
-      "score": 1.9595,
-      "id": 1
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "CETM rechaza que el transporte y las empresas asuman las consecuencias de una huelga general - Diario de Transporte",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Ruta del Transporte",
-          "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNNUdSd0lPNkxNRE8zaVFNODUtS2ZVakd2eVNJMzFKVlNiOU8wS2d4cXZqb2lodWI2ZUo2ZHczelFOX2ZZT1NsZkJWLVhwM1JYYlNwdjJWTE55bUtWblFDSlZfMDhfTmcxbXNQZFpONnNDNmFjZ283cl9kM0ZUb1dwWjVPSkpEUnphb285UDRQQVp5cnlUUDlZWkhNWEVfWTRSMDhiNVJjb0Q3YkV5aXkydVhPZWZ6bzZHMTZUbEdtclJYaVdYa21taHZWNXFPUldjZ3dHRENNOHFQdw?oc=5",
-          "fecha": "Wed, 07 Oct 2026 17:39:24 GMT",
-          "origen": "google_news"
-        },
-        {
-          "fuente": "Diario de Transporte",
-          "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxQZzZwZVFFdGtKTDFqY1h5VS1LX004a2x2eXQtcTQ5eTA4RzlNWkhzeVRjWG5xMGVSdWROZmt5bDJJUlNORFZkU1FBUTFuc2tkakNneUphcXJvTEVRR211RWhPMEtuQmwzakRyc3BVZ3pYZXloSTNuUGhMTDdKUUVzLWNTdlhBY1RaeFFHZWM1R01fS1c3ZUNyMkJCWlNISUJ0ZTFOaU95eFQ0T2hyME1rTUhJWTlBV2NaakZqaVpRbG5BZm96Vm9VeGRndWU4ZnZ0VXBEWEpKNUlVLWlDeE9MVENLSQ?oc=5",
-          "fecha": "Wed, 07 Oct 2026 18:43:37 GMT",
-          "origen": "google_news"
-        },
-        {
-          "fuente": "Nexotrans",
-          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPUHE4SklDUG9UOGpCLVJMUmxwaWkxS2FudjgxMnlsNkNMNENiNUl5VjRZYVZRNllyTzhjZDlXRzBIUDQ3U09KOGFrWElGV2RidjNZMTVxOTBUZzB4SEtsaXpPanRjMzdrTGhPMExsWXVxUVJGMVJDNi1YR2Z1cXdBaGVyUktaYXJfMy1SdExvSkc1ME1ncWxUUW1iRHZFNHF6RlZGUEJScHQzSnFYUVJtenFKc1VXekZBMGc?oc=5",
-          "fecha": "Thu, 08 Oct 2026 03:35:08 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 3,
-      "fecha_mas_reciente": "2026-10-08T03:35:08+00:00",
-      "score": 1.2236,
-      "id": 2
+      "score": 1.716,
+      "id": 3
     },
     {
       "tipo_evento": "clima",
@@ -78,8 +99,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-09T21:09:00+00:00",
-      "score": 1.1151,
-      "id": 3
+      "score": 0.9765,
+      "id": 4
     },
     {
       "tipo_evento": "clima",
@@ -97,8 +118,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-09T20:51:15+00:00",
-      "score": 1.1103,
-      "id": 4
+      "score": 0.9723,
+      "id": 5
     },
     {
       "tipo_evento": "paro",
@@ -118,28 +139,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-09T19:25:31+00:00",
-      "score": 1.0876,
-      "id": 5
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Los transportistas de la provincia de A Coruña se movilizan en Santiago y amenazan con ir a la huelga: \"A negociación está rota\" - El Correo Gallego",
-      "actores": [
-        "transportistas"
-      ],
-      "fuentes": [
-        {
-          "fuente": "El Correo Gallego",
-          "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQM0tleFcta2JHal9JcHZuQ010Vm82U3lVR2hybWNYNmFjSTd6X1k0VkZ2MHp3Q2hWMGZERk5CbUNhSEhzREVDdU8tT19xSWFrRjRHTkViZ084cVNZYWwwd05lU2FScF8wTmlXVTltQVEyYkxCMmhnWVlqRW0xZ09vUzJjUVJRZ0ZlUEpnMHZzTFJLZjhzUEpEWXp6RkJ0cVFsc1pVUmtZZ0JfdmNpbG9IT1diVDhfb2fSAbwBQVVfeXFMTTdEMkY5cGl6RUJ4S0JqRXRnSUZZZGtQU3RIOFRjZEpLM2ZadkRVclJ3Y3pFeHdZeVhYY2x3M3pHVWg5bHFaTVZpR0RISHNzX3JOeC1KbWQ3SWUybXliaXJUUE0zWGt4cFdEYzRzdllFLWtYb0h4SVU1NmYxb3dxeW95TEJvZk9KV3dyV2RERTZnSEZfTUhaQkhLM1dvSTkwam9ST2YxbnlLM1d2THhaRXl1NE1zRHVyX1ptdGU?oc=5",
-          "fecha": "Fri, 09 Oct 2026 11:43:09 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-10-09T11:43:09+00:00",
-      "score": 0.9731,
+      "score": 0.9524,
       "id": 6
     },
     {
@@ -158,8 +158,33 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-09T09:39:49+00:00",
-      "score": 0.9446,
+      "score": 0.8272,
       "id": 7
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "CETM rechaza que el transporte y las empresas asuman las consecuencias de una huelga general - Diario de Transporte",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Ruta del Transporte",
+          "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNNUdSd0lPNkxNRE8zaVFNODUtS2ZVakd2eVNJMzFKVlNiOU8wS2d4cXZqb2lodWI2ZUo2ZHczelFOX2ZZT1NsZkJWLVhwM1JYYlNwdjJWTE55bUtWblFDSlZfMDhfTmcxbXNQZFpONnNDNmFjZ283cl9kM0ZUb1dwWjVPSkpEUnphb285UDRQQVp5cnlUUDlZWkhNWEVfWTRSMDhiNVJjb0Q3YkV5aXkydVhPZWZ6bzZHMTZUbEdtclJYaVdYa21taHZWNXFPUldjZ3dHRENNOHFQdw?oc=5",
+          "fecha": "Wed, 07 Oct 2026 17:39:24 GMT",
+          "origen": "google_news"
+        },
+        {
+          "fuente": "Diario de Transporte",
+          "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxQZzZwZVFFdGtKTDFqY1h5VS1LX004a2x2eXQtcTQ5eTA4RzlNWkhzeVRjWG5xMGVSdWROZmt5bDJJUlNORFZkU1FBUTFuc2tkakNneUphcXJvTEVRR211RWhPMEtuQmwzakRyc3BVZ3pYZXloSTNuUGhMTDdKUUVzLWNTdlhBY1RaeFFHZWM1R01fS1c3ZUNyMkJCWlNISUJ0ZTFOaU95eFQ0T2hyME1rTUhJWTlBV2NaakZqaVpRbG5BZm96Vm9VeGRndWU4ZnZ0VXBEWEpKNUlVLWlDeE9MVENLSQ?oc=5",
+          "fecha": "Wed, 07 Oct 2026 18:43:37 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 2,
+      "fecha_mas_reciente": "2026-10-07T18:43:37+00:00",
+      "score": 0.7472,
+      "id": 8
     },
     {
       "tipo_evento": "clima",
@@ -177,45 +202,26 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-08T22:37:30+00:00",
-      "score": 0.8054,
-      "id": 8
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "CETM, contra las \"consecuencias de una huelga ajena al ámbito laboral\" - Cadena de Suministro",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Cadena de Suministro",
-          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOMlI4RVJ1VllIYW1fT1dBSjZuZG9jUTQ1d0VxSTFsQ0NhQ1hfQ0FDX1NLMGFqOXhDcUY0LVpscFNYSjlXaFBZR2RhdExEQ3I5NWlrMTlKR1d6MldESFhCZkQ5VE9CU2N4ZS1vR1hRX3BCQ3lCVENOeXpkS2dZbzdfWWxpWEl0dVdHRUoxX0NxOHFBV2xWWXMwVzc4U2VuUHdCbDd2bHhYckQ2cWF6NWFsSU5LWHpjWndoSzRlQWhBeUZaTms?oc=5",
-          "fecha": "Thu, 08 Oct 2026 07:16:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-10-08T07:16:00+00:00",
-      "score": 0.6452,
+      "score": 0.7053,
       "id": 9
     },
     {
       "tipo_evento": "paro",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "El transporte en Francia convoca una huelga a partir del 21 de octubre - Información Logística",
+      "resumen": "Las empresas de transporte creen \"injustificada\" la huelga general y piden preservar la actividad - Mundo Petróleo",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "Información Logística",
-          "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQaHlHM3V1TmQ3cW9mYk91MURHM3ZvZlJkQ05tbVZrZTdLZi15WDI3ekFvVjhobTNpR2ZlWUNYcnNOcTB1ZXdHVWJHU2lQUFVEeEZWV1NpWkRPa0tfVFRvb3lGU1Vad254NEVHTjAwbnlVVlpnU0kyc3FZMzlxZHJsd2dHbnhMMlpCT3hnMWVVN1NEV1ZZSml0M2pUcEh6RUpPQnc?oc=5",
-          "fecha": "Thu, 08 Oct 2026 04:24:00 GMT",
+          "fuente": "Mundo Petróleo",
+          "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxQMjFsc1pLaW9Ua3FpM0RBbEZVdG5Ibk43NEJuX3EzUEQ4VUpBdmhvTXJoMVhnLVFacFYxNXpyTy1mWkhTU2pyaVpHOWFCOGtlNTFtRFdNNVhmcVkwa2R5NElvS25vQjJKVHZsYUpvMUFrSEhGT2Y0eDM0TXZRYjZNZWR0eElCZXg1WjF4QmVwbG9RQVBJYzBuS25adzVudDRYYzZZZzZLeURBMmVsQjdDZ2NmV1JGajJGT3JYaEdnXzdCeWt5dEZzTy16WXVtZw?oc=5",
+          "fecha": "Thu, 08 Oct 2026 04:14:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-10-08T04:24:00+00:00",
-      "score": 0.6191,
+      "fecha_mas_reciente": "2026-10-08T04:14:00+00:00",
+      "score": 0.5408,
       "id": 10
     },
     {
@@ -234,7 +240,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-07T19:44:27+00:00",
-      "score": 0.5463,
+      "score": 0.4784,
       "id": 11
     },
     {
@@ -253,7 +259,7 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-07T16:27:02+00:00",
-      "score": 0.5209,
+      "score": 0.4562,
       "id": 12
     },
     {
@@ -272,27 +278,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-07T16:07:57+00:00",
-      "score": 0.5186,
+      "score": 0.4541,
       "id": 13
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Las empresas de transporte creen \"injustificada\" la huelga general y piden preservar la actividad - Europa Press",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Europa Press",
-          "url": "https://news.google.com/rss/articles/CBMi9AFBVV95cUxNWmFGbnNYLTlqVWlWZWkxSnVPNlFFSWxHUTY5SW9td1plSFRoNFJRbXM2bnBhdlRQdXphekEtVUFvNUFxUURXSkpHV2poUTB4c3YtUjUtVGVPVGFlWmlSelloZ0dfeUpycXk3RmNUZ2o2UzNiaDJPa25KbGtSUUE0MUFWWjJiZHZYLWh3Z3dpZ01pSEYwaGlOV0xPd2c1aFNIMkN6MlhvYW8wZ3owUUdyeGt3SXJWNXNYWExaYktkZkNfVlNaaGpoWHQ2dzgtQll4QUs0YzZfY1czVmRuVnF0Y3N5VWt4UkF1UXBHdHl4YzJYNEQz?oc=5",
-          "fecha": "Wed, 07 Oct 2026 16:00:53 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-10-07T16:00:53+00:00",
-      "score": 0.5177,
-      "id": 14
     },
     {
       "tipo_evento": "congestion",
@@ -310,8 +297,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-07T15:28:54+00:00",
-      "score": 0.5137,
-      "id": 15
+      "score": 0.4499,
+      "id": 14
     },
     {
       "tipo_evento": "paro",
@@ -329,8 +316,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-07T13:49:39+00:00",
-      "score": 0.5016,
-      "id": 16
+      "score": 0.4392,
+      "id": 15
     },
     {
       "tipo_evento": "paro",
@@ -348,8 +335,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-06T22:00:41+00:00",
-      "score": 0.3992,
-      "id": 17
+      "score": 0.3496,
+      "id": 16
     },
     {
       "tipo_evento": "congestion",
@@ -367,8 +354,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-05T18:15:49+00:00",
-      "score": 0.2674,
-      "id": 18
+      "score": 0.2342,
+      "id": 17
     },
     {
       "tipo_evento": "congestion",
@@ -386,8 +373,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-05T16:05:47+00:00",
-      "score": 0.2591,
-      "id": 19
+      "score": 0.2269,
+      "id": 18
     },
     {
       "tipo_evento": "paro",
@@ -406,7 +393,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-16T07:00:00+00:00",
       "score": 0.1733,
-      "id": 20
+      "id": 19
     },
     {
       "tipo_evento": "bloqueo",
@@ -425,7 +412,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-15T07:00:00+00:00",
       "score": 0.1733,
-      "id": 21
+      "id": 20
     },
     {
       "tipo_evento": "paro",
@@ -446,7 +433,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-19T07:00:00+00:00",
       "score": 0.1733,
-      "id": 22
+      "id": 21
     },
     {
       "tipo_evento": "paro",
@@ -467,7 +454,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2024-10-01T06:02:36+00:00",
       "score": 0.1733,
-      "id": 23
+      "id": 22
     },
     {
       "tipo_evento": "congestion",
@@ -485,8 +472,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-04T09:38:04+00:00",
-      "score": 0.1669,
-      "id": 24
+      "score": 0.1462,
+      "id": 23
     },
     {
       "tipo_evento": "paro",
@@ -504,8 +491,8 @@
       ],
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-04T04:50:14+00:00",
-      "score": 0.1557,
-      "id": 25
+      "score": 0.1364,
+      "id": 24
     },
     {
       "tipo_evento": "paro",
@@ -532,7 +519,7 @@
       "n_fuentes": 2,
       "fecha_mas_reciente": "2026-09-21T07:00:00+00:00",
       "score": 0.1099,
-      "id": 26
+      "id": 25
     },
     {
       "tipo_evento": "paro",
@@ -551,7 +538,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-24T12:04:46+00:00",
       "score": 0.104,
-      "id": 27
+      "id": 26
     },
     {
       "tipo_evento": "paro",
@@ -570,7 +557,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T07:00:00+00:00",
       "score": 0.104,
-      "id": 28
+      "id": 27
     },
     {
       "tipo_evento": "bloqueo",
@@ -589,7 +576,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-19T07:00:00+00:00",
       "score": 0.104,
-      "id": 29
+      "id": 28
     },
     {
       "tipo_evento": "bloqueo",
@@ -608,49 +595,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.104,
-      "id": 30
-    },
-    {
-      "tipo_evento": "paro",
-      "ubicacion": "",
-      "severidad": 3,
-      "resumen": "Huelga parcial de transportistas en Bolivia en rechazo a eliminación del subsidio al diésel - La Jornada",
-      "actores": [
-        "transportistas"
-      ],
-      "fuentes": [
-        {
-          "fuente": "La Jornada",
-          "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxPQXU1bUtQT2VJTVplRDJ6WDdxQlZQcG1JcDRuRFRLeE9UYVhUSUtHU3doSklldERWT09ldEhvenZ1cmVJaDltSzFoSldZMjFrYzU2QzFtYXQtVllJZnQwYVlVdkRDUkE5NFRmazNlSU1lS3hwVzZsZzZRcnJxT1F4WmJKYTFkbmV3ZllxcllfRkxYN29yZlVJR3FtYm5xUUowTkFkSDR0Q0pnbWJ2RzdYRVBuRFNEaEVpb1FEVGk3SmhRU2pacFZoeEN5X2VIaU1pV2UxMktTcUhQRjQ?oc=5",
-          "fecha": "Mon, 28 Sep 2026 18:14:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-28T18:14:00+00:00",
-      "score": 0.104,
-      "id": 31
-    },
-    {
-      "tipo_evento": "bloqueo",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Bloqueos ya cuestan $12,9 billones: Colfecar, Fenavi, Fenalcarbón y Analdex piden al Gobierno vías despejadas - Portafolio.co",
-      "actores": [
-        "gobierno"
-      ],
-      "fuentes": [
-        {
-          "fuente": "Portafolio.co",
-          "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxOcGpFaUNsb1NDbGRyaDdSQVRPeEtFMTVRYUZPOVBtTzN0WGNwbVZ2dW5fQldwcFVOTFVWQTF4Y3JrYWVNcnMzb0xabWxBMlU3b0YtUU1OMFkxVEo4eS00bjF1T2k0NXlvbmxvZmxQeXRyNE5EWGJRNjlxSThKS0pzZjRoQ3kzRFAtalNpRklXZjNLbHdkMTRZYkpmczY2N0Y4eEg3d1ZLSDd6R2FmZE1taHdUc1paN0Y5TkctOVdHRXd3U0QzajROcXJuN1A0a2k4RWpJdDA4SzRnN1hBUWx0N9IB5gFBVV95cUxONE1QaWFyTl9MSC1lbmlDOXdwT1V4VVlpZ2pYTVFfNDJiUVRaRzVFbFA1TmJXTTVMS1paUUlsZWxGYndWUHNxaGtLSExReFB5V2oyTVd3ak5leW9yMjY5Zjg0aU81TnF0bmdlX1pYMVVNY0hTTEpaT0k5bVBlS1BFVHRVc3JxOEZpbDlVTGxwc0lLeHZJNTR1czJwN0Y3bjJ3OWs5T1JjUTN4ZGhsa0xTemFhMEZ0OHdEeDdRbS1EYWlSZHFPeWxpVHV4S0Z3ZHpfYTNjRTR3TFRzOGEyLWdoNldYcEx6UQ?oc=5",
-          "fecha": "Thu, 01 Oct 2026 21:15:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-10-01T21:15:00+00:00",
-      "score": 0.0698,
-      "id": 32
+      "id": 29
     },
     {
       "tipo_evento": "paro",
@@ -669,7 +614,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 33
+      "id": 30
     },
     {
       "tipo_evento": "paro",
@@ -688,7 +633,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 34
+      "id": 31
     },
     {
       "tipo_evento": "paro",
@@ -709,7 +654,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 35
+      "id": 32
     },
     {
       "tipo_evento": "paro",
@@ -730,7 +675,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 36
+      "id": 33
     },
     {
       "tipo_evento": "paro",
@@ -749,7 +694,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 37
+      "id": 34
     },
     {
       "tipo_evento": "paro",
@@ -768,7 +713,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-22T07:00:00+00:00",
       "score": 0.0693,
-      "id": 38
+      "id": 35
     },
     {
       "tipo_evento": "paro",
@@ -789,7 +734,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 39
+      "id": 36
     },
     {
       "tipo_evento": "paro",
@@ -808,7 +753,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-03T07:00:00+00:00",
       "score": 0.0693,
-      "id": 40
+      "id": 37
     },
     {
       "tipo_evento": "bloqueo",
@@ -827,7 +772,28 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-29T14:02:09+00:00",
       "score": 0.0693,
-      "id": 41
+      "id": 38
+    },
+    {
+      "tipo_evento": "bloqueo",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Bloqueos ya cuestan $12,9 billones: Colfecar, Fenavi, Fenalcarbón y Analdex piden al Gobierno vías despejadas - Portafolio.co",
+      "actores": [
+        "gobierno"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Portafolio.co",
+          "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxOcGpFaUNsb1NDbGRyaDdSQVRPeEtFMTVRYUZPOVBtTzN0WGNwbVZ2dW5fQldwcFVOTFVWQTF4Y3JrYWVNcnMzb0xabWxBMlU3b0YtUU1OMFkxVEo4eS00bjF1T2k0NXlvbmxvZmxQeXRyNE5EWGJRNjlxSThKS0pzZjRoQ3kzRFAtalNpRklXZjNLbHdkMTRZYkpmczY2N0Y4eEg3d1ZLSDd6R2FmZE1taHdUc1paN0Y5TkctOVdHRXd3U0QzajROcXJuN1A0a2k4RWpJdDA4SzRnN1hBUWx0N9IB5gFBVV95cUxONE1QaWFyTl9MSC1lbmlDOXdwT1V4VVlpZ2pYTVFfNDJiUVRaRzVFbFA1TmJXTTVMS1paUUlsZWxGYndWUHNxaGtLSExReFB5V2oyTVd3ak5leW9yMjY5Zjg0aU81TnF0bmdlX1pYMVVNY0hTTEpaT0k5bVBlS1BFVHRVc3JxOEZpbDlVTGxwc0lLeHZJNTR1czJwN0Y3bjJ3OWs5T1JjUTN4ZGhsa0xTemFhMEZ0OHdEeDdRbS1EYWlSZHFPeWxpVHV4S0Z3ZHpfYTNjRTR3TFRzOGEyLWdoNldYcEx6UQ?oc=5",
+          "fecha": "Thu, 01 Oct 2026 21:15:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-10-01T21:15:00+00:00",
+      "score": 0.0693,
+      "id": 39
     },
     {
       "tipo_evento": "bloqueo",
@@ -848,7 +814,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-29T07:00:00+00:00",
       "score": 0.0693,
-      "id": 42
+      "id": 40
     },
     {
       "tipo_evento": "bloqueo",
@@ -867,7 +833,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-17T07:00:00+00:00",
       "score": 0.0693,
-      "id": 43
+      "id": 41
     },
     {
       "tipo_evento": "paro",
@@ -886,7 +852,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-05-21T07:00:00+00:00",
       "score": 0.0693,
-      "id": 44
+      "id": 42
     },
     {
       "tipo_evento": "bloqueo",
@@ -905,7 +871,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-17T07:00:00+00:00",
       "score": 0.0693,
-      "id": 45
+      "id": 43
     },
     {
       "tipo_evento": "bloqueo",
@@ -924,26 +890,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-09T07:00:00+00:00",
       "score": 0.0693,
-      "id": 46
-    },
-    {
-      "tipo_evento": "bloqueo",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Bloqueo en la vía Panamericana |Tras cinco días grupo de transportadores compartió cómo resisten: hasta con carreras de costales - Infobae",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Infobae",
-          "url": "https://news.google.com/rss/articles/CBMigAJBVV95cUxQYVVzS3hCd0toeGJGbHZrMHdiVmlTekU2eDA2aG1xUmdXQ09lZUFRV0x2X21xeENTUWgyVzJadWRFb3hnNHNvN3VMZ0FHQ1lRWktaMkxfeHc1bWgxUTNTMFdxa284VWpaek45NE11dXUzUTdlSGdUWUVuVXIzR3FycGgwU29JYm1IQ01ZMTN2eGZBOXZiTEtOeE50ZFluU3ltUms0RGJtdXVTT1d3aldfUFJBZmtsYmRHcFVsZlVRc0JOWjFhczhlOFh0emJ4TTZpWHNxSkpiRmx3N2xSMjk4ZzZFcU1qX1JNeDhTZkpGeG5zdzhVWjVVVFA4SjlmM2hL0gGbAkFVX3lxTE5RWDJ1UkNINURaNkZsQnp5TkZFRnhHcHFzcGpydzVTRVhoSHFGWjJReGRlRjBMcG5rbTJjWXlTTlVBTVhkT1dONU94ZFJZcVJzM1laM1N3Mm5Nb3Uzcld5RExMVURoVE5IZEQxS0NxZ2poOURBZ2Q4cDd2ZDFYbkpqTkNwcmpYckxlNDZjeUh2dWdFZlRUZW5jZVF6WVZxOWNtall4NHZOVzZBQ1hpVVZFOWZSM0V2SWp4TW5vdE04a1VmcHI4MUpoTHZHOFZiRGNoSGNrcWNIcS0zeTdhdkFON1NyZ0tyeWJLWkh6cVBEZ3QyV3ROWW5MTTNYN29XMUVBQnd0OF9qdk9NeEF6M1RoV093czNIQURoR3M?oc=5",
-          "fecha": "Sat, 23 May 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-05-23T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 47
+      "id": 44
     },
     {
       "tipo_evento": "congestion",
@@ -962,7 +909,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-28T16:00:10+00:00",
       "score": 0.0693,
-      "id": 48
+      "id": 45
     },
     {
       "tipo_evento": "congestion",
@@ -981,26 +928,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-27T07:00:00+00:00",
       "score": 0.0693,
-      "id": 49
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "Panamá",
-      "severidad": 2,
-      "resumen": "Congestión portuaria y falta de infraestructura digital ponen presión a Panamá - Revista SUMMA",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Revista SUMMA",
-          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQdGh3Y3ZMUldNSTEteVRlXzAtclFoYmdWaHMyLWR6R09aY2VDLVF5M0hxWFU3SzloTUJvTWFsbjdJbXQ2M2d6dlVVZExSVHJ0alpTNzhfeUtYM1NaQjZqZ1hsQlY2c3c2ajR6U0x3a0NjeFpESGxPd2FEUDZTRlhGWGQ1cWotRy1qV09pZkhtRjlRWVBPeUhjN01zRkFKeUtNdEpVYUhkaw?oc=5",
-          "fecha": "Wed, 30 Sep 2026 15:15:45 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-30T15:15:45+00:00",
-      "score": 0.0693,
-      "id": 50
+      "id": 46
     },
     {
       "tipo_evento": "congestion",
@@ -1019,26 +947,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 51
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "La congestión portuaria en Asia alienta el retorno de los armadores al Mar Rojo - Asociación de Cargadores de España",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "Asociación de Cargadores de España",
-          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZXhFaFA1RmtadmlwazFwdDdXa1JOY3JXT2F5Qmp2WDRHRVZreEZxWTd4OXNhTDM1NHdXalFSSExqMEJTSDkwamRIRExGcm53d25EMktaUDl5V2t5T2NVdW5PbmVZQmkyVUh6WW1nR3VKdElHR0hQOGpSclpTZkRNTUk1R0NUT2hDeWktdHhpcTJnclNJOXp4NlNPdGpzemtES19Nc2s3eEZpNnY5ajhjQXNaV1RiRmRFWXIwYi1aUQ?oc=5",
-          "fecha": "Tue, 22 Sep 2026 14:32:54 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-09-22T14:32:54+00:00",
-      "score": 0.0693,
-      "id": 52
+      "id": 47
     },
     {
       "tipo_evento": "congestion",
@@ -1057,7 +966,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-27T07:00:00+00:00",
       "score": 0.0693,
-      "id": 53
+      "id": 48
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "La congestión portuaria en Asia alienta el retorno de los armadores al Mar Rojo - Asociación de Cargadores de España",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Asociación de Cargadores de España",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZXhFaFA1RmtadmlwazFwdDdXa1JOY3JXT2F5Qmp2WDRHRVZreEZxWTd4OXNhTDM1NHdXalFSSExqMEJTSDkwamRIRExGcm53d25EMktaUDl5V2t5T2NVdW5PbmVZQmkyVUh6WW1nR3VKdElHR0hQOGpSclpTZkRNTUk1R0NUT2hDeWktdHhpcTJnclNJOXp4NlNPdGpzemtES19Nc2s3eEZpNnY5ajhjQXNaV1RiRmRFWXIwYi1aUQ?oc=5",
+          "fecha": "Tue, 22 Sep 2026 14:32:54 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-09-22T14:32:54+00:00",
+      "score": 0.0693,
+      "id": 49
     },
     {
       "tipo_evento": "congestion",
@@ -1076,7 +1004,26 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-09T07:00:00+00:00",
       "score": 0.0693,
-      "id": 54
+      "id": 50
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "Panamá",
+      "severidad": 2,
+      "resumen": "Congestión portuaria y falta de infraestructura digital ponen presión a Panamá - La Estrella de Panamá",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "La Estrella de Panamá",
+          "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOS3haMTN6RnBjR0dfd3Q0YkNQWlBBam5oTVZDeDhTQS1Kc3FkajNtTkxQY2M1aERhckNKdDZQT3IyeWcyU1phOVFJelJVSjNjOUh5QlZsV1hCbGRXcDVrS056T3JVNm1VcXhOSUNXempNTGtfMGJyOVcxY3c5ci1wRkUxWFJ5OTN2UXpLYUc1TGF6Si1CSDRoTGFJVC1MSXBzem10bkRVOWZuRlZzME9CbGVnalFFbTFtWVVmSVhfYWFFdWRZeUZV0gHMAUFVX3lxTE8zb01TOGJ6Y1FSYVB2V1JoRHlqVDhNdm40ZS04cE9HWVpzdVlraU5tVUpQSWRKaU5Wd01VM3V1ZldINXJZWFRFRW9RWjZpZHo0QU40WXRGc092WjlpSFZVVUdiRGwxQmdTSWxBdk5lNUlUSVNBTHgzRDU0ZF9PMF93aHdkNjdreDZtYl9UOW5Eb0pZZFdSTl9QRzVIX1dZdzlNbkFUOV9WeDdfS0NtY2c3MWphVWhFR0Nlb3E4X1l3VWVGSndHckI0S2xhUA?oc=5",
+          "fecha": "Mon, 28 Sep 2026 05:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-09-28T05:00:00+00:00",
+      "score": 0.0693,
+      "id": 51
     },
     {
       "tipo_evento": "clima",
@@ -1095,7 +1042,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-26T07:00:00+00:00",
       "score": 0.0693,
-      "id": 55
+      "id": 52
     },
     {
       "tipo_evento": "congestion",
@@ -1114,7 +1061,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-28T07:00:00+00:00",
       "score": 0.0693,
-      "id": 56
+      "id": 53
     },
     {
       "tipo_evento": "paro",
@@ -1133,7 +1080,109 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-28T07:00:00+00:00",
       "score": 0.0693,
+      "id": 54
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Fujimori desactiva el paro del transporte con promesas de seguridad y una rebaja de multas - EL PAÍS",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "EL PAÍS",
+          "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxOaE82V0xBWkw0VjRJaGRNSWktN1lweE8zNkV4MmVScUZGODVDSHltWl8ydmxHTE1hY0FxMzlERzljUjVGUHBVcTdWWnQxalU4ZW4xMHQ4ZWN3bFVUdGwtWE1sSW5BWlVhOWJQVS11b1RZbUdPZ21FUzZ3dmVzeUdrTUJBenAtbjZlQ1ZZXzVsX3d5M0ZKY3NjNk5GdVlaSkg2V2dEVGgyU2FoWnFpRTNydThZaGhlOTkzX0pFamhZZnNzUnh3TFJGNEhnRC1GUdIB4gFBVV95cUxOS011Yk1iM3FCcElqcTdvU3B2eV9kVnNOMWFGWE1PR1VHbENlcEFFbk9nckdtNkdzMWN0NzZucEhZUDZwS3JKbFhqM2hLOWp1YmdXWkt6ekpkSmxmTWNjZkRmam0xT2NfR1g5V09aWE9yMy0zeDREdHRQNV9zdFJxQzZNZm1zbi1iMGZDMVY4amUxbW45cjEwRGtFRDdvLXhEVmJrSy04MkpsWFprOWRnY1ByTjFMTDVqdG00aEM4TU9XZ1VKczVhUHNxQVUtYUZIUUxmNlBhdmFwZFNoYWY4SXNB?oc=5",
+          "fecha": "Wed, 26 Aug 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-08-26T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 55
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Cancelan huelga de transportistas en Kenia tras acuerdo por precios del combustible - teleSUR",
+      "actores": [
+        "transportistas"
+      ],
+      "fuentes": [
+        {
+          "fuente": "teleSUR",
+          "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE9YNUh4SUsybzE2TW4wdWNsRGF5a05CQjJnZ1lqcS1xWXRvVzRqcm1CYlVfUHVwWng1YnFZbG55UkdiUjZvY3JwZnY4TWhzTU1tbzVPOHc0dWJuRU13MDVvck0zd2RkcGZwbjd6cDRZakpfTFNtSVRIckZJVQ?oc=5",
+          "fecha": "Tue, 19 May 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-05-19T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 56
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "🔵⚪ Los transportistas fluviales de Pucallpa levantaron el paro tras el anuncio del Gobierno de Keiko Fujimori de otorgar un subsidio focalizado para el sector, en respuesta al alza",
+      "actores": [
+        "transportistas",
+        "gobierno"
+      ],
+      "fuentes": [
+        {
+          "fuente": "Instagram",
+          "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE9jWXMwSUFUcDlZTjQ1OVdmNmtiRFBTNUdac25uQnZPRXR2OXNYYjVMcnlDQ1d4dThFMDBkVnlnVzBwZ1N4MXpUMVR4RW5JV3YyM1E?oc=5",
+          "fecha": "Fri, 14 Aug 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-08-14T07:00:00+00:00",
+      "score": 0.0693,
       "id": 57
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Vuelve la crisis de los combustibles a Bolivia: Huelgas y bloqueos de transportistas - France 24",
+      "actores": [
+        "transportistas"
+      ],
+      "fuentes": [
+        {
+          "fuente": "France 24",
+          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPTWpvMFRFYlI1Y0RwSUxHYjR3YURPc2tOSjBRQnNjejcyRUFRVVVsYXBWWXNPWUZCYk5tdmh0NlVpNDR6MF9lSktEOFM3cm1KQjJRMUpvVGo2T1JrV1VQbVpIb0Y5Q2VHY2EwNDctNkJ3UHFwNVJoa2dZcWp2anFkYmlpUHNmRUNVUW5CcWpnNHNRYnJoZV9vaXBnTmhWV2pDbzFLcENPaEdiZnNxSnRVT05aWnNieFFyQW5zajFwanZGWDI2XzhWUGU3OFlMRHNybGNQY0Jlaw?oc=5",
+          "fecha": "Tue, 05 May 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-05-05T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 58
+    },
+    {
+      "tipo_evento": "paro",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Huelga de camiones en Italia: paro nacional del 25 al 29 de mayo - Trans.INFO",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Trans.INFO",
+          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxQRzV5N181b2JkVDc1UmtCVEhiTXBLd3B0M2w1enNPQV9YclpUYlpUcEE3LTJKTXR0emNHTEpvajllNWR3eHVFSW9iZVl2bDBROEJoYmR0UUgxcnFnSDNTblZ4Tmk0bzg3d05wWnFfaTFraTdpeWN6RmkzNFI5Z1BPeEgyOTlpRlhlT01RbDQzaERfRFNRaXAyN3g5bnk2R1A3YU9PQWFqMW9kb2FRN2NaT2NZcXZXSHRCTTZFV3U1RnBTaGx6?oc=5",
+          "fecha": "Tue, 19 May 2026 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2026-05-19T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 59
     },
     {
       "tipo_evento": "paro",
@@ -1152,7 +1201,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-26T20:44:30+00:00",
       "score": 0.0693,
-      "id": 58
+      "id": 60
     },
     {
       "tipo_evento": "paro",
@@ -1173,7 +1222,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2024-12-11T08:00:00+00:00",
       "score": 0.0693,
-      "id": 59
+      "id": 61
     },
     {
       "tipo_evento": "paro",
@@ -1192,7 +1241,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-08-04T07:00:00+00:00",
       "score": 0.0693,
-      "id": 60
+      "id": 62
     },
     {
       "tipo_evento": "paro",
@@ -1211,7 +1260,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-30T07:00:00+00:00",
       "score": 0.0693,
-      "id": 61
+      "id": 63
     },
     {
       "tipo_evento": "paro",
@@ -1230,7 +1279,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-02-25T08:00:00+00:00",
       "score": 0.0693,
-      "id": 62
+      "id": 64
     },
     {
       "tipo_evento": "congestion",
@@ -1249,7 +1298,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-09-28T07:00:00+00:00",
       "score": 0.0693,
-      "id": 63
+      "id": 65
     },
     {
       "tipo_evento": "congestion",
@@ -1268,7 +1317,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-10T10:51:44+00:00",
       "score": 0.0693,
-      "id": 64
+      "id": 66
     },
     {
       "tipo_evento": "congestion",
@@ -1289,7 +1338,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-07-07T07:00:00+00:00",
       "score": 0.0693,
-      "id": 65
+      "id": 67
     },
     {
       "tipo_evento": "congestion",
@@ -1308,7 +1357,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-03-17T07:00:00+00:00",
       "score": 0.0693,
-      "id": 66
+      "id": 68
     },
     {
       "tipo_evento": "congestion",
@@ -1329,7 +1378,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-10-01T10:25:11+00:00",
       "score": 0.0693,
-      "id": 67
+      "id": 69
     },
     {
       "tipo_evento": "congestion",
@@ -1348,7 +1397,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-02-09T08:00:00+00:00",
       "score": 0.0693,
-      "id": 68
+      "id": 70
     },
     {
       "tipo_evento": "congestion",
@@ -1367,7 +1416,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-04-22T07:00:00+00:00",
       "score": 0.0693,
-      "id": 69
+      "id": 71
     },
     {
       "tipo_evento": "congestion",
@@ -1386,26 +1435,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-07-31T07:00:00+00:00",
       "score": 0.0693,
-      "id": 70
-    },
-    {
-      "tipo_evento": "congestion",
-      "ubicacion": "",
-      "severidad": 2,
-      "resumen": "Puerto de Yangshan enfrenta congestión y altera la cadena logística global - https://logistica360chile.cl/",
-      "actores": [],
-      "fuentes": [
-        {
-          "fuente": "https://logistica360chile.cl/",
-          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPdDIwRnQ5MXJqWHRSWVpKSWQ0bmtGOWRaVFBfd1g1bm9kZ3JxWGdYRlI0OHRUT0ZKX29vZmc4cm5ibk9abFhVbGc4dENaWVZLU0ZPTV9WUlZjOVdQWVE1S1BtZVVMOGJIeFo2Y2tzN1pFLXdfQnB3TDR5Yl9lVUpQOS1Iamt1bHpMd0tSaG9lLXpoQWdwQUU5aVNveFMwNWdYMi1aSTZQNA?oc=5",
-          "fecha": "Wed, 05 Aug 2026 07:00:00 GMT",
-          "origen": "google_news"
-        }
-      ],
-      "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-08-05T07:00:00+00:00",
-      "score": 0.0693,
-      "id": 71
+      "id": 72
     },
     {
       "tipo_evento": "congestion",
@@ -1424,7 +1454,7 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2025-03-19T07:00:00+00:00",
       "score": 0.0693,
-      "id": 72
+      "id": 73
     },
     {
       "tipo_evento": "congestion",
@@ -1443,26 +1473,45 @@
       "n_fuentes": 1,
       "fecha_mas_reciente": "2026-06-13T07:00:00+00:00",
       "score": 0.0693,
-      "id": 73
+      "id": 74
     },
     {
       "tipo_evento": "congestion",
       "ubicacion": "",
       "severidad": 2,
-      "resumen": "Tarifas spot se mantienen elevadas, mientras la congestión en los puertos asiáticos condiciona el mercado - Mundo Marítimo",
+      "resumen": "Puerto de Yangshan enfrenta congestión y altera la cadena logística global - https://logistica360chile.cl/",
       "actores": [],
       "fuentes": [
         {
-          "fuente": "Mundo Marítimo",
-          "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOTmE1S25nMzc3ckFIUlhFQVI4TzdDTUFOak83UE92U3hIS1lqckRzUXE4bWRxLXdBaUhXb2cwMzRDMW8zbkUtSkNscWpBc0tQSGxOSXh0S2ZFMlhBdjM5dmlsZ3hEN2ZhTUtiZFJ3QVhVMkc4OHFKUldYYU9LZE04RGZJRjlkNnd5ckhrNWJHamxBQ1pNN2lzNnFtUC1rM3drMjBtSFpPWnFGSWgxRlZNUm12Vk9rZ3Q4dzR2ZzV3bWIzbzgzclFxSm9lSDRzVnk1aFlXWDBNd1FRZw?oc=5",
-          "fecha": "Mon, 31 Aug 2026 04:02:57 GMT",
+          "fuente": "https://logistica360chile.cl/",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPdDIwRnQ5MXJqWHRSWVpKSWQ0bmtGOWRaVFBfd1g1bm9kZ3JxWGdYRlI0OHRUT0ZKX29vZmc4cm5ibk9abFhVbGc4dENaWVZLU0ZPTV9WUlZjOVdQWVE1S1BtZVVMOGJIeFo2Y2tzN1pFLXdfQnB3TDR5Yl9lVUpQOS1Iamt1bHpMd0tSaG9lLXpoQWdwQUU5aVNveFMwNWdYMi1aSTZQNA?oc=5",
+          "fecha": "Wed, 05 Aug 2026 07:00:00 GMT",
           "origen": "google_news"
         }
       ],
       "n_fuentes": 1,
-      "fecha_mas_reciente": "2026-08-31T04:02:57+00:00",
+      "fecha_mas_reciente": "2026-08-05T07:00:00+00:00",
       "score": 0.0693,
-      "id": 74
+      "id": 75
+    },
+    {
+      "tipo_evento": "congestion",
+      "ubicacion": "",
+      "severidad": 2,
+      "resumen": "Congestión portuaria en China empeora con cierre de Ningbo - Infobae",
+      "actores": [],
+      "fuentes": [
+        {
+          "fuente": "Infobae",
+          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQQnhZRV9kbmEzdzUxYU4tSlBQQ0hZZGxWTW1BTURxbTYwMHFVdkJ0NDlDQ1lfS2lWa2xGaUN0WXBJLUt6QWgyYjE2WUFBVlU2cUMzSUFlYVNQS3UycGdLNklTcDZ6UFRMd0RzSm5QZUJpaEtSRzBaN0c3LVJ0YXBYYW5oZ3dfMEE5b2dYMEZWOVU4YjBCN25nc2F5N2JZVVEzamxrYTk1d0xhbFlfbGFTRtIBywFBVV95cUxOd3BFT3FCTlVoZy1Kd2c0NVUyTGZITDVfSjJPMHlTODdkM25nbVJHOUxqQ1JSeUJMejEtbGRJZVVRcDFpam9obHNUeTFiMGU2YmZFeXJ6em5KdVRSS0ptaHhjNzZKN2hqd2taNjFNVERMdGY0U2pVWWtpOUV3Uml0Nm5pS2JEVE93Skx4MFhGN2lsVFJfelVFV1ZhQnRGelVoeUNFbmt2NVZiNU1lMEJlM25EZ0RKOWFTaDRld1ZDc1RIUE9iX3NsVDd6Zw?oc=5",
+          "fecha": "Wed, 18 Aug 2021 07:00:00 GMT",
+          "origen": "google_news"
+        }
+      ],
+      "n_fuentes": 1,
+      "fecha_mas_reciente": "2021-08-18T07:00:00+00:00",
+      "score": 0.0693,
+      "id": 76
     }
   ]
 }
