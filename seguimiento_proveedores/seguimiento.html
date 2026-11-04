@@ -102,7 +102,7 @@ pre.msg{white-space:pre-wrap;background:#f7f8fa;border:1px solid var(--bd2);bord
 
 <script>
 'use strict';
-const VERSION = 'v0.3';
+const VERSION = 'v0.4';
 
 /* =========================================================================
    Utilidades
@@ -1286,9 +1286,119 @@ function enlazarHoy(){
     });
   });
 }
-/* @@TABLERO@@ */
-function vistaTablero(){ return '<div class="panel vacio">Tablero: en construcción.</div>'; }
-function enlazarTablero(){}
+/* =========================================================================
+   Tablero
+   ========================================================================= */
+const TAB = { vista:'resumen', inactivos:false };
+/** Indicadores por proveedor. Una pregunta cuenta como respondida si llega una respuesta antes de la siguiente pregunta. */
+function metricasProveedores(){
+  const nombres = new Map();
+  (S.config.proveedores || []).forEach(p => nombres.set(normH(p.proveedor), p.proveedor));
+  if (TAB.inactivos) Object.values(S.seg).forEach(r => { if (!nombres.has(normH(r.proveedor))) nombres.set(normH(r.proveedor), r.proveedor); });
+  const out = [];
+  for (const [k, nombre] of nombres){
+    if (!TAB.inactivos && !provActivo(nombre)) continue;
+    const lin = Object.values(S.seg).filter(r => normH(r.proveedor) === k);
+    const preg = S.eventos.filter(e => e.tipo === 'PREGUNTA' && normH(e.proveedor) === k).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
+    const resp = S.eventos.filter(e => e.tipo === 'RESPUESTA' && normH(e.proveedor) === k).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
+    let respondidas = 0, sumDias = 0;
+    preg.forEach((q, i) => {
+      const hasta = preg[i + 1] ? preg[i + 1].fecha_hora : '9999';
+      const r = resp.find(x => x.fecha_hora >= q.fecha_hora && x.fecha_hora < hasta);
+      if (r){ respondidas++; sumDias += horasEntre(q.fecha_hora, r.fecha_hora) / 24; }
+    });
+    const abiertas = lin.filter(r => ACTIVOS.has(r.estado) || r.estado === 'ENTREGADO_POR_CONFIRMAR');
+    const cambios = lin.reduce((s, r) => s + (+r.contador_cambios || 0), 0);
+    out.push({ proveedor:nombre, alias:provAlias(nombre), comprador:provComprador(nombre), activo:provActivo(nombre),
+      abiertas:abiertas.length, sinFecha:lin.filter(r => ACTIVOS.has(r.estado) && !r.fecha_prometida).length,
+      conFecha:lin.filter(r => ACTIVOS.has(r.estado) && r.fecha_prometida).length,
+      vencidas:lin.filter(r => ACTIVOS.has(r.estado) && vencida(r)).length,
+      preguntas:preg.length, respondidas, pctResp: preg.length ? respondidas / preg.length : null,
+      diasResp: respondidas ? sumDias / respondidas : null,
+      riesgo:lin.filter(enRiesgo).length, cambios, lineasConCambios:lin.filter(r => +r.contador_cambios > 0).length,
+      maxCambios:lin.reduce((m, r) => Math.max(m, +r.contador_cambios || 0), 0),
+      epc:lin.filter(r => r.estado === 'ENTREGADO_POR_CONFIRMAR').length, almacen:lin.filter(revisarAlmacen).length,
+      cerradas:lin.filter(r => CERRADOS.has(r.estado)).length });
+  }
+  return out.sort((a, b) => b.riesgo - a.riesgo || a.alias.localeCompare(b.alias));
+}
+function lineasRiesgo(){
+  return Object.values(S.seg).filter(r => enRiesgo(r) && (TAB.inactivos || provActivo(r.proveedor))).sort((a, b) => desfase(b) - desfase(a));
+}
+function lineasCambios(){
+  return Object.values(S.seg).filter(r => +r.contador_cambios > 0 && (TAB.inactivos || provActivo(r.proveedor))).sort((a, b) => b.contador_cambios - a.contador_cambios || (a.proveedor < b.proveedor ? -1 : 1));
+}
+const pct = v => v == null ? '—' : Math.round(v * 100) + ' %';
+const d1 = v => v == null ? '—' : (Math.round(v * 10) / 10).toLocaleString('es-CO');
+function vistaTablero(){
+  const m = metricasProveedores(), riesgo = lineasRiesgo(), camb = lineasCambios();
+  const tot = k => m.reduce((s, x) => s + x[k], 0);
+  const preg = tot('preguntas'), resp = tot('respondidas');
+  let h = `<div class="kpis">
+    <div class="kpi"><div class="v">${tot('abiertas')}</div><div class="l">líneas abiertas</div></div>
+    <div class="kpi"><div class="v">${pct(preg ? resp / preg : null)}</div><div class="l">respuesta (${resp}/${preg} mensajes)</div></div>
+    <div class="kpi ${riesgo.length ? 'rojo' : ''}"><div class="v">${riesgo.length}</div><div class="l">riesgo de faltante (prometida &gt; requerida)</div></div>
+    <div class="kpi"><div class="v">${tot('cambios')}</div><div class="l">cambios de fecha</div></div>
+    <div class="kpi"><div class="v">${tot('epc')}</div><div class="l">entregados por confirmar</div></div>
+    <div class="kpi ${tot('almacen') ? 'rojo' : ''}"><div class="v">${tot('almacen')}</div><div class="l">revisar con almacén</div></div></div>
+  <div class="panel fila">
+    <button class="b ${TAB.vista === 'resumen' ? 'pri' : ''}" data-tv="resumen">Resumen por proveedor</button>
+    <button class="b ${TAB.vista === 'riesgo' ? 'pri' : ''}" data-tv="riesgo">Riesgo de faltante (${riesgo.length})</button>
+    <button class="b ${TAB.vista === 'cambios' ? 'pri' : ''}" data-tv="cambios">Cambios de fecha por línea (${camb.length})</button>
+    <label class="chk"><input type="checkbox" id="tbInact" ${TAB.inactivos ? 'checked' : ''}> Incluir proveedores no activos</label>
+    <span class="sp"></span><button class="b pri" id="tbExport">Exportar tablero a Excel</button></div>`;
+  if (TAB.vista === 'resumen'){
+    h += `<div class="panel"><h2>Por proveedor</h2><div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>Comprador</th><th class="n">Abiertas</th><th class="n">Sin fecha</th><th class="n">Vencidas</th>
+      <th class="n">Mensajes</th><th class="n">% respuesta</th><th class="n">Días prom. respuesta</th><th class="n">Riesgo faltante</th><th class="n">Cambios de fecha</th>
+      <th class="n">Líneas con cambios</th><th class="n">Máx. cambios / línea</th><th class="n">Entregados por confirmar</th><th class="n">Revisar almacén</th></tr></thead><tbody>
+      ${m.map(x => `<tr><td><b>${esc(x.alias)}</b>${x.activo ? '' : ' <span class="chip">inactivo</span>'}<br><span class="peq mut">${esc(x.proveedor)}</span></td><td>${esc(x.comprador)}</td>
+        <td class="n">${x.abiertas}</td><td class="n">${x.sinFecha}</td><td class="n ${x.vencidas ? 'rojo' : ''}">${x.vencidas}</td><td class="n">${x.preguntas}</td>
+        <td class="n">${pct(x.pctResp)}</td><td class="n">${d1(x.diasResp)}</td><td class="n ${x.riesgo ? 'rojo' : ''}">${x.riesgo}</td><td class="n">${x.cambios}</td>
+        <td class="n">${x.lineasConCambios}</td><td class="n">${x.maxCambios}</td><td class="n">${x.epc}</td><td class="n ${x.almacen ? 'rojo' : ''}">${x.almacen}</td></tr>`).join('') || '<tr><td colspan="14" class="vacio">Sin datos</td></tr>'}
+      </tbody></table></div></div>`;
+  } else if (TAB.vista === 'riesgo'){
+    h += `<div class="panel"><h2>Riesgo de faltante</h2><p class="peq mut">Líneas abiertas cuya fecha prometida supera la fecha requerida, de mayor a menor desfase.</p>
+      <div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Pendiente</th><th>Requerida</th><th>Prometida</th><th class="n">Desfase (días)</th><th class="n">Cambios</th><th>Estado</th></tr></thead><tbody>
+      ${riesgo.map(r => `<tr class="riesgo"><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.linea)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td>
+        <td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtF(r.fecha_requerida)}</td><td class="rojo">${fmtF(r.fecha_prometida)}</td>
+        <td class="n rojo">+${desfase(r)}</td><td class="n">${r.contador_cambios || ''}</td><td>${chipEstado(r.estado)}</td></tr>`).join('') || '<tr><td colspan="11" class="vacio">Sin líneas en riesgo</td></tr>'}
+      </tbody></table></div></div>`;
+  } else {
+    h += `<div class="panel"><h2>Cambios de fecha por línea</h2><div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Cambios</th><th>Fecha anterior</th><th>Fecha prometida</th><th>Requerida</th><th>Estado</th><th>Historial</th></tr></thead><tbody>
+      ${camb.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.linea)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td>
+        <td class="n"><b>${r.contador_cambios}</b></td><td>${fmtF(r.fecha_prometida_anterior)}</td><td class="${enRiesgo(r) ? 'rojo' : ''}">${fmtF(r.fecha_prometida)}</td><td>${fmtF(r.fecha_requerida)}</td><td>${chipEstado(r.estado)}</td>
+        <td class="peq mut">${historialFechas(r.clave).map(fmtC).join(' → ')}</td></tr>`).join('') || '<tr><td colspan="11" class="vacio">Sin cambios de fecha</td></tr>'}
+      </tbody></table></div></div>`;
+  }
+  return h;
+}
+function historialFechas(clave){
+  const ev = S.eventos.filter(e => e.clave === clave && e.tipo === 'RESPUESTA' && e.fecha_nueva).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
+  const f = []; ev.forEach(e => { if (e.fecha_anterior && !f.length) f.push(e.fecha_anterior); if (f[f.length - 1] !== e.fecha_nueva) f.push(e.fecha_nueva); });
+  return f;
+}
+function libroTablero(){
+  const wb = XLSX.utils.book_new();
+  const m = metricasProveedores();
+  const ws1 = XLSX.utils.aoa_to_sheet([['Proveedor','Alias','Comprador','Líneas abiertas','Sin fecha','Vencidas','Mensajes enviados','Mensajes respondidos','% respuesta','Días promedio respuesta','Líneas riesgo faltante','Cambios de fecha','Líneas con cambios','Máx. cambios por línea','Entregados por confirmar','Revisar con almacén','Cerradas'],
+    ...m.map(x => [x.proveedor, x.alias, x.comprador, x.abiertas, x.sinFecha, x.vencidas, x.preguntas, x.respondidas, x.pctResp == null ? '' : Math.round(x.pctResp * 1000) / 1000, x.diasResp == null ? '' : Math.round(x.diasResp * 10) / 10, x.riesgo, x.cambios, x.lineasConCambios, x.maxCambios, x.epc, x.almacen, x.cerradas])]);
+  for (let i = 1; i <= m.length; i++){ const c = ws1[XLSX.utils.encode_cell({ r:i, c:8 })]; if (c && c.t === 'n') c.z = '0%'; }
+  ws1['!cols'] = [{wch:44},{wch:14},{wch:18}, ...Array(14).fill({wch:12})];
+  XLSX.utils.book_append_sheet(wb, ws1, 'resumen_proveedores');
+  const lin = (rs, extra) => rs.map(r => ({ ...r, proveedor_alias:provAlias(r.proveedor), desfase_dias:desfase(r) == null ? '' : desfase(r),
+    riesgo_faltante:enRiesgo(r) ? 'SI' : '', revisar_almacen:revisarAlmacen(r) ? 'SI' : '', ...(extra ? extra(r) : {}) }));
+  const colsL = ['proveedor_alias','proveedor','oc','linea','item','descripcion','unidad','cantidad_pendiente','fecha_requerida','fecha_prometida','desfase_dias','estado','contador_cambios','fecha_prometida_anterior','riesgo_faltante','revisar_almacen','ultima_pregunta','ultima_respuesta','fecha_entregado','comprador'];
+  XLSX.utils.book_append_sheet(wb, hojaConFechas(colsL, lin(lineasRiesgo())), 'riesgo_faltante');
+  XLSX.utils.book_append_sheet(wb, hojaConFechas([...colsL, 'historial'], lin(lineasCambios(), r => ({ historial:historialFechas(r.clave).map(fmtF).join(' > ') }))), 'cambios_por_linea');
+  const todas = Object.values(S.seg).filter(r => TAB.inactivos || provActivo(r.proveedor)).sort((a, b) => (a.proveedor + a.oc + a.linea).localeCompare(b.proveedor + b.oc + b.linea));
+  XLSX.utils.book_append_sheet(wb, hojaConFechas(colsL, lin(todas)), 'detalle_lineas');
+  return wb;
+}
+function enlazarTablero(){
+  document.querySelectorAll('[data-tv]').forEach(b => b.onclick = () => { TAB.vista = b.dataset.tv; renderTodo(); });
+  $('#tbInact').onchange = e => { TAB.inactivos = e.target.checked; renderTodo(); };
+  $('#tbExport').onclick = () => XLSX.writeFile(libroTablero(), `tablero_seguimiento_${sello()}.xlsx`);
+}
 /* =========================================================================
    Modo administrador
    ========================================================================= */
@@ -1476,7 +1586,7 @@ async function init(){
 window.App = { S, R, parseFecha, parseFechaHora, leerExplosion, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
   conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
   revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, interpretarRespuesta,
-  previaRespuesta, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
+  previaRespuesta, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
 init();
 </script>
 </body>

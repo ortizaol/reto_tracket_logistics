@@ -28,3 +28,10 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - Edición de reglas, plantillas (usted/tú) con vista previa del mensaje usando líneas reales del proveedor, y exclusiones (OC / ítem / línea).
 - Exportar `config.xlsx` (escribe en la carpeta si está conectada; si no, descarga). Los cambios no exportados se guardan en el navegador y se señalan.
 - **Motivo:** el administrador debe poder ampliar el piloto y ajustar mensajes sin tocar el HTML ni editar Excel a mano.
+
+## v0.4 — Tablero
+- Indicadores por proveedor: % de respuesta (mensaje respondido antes del siguiente mensaje), días promedio de respuesta, líneas sin fecha y vencidas, líneas en riesgo de faltante (en rojo), cambios de fecha totales / líneas con cambios / máximo por línea, entregados por confirmar y "revisar con almacén".
+- Vista "Riesgo de faltante": líneas abiertas con fecha prometida posterior a la requerida, ordenadas por días de desfase.
+- Vista "Cambios de fecha por línea" con historial de fechas (de los eventos).
+- Exportación del tablero a Excel (resumen, riesgo, cambios y detalle de líneas) con fechas reales de Excel.
+- **Motivo:** medir la confiabilidad de cada proveedor y priorizar dónde intervenir antes de que el faltante llegue a la línea de producción.
