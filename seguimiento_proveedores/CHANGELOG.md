@@ -21,3 +21,10 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - Intérprete de respuestas tolerante ("1 SI", "1 NO 25/11", "1 ENT", "TODO SI", "2 25/11", sí/si, d/m, dd-mm, dd/mm/aaaa, prefijos de WhatsApp) con vista previa editable: estado y fecha anterior → nueva, desfase contra la requerida y filas en rojo que bloquean el guardado.
 - Exportar mi seguimiento → `respuestas/seguimiento_<comprador>_<aaaammdd_hhmm>.xlsx` (hojas `lineas` y `eventos`), directo a la carpeta si está conectada.
 - **Motivo:** el comprador necesita un flujo de un clic por proveedor y registrar la respuesta sin digitar; la numeración guardada evita errores al cruzar la respuesta con las líneas.
+
+## v0.3 — Modo administrador
+- Pestaña "Administrador" con PIN (freno visual; la seguridad real son los permisos de OneDrive sobre `config.xlsx`).
+- Edición de proveedores (alias, activo, contacto, celular, comprador, trato usted/tú) con verificación de que el nombre exista en la explosión y lista de proveedores nacionales aún no configurados.
+- Edición de reglas, plantillas (usted/tú) con vista previa del mensaje usando líneas reales del proveedor, y exclusiones (OC / ítem / línea).
+- Exportar `config.xlsx` (escribe en la carpeta si está conectada; si no, descarga). Los cambios no exportados se guardan en el navegador y se señalan.
+- **Motivo:** el administrador debe poder ampliar el piloto y ajustar mensajes sin tocar el HTML ni editar Excel a mano.
