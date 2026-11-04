@@ -102,7 +102,7 @@ pre.msg{white-space:pre-wrap;background:#f7f8fa;border:1px solid var(--bd2);bord
 
 <script>
 'use strict';
-const VERSION = 'v0.1';
+const VERSION = 'v0.2';
 
 /* =========================================================================
    Utilidades
@@ -841,9 +841,450 @@ function enlazarLineas(){
   $('#fPiloto').onchange = e => { FILTRO.piloto = e.target.checked; renderTodo(); };
 }
 
-/* @@HOY@@ */
-function vistaHoy(){ return '<div class="panel vacio">Gestión de hoy: en construcción.</div>'; }
-function enlazarHoy(){}
+/* =========================================================================
+   Qué preguntar hoy
+   ========================================================================= */
+function vencida(r){
+  const h = hoy();
+  return (r.fecha_prometida && r.fecha_prometida < h) || (!r.fecha_prometida && r.fecha_requerida && r.fecha_requerida < h);
+}
+/**
+ * Decide si una línea se pregunta hoy.
+ *  - Solo fecha requerida ≤ hoy + horizonte, más todas las vencidas.
+ *  - Sin fecha prometida: si nunca se preguntó o si pasaron las horas de recordatorio sin respuesta.
+ *  - Con fecha prometida: en cada "día antes" configurado (si no hubo contacto desde ese hito) y el mismo día;
+ *    vencidas, cada N días.
+ *  - Nunca dos veces el mismo día.
+ */
+function evaluarLinea(r){
+  const no = motivo => ({ preguntar:false, motivo });
+  if (!ACTIVOS.has(r.estado)) return no('estado ' + (ETQ_ESTADO[r.estado] || r.estado));
+  if (!provActivo(r.proveedor)) return no('proveedor inactivo');
+  if (excluida(r)) return no('excluida');
+  if (S.explosion && !S.explosion.lineas[r.clave]) return no('no figura en la explosión');
+  const h = hoy(), rg = R(), fin = addDias(h, rg.horizonte_semanas * 7), venc = vencida(r);
+  if (r.fecha_requerida && r.fecha_requerida > fin && !venc) return no('fuera del horizonte');
+  if (r.ultima_pregunta && r.ultima_pregunta.slice(0,10) === h) return no('ya se preguntó hoy');
+  const contacto = maxStr(r.ultima_pregunta, r.ultima_respuesta);
+  if (!r.fecha_prometida){
+    if (!r.ultima_pregunta) return { preguntar:true, motivo: venc ? 'vencida sin fecha' : 'primera solicitud' };
+    const hrs = horasEntre(contacto, ahora());
+    if (hrs >= rg.horas_sin_respuesta_para_recordatorio) return { preguntar:true, motivo:`sin fecha hace ${Math.floor(hrs)} h` };
+    return no('esperando respuesta');
+  }
+  const d = diasEntre(h, r.fecha_prometida);
+  if (d < 0){
+    const dd = contacto ? diasEntre(contacto.slice(0,10), h) : 999;
+    if (dd >= rg.frecuencia_vencidas_dias) return { preguntar:true, motivo:`vencida hace ${-d} día(s)` };
+    return no(`vencida; se vuelve a preguntar en ${rg.frecuencia_vencidas_dias - dd} día(s)`);
+  }
+  const hitos = rg.dias_antes_repregunta.filter(c => c >= d);
+  if (!hitos.length) return no('próxima repregunta ' + fmtF(addDias(r.fecha_prometida, -rg.dias_antes_repregunta[0])));
+  const hito = addDias(r.fecha_prometida, -Math.min(...hitos));
+  if (!contacto || contacto.slice(0,10) < hito) return { preguntar:true, motivo: d === 0 ? 'entrega prometida hoy' : `faltan ${d} día(s)` };
+  return no('confirmada recientemente');
+}
+function ordenUrgencia(a, b){
+  const ka = (vencida(a) ? '0' : '1') + (a.fecha_prometida || a.fecha_requerida || '9999'), kb = (vencida(b) ? '0' : '1') + (b.fecha_prometida || b.fecha_requerida || '9999');
+  return ka < kb ? -1 : ka > kb ? 1 : (a.clave < b.clave ? -1 : 1);
+}
+function ultimaPregunta(prov){
+  let u = null; const k = normH(prov);
+  for (const e of S.eventos) if (e.tipo === 'PREGUNTA' && normH(e.proveedor) === k && (!u || e.fecha_hora > u.fecha_hora)) u = e;
+  return u;
+}
+function ultimaRespuestaDesde(prov, desde){
+  let u = null; const k = normH(prov);
+  for (const e of S.eventos) if (e.tipo === 'RESPUESTA' && normH(e.proveedor) === k && e.fecha_hora >= desde && (!u || e.fecha_hora > u.fecha_hora)) u = e;
+  return u;
+}
+/** Líneas (en orden) del último mensaje enviado al proveedor: la numeración que usa la respuesta. */
+function lineasDeMensaje(ev){ return String(ev.lineas || '').split(/\s*;\s*/).filter(Boolean).map(k => S.seg[k]).filter(Boolean); }
+function plantillaPara(rs){
+  if (rs.some(vencida)) return 'vencida';
+  if (rs.some(r => !r.ultima_pregunta)) return 'primera_solicitud';
+  if (rs.some(r => !r.fecha_prometida)) return 'recordatorio';
+  return 'repregunta';
+}
+const recortar = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+function lineaDetalle(r, i){
+  return [`${i}) ${r.oc}${r.linea ? ' L' + r.linea : ''}`, `${r.item} ${recortar(r.descripcion, 45)}`.trim(),
+    `${fmtN(r.cantidad_pendiente)} ${r.unidad || ''}`.trim(), `Req. ${fmtC(r.fecha_requerida)}`,
+    r.fecha_prometida ? `Prometida ${fmtC(r.fecha_prometida)}` : 'SIN FECHA'].join(' | ');
+}
+function textoFormato(rs, trato){
+  const iCon = rs.findIndex(r => r.fecha_prometida) + 1, iSin = rs.findIndex(r => !r.fecha_prometida) + 1;
+  const l = [trato === 'tu' ? 'Responde con el número de línea:' : 'Responda con el número de línea:'];
+  if (iCon){ l.push(`• ${iCon} SI → se mantiene la fecha`, `• ${iCon} NO dd/mm → nueva fecha`); }
+  if (iSin) l.push(`• ${iSin} dd/mm → fecha de entrega`);
+  l.push(`• ${iCon || iSin} ENT → ya entregado`);
+  if (rs.filter(r => r.fecha_prometida).length > 1) l.push('• TODO SI → se mantienen todas');
+  return l.join('\n');
+}
+function construirMensaje(prov, rs, plantilla, comprador){
+  const p = provCfg(prov) || {}, trato = p.trato === 'tu' ? 'tu' : 'usted';
+  const pl = (S.config.plantillas && S.config.plantillas[plantilla]) || PLANTILLAS_DEF[plantilla];
+  let t = pl[trato] || PLANTILLAS_DEF[plantilla][trato];
+  const vals = { contacto: p.contacto || '', comprador: comprador || S.comprador || provComprador(prov) || 'Compras',
+    detalle: rs.map((r, i) => lineaDetalle(r, i + 1)).join('\n'), n_lineas: String(rs.length), formato: textoFormato(rs, trato) };
+  t = t.replace(/\{(\w+)\}/g, (m, k) => (k in vals ? vals[k] : m));
+  if (!t.includes(AVISO_PLATAFORMA)) t += '\n\n' + AVISO_PLATAFORMA;
+  return t.replace(/[ \t]+,/g, ',').replace(/[ \t]+\n/g, '\n');
+}
+/** Arma la gestión del día por proveedor. */
+function gestionHoy(verTodos, mostrarSinGestion){
+  const porProv = {};
+  for (const r of Object.values(S.seg)){
+    if (!provActivo(r.proveedor)) continue;
+    const k = normH(r.proveedor);
+    const g = porProv[k] || (porProv[k] = { proveedor: provCfg(r.proveedor).proveedor, nombreExp: r.proveedor, hoy: [], motivos: {}, activas: 0 });
+    if (ACTIVOS.has(r.estado) && !excluida(r)) g.activas++;
+    const ev = evaluarLinea(r);
+    if (ev.preguntar){ g.hoy.push(r); g.motivos[r.clave] = ev.motivo; }
+  }
+  const me = norm(S.comprador);
+  const lista = [];
+  for (const g of Object.values(porProv)){
+    g.hoy.sort(ordenUrgencia);
+    g.comprador = provComprador(g.nombreExp);
+    g.pregunta = ultimaPregunta(g.nombreExp);
+    g.respuesta = g.pregunta ? ultimaRespuestaDesde(g.nombreExp, g.pregunta.fecha_hora) : null;
+    g.esperando = !!g.pregunta && !g.respuesta;
+    if (!verTodos && me && norm(g.comprador) !== me) continue;
+    if (!g.hoy.length && !g.esperando && !(mostrarSinGestion && g.activas)) continue;
+    lista.push(g);
+  }
+  lista.sort((a, b) => {
+    if (!!a.hoy.length !== !!b.hoy.length) return a.hoy.length ? -1 : 1;
+    if (a.hoy.length) return ordenUrgencia(a.hoy[0], b.hoy[0]);
+    return provAlias(a.proveedor).localeCompare(provAlias(b.proveedor));
+  });
+  return lista;
+}
+
+/* =========================================================================
+   Intérprete de respuestas
+   ========================================================================= */
+/** Fecha de respuesta d/m, dd/mm, dd-mm o dd/mm/aaaa → AAAA-MM-DD (año inferido: el más cercano a hoy). */
+function fechaRespuesta(s){
+  const m = /^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/.exec(s);
+  if (!m) return '';
+  const d = +m[1], mo = +m[2];
+  if (m[3]){ let y = +m[3]; if (y < 100) y += 2000; return fechaValida(y, mo, d) ? `${y}-${pad(mo)}-${pad(d)}` : ''; }
+  const h = hoy(); let y = +h.slice(0,4);
+  if (!fechaValida(y, mo, d) && !fechaValida(y + 1, mo, d)) return '';
+  let f = `${y}-${pad(mo)}-${pad(d)}`;
+  if (fechaValida(y, mo, d)){ const dif = diasEntre(h, f); if (dif < -180) f = `${y+1}-${pad(mo)}-${pad(d)}`; else if (dif > 185) f = `${y-1}-${pad(mo)}-${pad(d)}`; }
+  else f = `${y+1}-${pad(mo)}-${pad(d)}`;
+  return fechaValida(+f.slice(0,4), mo, d) ? f : '';
+}
+/** Quita los encabezados que agrega WhatsApp al copiar ("[4/11/26, 10:15] Nombre: " o "4/11/26 10:15 - Nombre: "). */
+function limpiarWhatsApp(t){
+  return String(t || '').split(/\r?\n/).map(l => l
+    .replace(/^\s*\[[^\]]{4,40}\]\s*[^:\n]{1,60}:\s*/, '')
+    .replace(/^\s*\d{1,2}\/\d{1,2}\/\d{2,4},?\s+\d{1,2}:\d{2}(?:\s*[ap]\.?\s*m\.?)?\s+-\s+[^:\n]{1,60}:\s*/i, '')).join('\n');
+}
+/**
+ * Interpreta la respuesta del proveedor.
+ * Formatos: "1 SI" · "1 NO 25/11" · "1 ENT" · "TODO SI" · "2 25/11". Tolerante a mayúsculas, tildes, espacios,
+ * separadores (1. 1) 1: 1-) y a varias líneas con la misma acción ("1 y 2 SI").
+ * Devuelve { acciones: {n: {accion, fecha}}, errores: {n: motivo}, todo: accion|null, ignorado: [texto], fueraDeRango: [n] }.
+ */
+function interpretarRespuesta(texto, n){
+  const t = norm(limpiarWhatsApp(texto));
+  const RX = /(\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?)(?!\d)|(\d{1,3})(?![\/\-]?\d)|([A-Z]+)|(\S)/g;
+  const tokens = []; let m;
+  while ((m = RX.exec(t))){
+    if (m[1]) tokens.push({ t:'F', v:m[1] });
+    else if (m[2]) tokens.push({ t:'N', v:+m[2] });
+    else if (m[3]){
+      const w = m[3];
+      if (w === 'SI' || w === 'OK' || w === 'CONFIRMO' || w === 'CONFIRMADO') tokens.push({ t:'A', v:'SI' });
+      else if (w === 'NO') tokens.push({ t:'A', v:'NO' });
+      else if (/^ENT/.test(w)) tokens.push({ t:'A', v:'ENT' });
+      else if (/^TOD[OA]S?$/.test(w)) tokens.push({ t:'TODO' });
+      else tokens.push({ t:'W', v:w });
+    }
+  }
+  const grupos = []; let g = null, todo = null, enTodo = false;
+  const ignorado = [];
+  for (const k of tokens){
+    if (k.t === 'N'){
+      if (!g || g.accion || g.fecha){ g = { nums:[], accion:null, fecha:null, extra:[] }; grupos.push(g); }
+      g.nums.push(k.v); enTodo = false;
+    } else if (k.t === 'TODO'){ enTodo = true; g = null; }
+    else if (k.t === 'A'){
+      if (enTodo){ todo = k.v; enTodo = false; continue; }
+      if (!g){ ignorado.push(k.v); continue; }
+      if (g.accion && g.accion !== k.v) g.extra.push(k.v); else g.accion = k.v;
+    } else if (k.t === 'F'){
+      if (!g){ ignorado.push(k.v); continue; }
+      if (g.fecha) g.extra.push(k.v); else g.fecha = k.v;
+    } else if (k.t === 'W'){
+      if (!['Y','E','LINEA','LINEAS','LA','EL','LAS','LOS','ITEM'].includes(k.v)) ignorado.push(k.v);
+    }
+  }
+  const acciones = {}, errores = {}, fueraDeRango = [];
+  for (const gr of grupos){
+    for (const num of gr.nums){
+      if (num < 1 || num > n){ fueraDeRango.push(num); continue; }
+      const f = gr.fecha ? fechaRespuesta(gr.fecha) : '';
+      delete errores[num]; delete acciones[num];
+      if (gr.fecha && !f){ errores[num] = `fecha no válida «${gr.fecha}»`; continue; }
+      if (gr.extra.length){ errores[num] = 'respuesta ambigua: ' + [gr.accion, gr.fecha, ...gr.extra].filter(Boolean).join(' '); continue; }
+      if (gr.accion === 'ENT') acciones[num] = { accion:'ENT', fecha:'' };
+      else if (gr.accion === 'SI') acciones[num] = f ? { accion:'FECHA', fecha:f } : { accion:'SI', fecha:'' };
+      else if (gr.accion === 'NO'){ if (f) acciones[num] = { accion:'NO', fecha:f }; else errores[num] = 'dice NO pero falta la nueva fecha'; }
+      else if (f) acciones[num] = { accion:'FECHA', fecha:f };
+      else errores[num] = 'no se reconoce SI / NO fecha / ENT / fecha';
+    }
+  }
+  return { acciones, errores, todo, ignorado, fueraDeRango };
+}
+/** Ajusta la acción interpretada al estado de la línea y la valida. */
+function validarAccion(r, accion, fecha){
+  if (accion === 'NINGUNA') return { accion, fecha:'', error:'' };
+  if (!r) return { accion, fecha, error:'línea no encontrada' };
+  if (CERRADOS.has(r.estado)) return { accion:'NINGUNA', fecha:'', error:'', nota:'línea ya cerrada; no se modifica' };
+  if (accion === 'ENT') return { accion, fecha:'', error:'' };
+  if (accion === 'SI'){
+    if (!r.fecha_prometida) return { accion, fecha:'', error:'SI sin fecha prometida: indique la fecha' };
+    return { accion, fecha:r.fecha_prometida, error:'' };
+  }
+  if (!fecha) return { accion, fecha:'', error:'falta la fecha' };
+  if (accion === 'FECHA' || accion === 'NO'){
+    if (!r.fecha_prometida) return { accion:'FECHA', fecha, error:'' };
+    if (fecha === r.fecha_prometida) return { accion:'SI', fecha, error:'' };
+    return { accion:'NO', fecha, error:'' };
+  }
+  return { accion, fecha, error:'acción desconocida' };
+}
+/** Construye la vista previa de una respuesta para las líneas del mensaje. */
+function previaRespuesta(texto, rs){
+  const p = interpretarRespuesta(texto, rs.length);
+  const filas = rs.map((r, i) => {
+    const n = i + 1;
+    let base;
+    if (p.errores[n]) base = { accion:'NINGUNA', fecha:'', error:p.errores[n] };
+    else if (p.acciones[n]) base = validarAccion(r, p.acciones[n].accion, p.acciones[n].fecha);
+    else if (p.todo) base = validarAccion(r, p.todo, '');
+    else base = { accion:'NINGUNA', fecha:'', error:'' };
+    return { n, clave:r.clave, ...base };
+  });
+  return { texto, filas, ignorado:p.ignorado, fueraDeRango:p.fueraDeRango };
+}
+const ACC_ETQ = { NINGUNA:'Sin cambio', SI:'SI (mantiene)', NO:'NO (nueva fecha)', FECHA:'Fecha (primera)', ENT:'ENT (entregado)' };
+function resultadoAccion(r, a){
+  if (a.accion === 'SI') return { estado:'CONFIRMADA', fecha:r.fecha_prometida };
+  if (a.accion === 'FECHA') return { estado:'CONFIRMADA', fecha:a.fecha };
+  if (a.accion === 'NO') return { estado:'CAMBIADA', fecha:a.fecha };
+  if (a.accion === 'ENT') return { estado:'ENTREGADO_POR_CONFIRMAR', fecha:r.fecha_prometida };
+  return { estado:r.estado, fecha:r.fecha_prometida };
+}
+/** Aplica una acción confirmada a la línea y registra el evento. */
+function aplicarAccion(r, a, prov, texto){
+  const ant = r.estado, fAnt = r.fecha_prometida, ts = ahora();
+  if (a.accion === 'NINGUNA') return false;
+  if (a.accion === 'SI') r.estado = 'CONFIRMADA';
+  else if (a.accion === 'FECHA'){ r.fecha_prometida = a.fecha; r.estado = 'CONFIRMADA'; }
+  else if (a.accion === 'NO'){
+    r.fecha_prometida_anterior = fAnt; r.fecha_prometida = a.fecha;
+    r.contador_cambios = (+r.contador_cambios || 0) + 1; r.estado = 'CAMBIADA';
+  } else if (a.accion === 'ENT'){ r.estado = 'ENTREGADO_POR_CONFIRMAR'; r.fecha_entregado = ts; }
+  r.ultima_respuesta = ts; tocar(r);
+  registrarEvento({ tipo:'RESPUESTA', proveedor:prov, clave:r.clave, estado_anterior:ant, estado_nuevo:r.estado,
+    fecha_anterior:fAnt, fecha_nueva:r.fecha_prometida, plantilla:a.accion, texto:String(texto || '').slice(0, 500) });
+  return true;
+}
+
+/* =========================================================================
+   Envío y exportación
+   ========================================================================= */
+function registrarPregunta(prov, rs, plantilla, msg){
+  const ts = ahora();
+  for (const r of rs){
+    if (!r.primera_pregunta) r.primera_pregunta = ts;
+    r.ultima_pregunta = ts; r.preguntado_por = S.comprador;
+    if (r.estado === 'NUEVA') r.estado = 'ESPERANDO_FECHA';
+    tocar(r);
+  }
+  registrarEvento({ tipo:'PREGUNTA', proveedor:prov, lineas: rs.map(r => r.clave).join(' ; '), plantilla, texto: msg.slice(0, 2000) });
+  delete PREVIA[normH(prov)];
+  guardarLocal();
+}
+const slug = s => norm(s).replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'SIN_NOMBRE';
+const sello = () => { const a = ahora(); return a.slice(0,10).replace(/-/g, '') + '_' + a.slice(11,13) + a.slice(14,16); };
+async function guardarLibro(wb, nombre, sub){
+  if (S.dirHandle){
+    try{
+      let d = S.dirHandle; if (sub) d = await d.getDirectoryHandle(sub, { create:true });
+      const fh = await d.getFileHandle(nombre, { create:true }); const w = await fh.createWritable();
+      await w.write(XLSX.write(wb, { bookType:'xlsx', type:'array' })); await w.close();
+      return 'carpeta';
+    }catch(e){ alert('No se pudo escribir en la carpeta (' + e.message + '). Se descargará el archivo.'); }
+  }
+  XLSX.writeFile(wb, nombre); return 'descarga';
+}
+function datosMiSeguimiento(){
+  const me = norm(S.comprador);
+  const lineas = Object.values(S.seg).filter(r => r.actualizado && (S.modificadas.has(r.clave) || norm(provComprador(r.proveedor)) === me || norm(r.actualizado_por) === me));
+  const eventos = S.eventos.filter(e => !e.comprador || norm(e.comprador) === me);
+  return { lineas, eventos };
+}
+async function exportarSeguimiento(){
+  if (!S.comprador){ alert('Elija primero su nombre de comprador (arriba a la derecha).'); return; }
+  const d = datosMiSeguimiento();
+  const nombre = `seguimiento_${slug(S.comprador)}_${sello()}.xlsx`;
+  const donde = await guardarLibro(libroSeguimiento(d.lineas, d.eventos), nombre, 'respuestas');
+  S.modificadas.clear(); if (!S.archivosSeg.includes(nombre)) S.archivosSeg.push(nombre);
+  guardarLocal(); lsSet(LS.ultExport, ahora());
+  S.avisos = [donde === 'carpeta' ? `Guardado en respuestas/${nombre} (${d.lineas.length} líneas, ${d.eventos.length} eventos).`
+    : `Descargado ${nombre}. Muévalo a la carpeta respuestas/ de OneDrive.`];
+  renderTodo();
+}
+
+/* =========================================================================
+   Vista "Gestión de hoy"
+   ========================================================================= */
+const PREVIA = {};      // normH(proveedor) -> vista previa de respuesta
+const UI = { verTodos:false, sinGestion:false, verMsg:{} };
+function vistaHoy(){
+  if (!S.explosion) return S.avisos.length ? '' : '<div class="panel vacio">Cargue la explosión para empezar.</div>';
+  const lista = gestionHoy(UI.verTodos, UI.sinGestion);
+  const nLin = lista.reduce((s, g) => s + g.hoy.length, 0);
+  const nProv = lista.filter(g => g.hoy.length).length;
+  const esperando = lista.filter(g => g.esperando).length;
+  const todas = Object.values(S.seg).filter(r => provActivo(r.proveedor));
+  const epc = todas.filter(r => r.estado === 'ENTREGADO_POR_CONFIRMAR');
+  const alm = epc.filter(revisarAlmacen);
+  let h = '';
+  if (!S.comprador) h += '<div class="aviso">Elija su nombre de comprador (arriba a la derecha) para ver sus proveedores y registrar preguntas.</div>';
+  h += `<div class="kpis">
+    <div class="kpi"><div class="v">${nProv}</div><div class="l">proveedores a contactar hoy</div></div>
+    <div class="kpi"><div class="v">${nLin}</div><div class="l">líneas a preguntar</div></div>
+    <div class="kpi"><div class="v">${esperando}</div><div class="l">mensajes esperando respuesta</div></div>
+    <div class="kpi"><div class="v">${epc.length}</div><div class="l">entregados por confirmar</div></div>
+    <div class="kpi ${alm.length ? 'rojo' : ''}"><div class="v">${alm.length}</div><div class="l">revisar con almacén</div></div>
+  </div>
+  <div class="panel fila">
+    <label class="chk"><input type="checkbox" id="chkTodos" ${UI.verTodos ? 'checked' : ''}> Ver proveedores de todos los compradores</label>
+    <label class="chk"><input type="checkbox" id="chkSinGestion" ${UI.sinGestion ? 'checked' : ''}> Mostrar también proveedores sin gestión hoy</label>
+    <span class="sp"></span>
+    <button class="b pri" id="btnExportar">Exportar mi seguimiento</button>
+  </div>`;
+  if (!lista.length) h += '<div class="panel vacio">No hay proveedores para gestionar hoy con los filtros actuales.</div>';
+  for (const g of lista) h += tarjetaProveedor(g);
+  if (alm.length) h += `<div class="panel"><h2>Revisar con almacén</h2><p class="peq mut">El proveedor reportó ENTREGADO hace más de ${R().dias_revisar_almacen} días y la línea sigue pendiente en la explosión.</p>
+    <table><tr><th>Proveedor</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Pend.</th><th>Entregado (según proveedor)</th></tr>
+    ${alm.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.linea)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td><td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtFH(r.fecha_entregado)}</td></tr>`).join('')}</table></div>`;
+  return h;
+}
+function filaLinea(r, n, extra){
+  const venc = vencida(r);
+  return `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td class="c"><b>${n}</b></td><td>${esc(r.oc)}</td><td>${esc(r.linea)}</td><td>${esc(r.item)}</td><td>${esc(recortar(r.descripcion, 60))}</td>
+    <td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td class="${venc && !r.fecha_prometida ? 'rojo' : ''}">${fmtF(r.fecha_requerida)}</td>
+    <td class="${r.fecha_prometida && r.fecha_prometida < hoy() ? 'rojo' : enRiesgo(r) ? 'rojo' : ''}">${fmtF(r.fecha_prometida) || '<span class="mut">—</span>'}</td>
+    <td>${chipEstado(r.estado)}${enRiesgo(r) ? ' <span class="chip rojo">+' + desfase(r) + ' d</span>' : ''}</td><td class="peq mut">${esc(extra || '')}</td></tr>`;
+}
+const CAB_LINEAS = '<tr><th class="c">#</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Pendiente</th><th>Requerida</th><th>Prometida</th><th>Estado</th><th></th></tr>';
+function tarjetaProveedor(g){
+  const p = provCfg(g.proveedor) || {}, k = normH(g.proveedor), cel = celularWa(p.celular);
+  let h = `<div class="panel" data-prov="${esc(k)}"><div class="fila"><h2 style="margin:0">${esc(provAlias(g.proveedor))}</h2>
+    <span class="mut peq">${esc(g.proveedor)} · ${esc(p.contacto || 'sin contacto')} · ${cel ? '+' + cel : '<span class="rojo">sin celular válido en config</span>'} · comprador: ${esc(g.comprador || '—')}</span>
+    <span class="sp"></span>${g.hoy.length ? `<span class="chip NUEVA">${g.hoy.length} para preguntar hoy</span>` : ''}${g.esperando ? ' <span class="chip ESPERANDO_FECHA">esperando respuesta</span>' : ''}</div>`;
+  if (g.hoy.length){
+    const pl = plantillaPara(g.hoy), msg = construirMensaje(g.proveedor, g.hoy, pl);
+    h += `<h3>Para preguntar hoy · plantilla «${pl}»</h3><table>${CAB_LINEAS}${g.hoy.map((r, i) => filaLinea(r, i + 1, g.motivos[r.clave])).join('')}</table>
+      <div class="fila" style="margin-top:8px"><button class="b wa" data-acc="wa" ${cel ? '' : 'disabled'}>Abrir WhatsApp</button>
+      <button class="b" data-acc="copiar">Copiar mensaje</button><button class="b" data-acc="vermsg">${UI.verMsg[k] ? 'Ocultar' : 'Ver'} mensaje</button>
+      ${msg.length > 3500 ? '<span class="rojo peq">Mensaje largo: WhatsApp puede recortarlo.</span>' : ''}</div>
+      ${UI.verMsg[k] ? `<pre class="msg">${esc(msg)}</pre>` : ''}`;
+  }
+  const mapa = g.pregunta ? lineasDeMensaje(g.pregunta) : g.hoy;
+  const pv = PREVIA[k];
+  h += `<h3>${g.pregunta ? `Respuesta al mensaje del ${fmtFH(g.pregunta.fecha_hora)} (${mapa.length} líneas)` + (g.respuesta ? ` · <span class="verde">respondido ${fmtFH(g.respuesta.fecha_hora)}</span>` : ' · <span class="rojo">sin respuesta</span>') : 'Registrar respuesta (numeración de la tabla de arriba)'}</h3>`;
+  if (g.pregunta && !g.hoy.length && !pv) h += `<table>${CAB_LINEAS}${mapa.map((r, i) => filaLinea(r, i + 1, '')).join('')}</table>`;
+  h += `<textarea data-acc="texto" placeholder="Pegue aquí la respuesta del proveedor. Ej.: 1 SI · 2 NO 25/11 · 3 ENT · TODO SI · 4 25/11">${esc(pv ? pv.texto : '')}</textarea>
+    <div class="fila" style="margin-top:6px"><button class="b" data-acc="interpretar" ${mapa.length ? '' : 'disabled'}>Interpretar</button>
+    ${pv ? '<button class="b pri" data-acc="guardar">Guardar respuesta</button><button class="b" data-acc="descartar">Descartar</button>' : ''}</div>`;
+  if (pv) h += vistaPrevia(pv, mapa);
+  return h + '</div>';
+}
+function vistaPrevia(pv, mapa){
+  const errores = pv.filas.filter(f => f.error).length;
+  let h = '';
+  if (pv.fueraDeRango.length) h += `<div class="error">Números de línea que no existen en el mensaje: ${pv.fueraDeRango.join(', ')}.</div>`;
+  if (pv.ignorado.length) h += `<div class="aviso peq">Texto no interpretado (revise si contiene información): <b>${esc(pv.ignorado.join(' '))}</b></div>`;
+  if (errores) h += `<div class="error">${errores} línea(s) en rojo: corrija la acción/fecha o elija «Sin cambio» antes de guardar.</div>`;
+  h += `<table><tr><th class="c">#</th><th>OC / línea</th><th>Ítem</th><th>Acción</th><th>Nueva fecha</th><th>Estado</th><th>Fecha prometida</th><th class="n">Desfase vs requerida</th><th>Observación</th></tr>`;
+  for (const f of pv.filas){
+    const r = mapa[f.n - 1]; if (!r) continue;
+    const res = resultadoAccion(r, f), d = desfase(r, res.fecha);
+    h += `<tr class="${f.error ? 'err' : ''}" data-n="${f.n}"><td class="c"><b>${f.n}</b></td><td>${esc(r.oc)} ${esc(r.linea)}</td><td>${esc(r.item)} <span class="peq mut">${esc(recortar(r.descripcion, 35))}</span></td>
+      <td><select data-acc="pv-acc">${Object.keys(ACC_ETQ).map(a => `<option value="${a}" ${a === f.accion ? 'selected' : ''}>${ACC_ETQ[a]}</option>`).join('')}</select></td>
+      <td><input type="date" data-acc="pv-fecha" value="${esc(f.accion === 'NO' || f.accion === 'FECHA' ? f.fecha : '')}" ${f.accion === 'NO' || f.accion === 'FECHA' ? '' : 'disabled'}></td>
+      <td>${chipEstado(r.estado)}${res.estado !== r.estado ? ' → ' + chipEstado(res.estado) : ''}</td>
+      <td>${fmtF(r.fecha_prometida) || '—'}${res.fecha !== r.fecha_prometida ? ' → <b>' + fmtF(res.fecha) + '</b>' : ''}</td>
+      <td class="n ${d > 0 ? 'rojo' : d != null ? 'verde' : ''}">${d == null ? '' : (d > 0 ? '+' : '') + d + ' d'}</td>
+      <td class="peq ${f.error ? 'rojo' : 'mut'}">${esc(f.error || f.nota || '')}</td></tr>`;
+  }
+  return h + '</table>';
+}
+function grupoPorClave(k){ return gestionHoy(true, true).find(g => normH(g.proveedor) === k); }
+function enlazarHoy(){
+  const ex = $('#btnExportar'); if (!ex) return;
+  ex.onclick = exportarSeguimiento;
+  $('#chkTodos').onchange = e => { UI.verTodos = e.target.checked; renderTodo(); };
+  $('#chkSinGestion').onchange = e => { UI.sinGestion = e.target.checked; renderTodo(); };
+  document.querySelectorAll('[data-prov]').forEach(card => {
+    const k = card.dataset.prov;
+    card.addEventListener('click', async ev => {
+      const acc = ev.target.dataset && ev.target.dataset.acc; if (!acc || ev.target.tagName !== 'BUTTON') return;
+      const g = grupoPorClave(k); if (!g) return;
+      const mapa = g.pregunta ? lineasDeMensaje(g.pregunta) : g.hoy;
+      if (acc === 'vermsg'){ UI.verMsg[k] = !UI.verMsg[k]; renderTodo(); }
+      else if (acc === 'wa' || acc === 'copiar'){
+        if (!S.comprador){ alert('Elija primero su nombre de comprador (arriba a la derecha).'); return; }
+        const pl = plantillaPara(g.hoy), msg = construirMensaje(g.proveedor, g.hoy, pl);
+        if (acc === 'wa'){
+          window.open(`https://wa.me/${celularWa((provCfg(g.proveedor) || {}).celular)}?text=${encodeURIComponent(msg)}`, '_blank');
+          registrarPregunta(g.nombreExp, g.hoy, pl, msg);
+        } else {
+          try{ await navigator.clipboard.writeText(msg); }catch(e){ prompt('Copie el mensaje:', msg); }
+          if (confirm('Mensaje copiado. ¿Registrar la pregunta como enviada ahora?')) registrarPregunta(g.nombreExp, g.hoy, pl, msg);
+        }
+        renderTodo();
+      }
+      else if (acc === 'interpretar'){
+        const t = card.querySelector('textarea[data-acc=texto]').value;
+        if (!t.trim()){ alert('Pegue primero la respuesta.'); return; }
+        PREVIA[k] = previaRespuesta(t, mapa); renderTodo();
+      }
+      else if (acc === 'descartar'){ delete PREVIA[k]; renderTodo(); }
+      else if (acc === 'guardar'){
+        const pv = PREVIA[k];
+        if (pv.filas.some(f => f.error)){ alert('Hay líneas en rojo: corríjalas o elija «Sin cambio».'); return; }
+        if (!S.comprador){ alert('Elija primero su nombre de comprador.'); return; }
+        let n = 0;
+        pv.filas.forEach(f => { const r = mapa[f.n - 1]; if (r && aplicarAccion(r, f, g.nombreExp, pv.texto)) n++; });
+        delete PREVIA[k]; guardarLocal();
+        S.avisos = [`${provAlias(g.proveedor)}: ${n} línea(s) actualizadas. Recuerde «Exportar mi seguimiento».`];
+        renderTodo();
+      }
+    });
+    card.addEventListener('change', ev => {
+      const acc = ev.target.dataset && ev.target.dataset.acc; const pv = PREVIA[k];
+      if (!pv || (acc !== 'pv-acc' && acc !== 'pv-fecha')) return;
+      const g = grupoPorClave(k); const mapa = g.pregunta ? lineasDeMensaje(g.pregunta) : g.hoy;
+      const tr = ev.target.closest('tr'), f = pv.filas.find(x => x.n === +tr.dataset.n);
+      const accion = tr.querySelector('[data-acc=pv-acc]').value, fecha = tr.querySelector('[data-acc=pv-fecha]').value;
+      const v = validarAccion(mapa[f.n - 1], accion, (accion === 'NO' || accion === 'FECHA') ? fecha : '');
+      // Al elegir NO/FECHA sin fecha todavía, se deja la acción elegida para que el usuario escriba la fecha.
+      Object.assign(f, { accion: (accion === 'NO' || accion === 'FECHA') && !fecha ? accion : v.accion, fecha: v.fecha, error: v.error, nota: v.nota || 'editado a mano' });
+      renderTodo();
+    });
+  });
+}
 /* @@TABLERO@@ */
 function vistaTablero(){ return '<div class="panel vacio">Tablero: en construcción.</div>'; }
 function enlazarTablero(){}
@@ -887,7 +1328,8 @@ async function init(){
 }
 window.App = { S, R, parseFecha, parseFechaHora, leerExplosion, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
   conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
-  revisarAlmacen, enRiesgo, renderTodo };
+  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, interpretarRespuesta,
+  previaRespuesta, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
 init();
 </script>
 </body>
