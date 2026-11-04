@@ -1,0 +1,12 @@
+{
+  "name": "seguimiento-proveedores",
+  "private": true,
+  "description": "Pruebas y datos de prueba del seguimiento de entregas (la herramienta es seguimiento.html, sin instalación).",
+  "scripts": {
+    "datos": "node pruebas/generar_datos_prueba.js",
+    "test": "node pruebas/pruebas.js"
+  },
+  "devDependencies": {
+    "xlsx": "0.18.5"
+  }
+}

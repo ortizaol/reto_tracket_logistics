@@ -35,3 +35,11 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - Vista "Cambios de fecha por línea" con historial de fechas (de los eventos).
 - Exportación del tablero a Excel (resumen, riesgo, cambios y detalle de líneas) con fechas reales de Excel.
 - **Motivo:** medir la confiabilidad de cada proveedor y priorizar dónde intervenir antes de que el faltante llegue a la línea de producción.
+
+## v0.5 — Datos de prueba, pruebas automatizadas y ajustes
+- `datos_prueba/` con datos ficticios: 3 explosiones (02/11, 09/11, 17/11) de los 3 proveedores del piloto + 1 no activo, OCI, pendiente 0, duplicados y una exclusión; `config.xlsx` de ejemplo.
+- `pruebas/pruebas.js` (86 verificaciones en Chromium): intérprete de respuestas, todas las transiciones de estado, reglas de qué preguntar por día, consolidación de archivos de varios compradores, cierres/reapertura por explosión, "revisar con almacén", mapeo manual, tablero, exportaciones de ida y vuelta y la interfaz (botón WhatsApp, vista previa en rojo, PIN).
+- SheetJS: primero el CDN oficial (0.20.3, corrige vulnerabilidades de 0.18.5), luego cdnjs 0.18.5 y por último copia local.
+- Vista previa: una fila con error ya no muestra el estado resultante (antes sugería "→ Confirmada").
+- README con uso para comprador, administración y estructura de carpetas en OneDrive.
+- **Motivo:** asegurar el comportamiento antes del piloto y dejar una forma reproducible de verificar cada mejora.

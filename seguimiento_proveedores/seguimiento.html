@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Seguimiento de entregas</title>
-<!-- Única dependencia: SheetJS. Si la red corporativa bloquea el CDN, copie xlsx.full.min.js junto a este archivo. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Única dependencia: SheetJS. Orden: CDN oficial (0.20.3) → cdnjs (0.18.5) → copia local xlsx.full.min.js junto a este archivo. -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>if (!window.XLSX) document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>');</script>
 <script>if (!window.XLSX) document.write('<script src="xlsx.full.min.js"><\/script>');</script>
 <style>
 :root{
@@ -102,7 +103,7 @@ pre.msg{white-space:pre-wrap;background:#f7f8fa;border:1px solid var(--bd2);bord
 
 <script>
 'use strict';
-const VERSION = 'v0.4';
+const VERSION = 'v0.5';
 
 /* =========================================================================
    Utilidades
@@ -1220,7 +1221,7 @@ function vistaPrevia(pv, mapa){
   h += `<table><tr><th class="c">#</th><th>OC / línea</th><th>Ítem</th><th>Acción</th><th>Nueva fecha</th><th>Estado</th><th>Fecha prometida</th><th class="n">Desfase vs requerida</th><th>Observación</th></tr>`;
   for (const f of pv.filas){
     const r = mapa[f.n - 1]; if (!r) continue;
-    const res = resultadoAccion(r, f), d = desfase(r, res.fecha);
+    const res = f.error ? { estado:r.estado, fecha:r.fecha_prometida } : resultadoAccion(r, f), d = f.error ? null : desfase(r, res.fecha);
     h += `<tr class="${f.error ? 'err' : ''}" data-n="${f.n}"><td class="c"><b>${f.n}</b></td><td>${esc(r.oc)} ${esc(r.linea)}</td><td>${esc(r.item)} <span class="peq mut">${esc(recortar(r.descripcion, 35))}</span></td>
       <td><select data-acc="pv-acc">${Object.keys(ACC_ETQ).map(a => `<option value="${a}" ${a === f.accion ? 'selected' : ''}>${ACC_ETQ[a]}</option>`).join('')}</select></td>
       <td><input type="date" data-acc="pv-fecha" value="${esc(f.accion === 'NO' || f.accion === 'FECHA' ? f.fecha : '')}" ${f.accion === 'NO' || f.accion === 'FECHA' ? '' : 'disabled'}></td>
@@ -1449,7 +1450,7 @@ function vistaAdmin(){
     <datalist id="dlProv">${nombresEx.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
     <table><tr><th>Proveedor (nombre en la explosión)</th><th>Alias</th><th>Activo</th><th>Contacto</th><th>Celular</th><th>Comprador</th><th>Trato</th><th>En explosión</th><th></th></tr>
     ${cfg.proveedores.map((p, i) => `<tr data-i="${i}">
-      <td><input type="text" data-f="proveedor" list="dlProv" value="${esc(p.proveedor)}" style="width:100%;min-width:260px"></td>
+      <td><input type="text" data-f="proveedor" list="dlProv" value="${esc(p.proveedor)}" style="width:100%;min-width:340px"></td>
       <td><input type="text" data-f="alias" value="${esc(p.alias)}" size="10"></td>
       <td><select data-f="activo"><option ${p.activo !== 'NO' ? 'selected' : ''}>SI</option><option ${p.activo === 'NO' ? 'selected' : ''}>NO</option></select></td>
       <td><input type="text" data-f="contacto" value="${esc(p.contacto)}" size="16"></td>
