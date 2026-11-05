@@ -1054,8 +1054,14 @@ function evaluarLinea(r){
   if (!contacto || contacto.slice(0,10) < hito) return { preguntar:true, motivo: d === 0 ? 'entrega prometida hoy' : `faltan ${d} día(s)` };
   return no('confirmada recientemente');
 }
+/** Urgencia: fecha requerida (planeación) más cercana primero; una fecha prometida ya vencida cuenta si es anterior. */
+function claveUrgencia(r){
+  let k = r.fecha_requerida || '9999-12-31';
+  if (r.fecha_prometida && r.fecha_prometida < hoy() && r.fecha_prometida < k) k = r.fecha_prometida;
+  return k;
+}
 function ordenUrgencia(a, b){
-  const ka = (vencida(a) ? '0' : '1') + (a.fecha_prometida || a.fecha_requerida || '9999'), kb = (vencida(b) ? '0' : '1') + (b.fecha_prometida || b.fecha_requerida || '9999');
+  const ka = claveUrgencia(a), kb = claveUrgencia(b);
   return ka < kb ? -1 : ka > kb ? 1 : (a.clave < b.clave ? -1 : 1);
 }
 function ultimaPregunta(prov){
@@ -1076,27 +1082,62 @@ function plantillaPara(rs){
   if (rs.some(r => !r.fecha_prometida)) return 'recordatorio';
   return 'repregunta';
 }
-const recortar = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
-function lineaDetalle(r, i){
-  return [`${i}) ${r.oc}${r.linea ? ' L' + r.linea : ''}`, `${r.item} ${recortar(r.descripcion, 45)}`.trim(),
-    `${fmtN(r.cantidad_pendiente)} ${r.unidad || ''}`.trim(), `Req. ${fmtC(r.fecha_requerida)}`,
-    r.fecha_prometida ? `Prometida ${fmtC(r.fecha_prometida)}` : 'SIN FECHA'].join(' | ');
+const recortar = (s, n) => { s = String(s || '').trim(); return s.length > n ? s.slice(0, n - 1).trim() + '…' : s; };
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESES_LARGO = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+/** Fecha en palabras para el proveedor: "hoy", "20 nov", "5 ene 2027" (año solo si no es el actual). */
+function fechaPalabras(iso){
+  if (!iso) return '';
+  if (iso === hoy()) return 'hoy';
+  const t = `${+iso.slice(8,10)} ${MESES[+iso.slice(5,7) - 1]}`;
+  return iso.slice(0,4) === hoy().slice(0,4) ? t : t + ' ' + iso.slice(0,4);
 }
-function textoFormato(rs, trato){
-  const iCon = rs.findIndex(r => r.fecha_prometida) + 1, iSin = rs.findIndex(r => !r.fecha_prometida) + 1;
-  const l = [trato === 'tu' ? 'Responde con el número de línea:' : 'Responda con el número de línea:'];
-  if (iCon){ l.push(`• ${iCon} SI → se mantiene la fecha`, `• ${iCon} NO dd/mm → nueva fecha`); }
-  if (iSin) l.push(`• ${iSin} dd/mm → fecha de entrega`);
-  l.push(`• ${iCon || iSin} ENT → ya entregado`);
-  if (rs.filter(r => r.fecha_prometida).length > 1) l.push('• TODO SI → se mantienen todas');
-  return l.join('\n');
+/**
+ * Selecciona el lote del siguiente mensaje: las líneas más urgentes, máximo N líneas y M OC distintas.
+ * Devuelve las líneas agrupadas por OC (en orden de urgencia) y numeradas dentro de cada OC.
+ */
+function loteMensaje(rs){
+  const rg = R(), ord = rs.slice().sort(ordenUrgencia), lote = [], ocs = [];
+  for (const r of ord){
+    if (lote.length >= rg.max_lineas_mensaje) break;
+    if (!ocs.includes(r.oc)){ if (ocs.length >= rg.max_oc_mensaje) continue; ocs.push(r.oc); }
+    lote.push(r);
+  }
+  return ocs.flatMap(oc => lote.filter(r => r.oc === oc));
+}
+/** Numeración dentro de cada OC para una lista ya agrupada: [{r, oc, n}]. */
+function numerarPorOC(rs){
+  const cont = {};
+  return rs.map(r => { cont[r.oc] = (cont[r.oc] || 0) + 1; return { r, oc:r.oc, n:cont[r.oc] }; });
+}
+function detalleMensaje(rs){
+  const out = []; let ocAct = null;
+  for (const { r, oc, n } of numerarPorOC(rs)){
+    if (oc !== ocAct){ if (ocAct) out.push(''); out.push(`OC ${numOC(oc)}`); ocAct = oc; }
+    const desc = recortar(r.descripcion, 30) + (r.item ? ` (${r.item})` : '');
+    out.push(`• Ítem ${n} · ${desc} · ${fmtN(r.cantidad_pendiente)} ${String(r.unidad || '').toLowerCase()} · Requerida ${fechaPalabras(reqEf(r))} · ` +
+      (r.fecha_prometida ? `Confirmada: ${fechaPalabras(r.fecha_prometida)}` : 'Sin confirmar'));
+  }
+  return out.join('\n');
+}
+/** Ejemplos de respuesta con números reales del mensaje, para que el proveedor responda sin plantillas rígidas. */
+function ejemplosRespuesta(rs){
+  const ocs = [...new Set(rs.map(r => r.oc))].map(numOC);
+  const f = addDias(hoy(), 7);
+  const ej = [rs.some(r => r.fecha_prometida) ? '"Todo igual"' : `"Todo llega el ${+f.slice(8,10)} de ${MESES_LARGO[+f.slice(5,7) - 1]}"`];
+  ej.push(`"La ${ocs[0]} llega el ${+f.slice(8,10)} de ${MESES_LARGO[+f.slice(5,7) - 1]}"`);
+  const conVarios = numerarPorOC(rs).find(x => x.n === 2);
+  if (conVarios) ej.push(ocs.length > 1 ? `"El ítem 2 de la ${numOC(conVarios.oc)} llega el ${+addDias(hoy(), 3).slice(8,10)}"` : `"El ítem 2 llega el ${+addDias(hoy(), 3).slice(8,10)}"`);
+  ej.push(`"La ${ocs[ocs.length - 1]} ya la entregamos"`);
+  return ej.join(' · ');
 }
 function construirMensaje(prov, rs, plantilla, comprador){
   const p = provCfg(prov) || {}, trato = p.trato === 'tu' ? 'tu' : 'usted';
   const pl = (S.config.plantillas && S.config.plantillas[plantilla]) || PLANTILLAS_DEF[plantilla];
   let t = pl[trato] || PLANTILLAS_DEF[plantilla][trato];
-  const vals = { contacto: p.contacto || '', comprador: comprador || S.comprador || provComprador(prov) || 'Compras',
-    detalle: rs.map((r, i) => lineaDetalle(r, i + 1)).join('\n'), n_lineas: String(rs.length), formato: textoFormato(rs, trato) };
+  const vals = { contacto: p.contacto || '', proveedor: (p.proveedor || prov), comprador: comprador || S.comprador || provComprador(prov) || 'Compras',
+    detalle: detalleMensaje(rs), n_lineas: String(rs.length), n_oc: String(new Set(rs.map(r => r.oc)).size), ejemplos: ejemplosRespuesta(rs),
+    formato: ejemplosRespuesta(rs) };
   t = t.replace(/\{(\w+)\}/g, (m, k) => (k in vals ? vals[k] : m));
   if (!t.includes(AVISO_PLATAFORMA)) t += '\n\n' + AVISO_PLATAFORMA;
   return t.replace(/[ \t]+,/g, ',').replace(/[ \t]+\n/g, '\n');
@@ -1116,6 +1157,8 @@ function gestionHoy(verTodos, mostrarSinGestion){
   const lista = [];
   for (const g of Object.values(porProv)){
     g.hoy.sort(ordenUrgencia);
+    g.envio = loteMensaje(g.hoy);
+    g.resto = g.hoy.length - g.envio.length;
     g.comprador = provComprador(g.nombreExp);
     g.pregunta = ultimaPregunta(g.nombreExp);
     g.respuesta = g.pregunta ? ultimaRespuestaDesde(g.nombreExp, g.pregunta.fecha_hora) : null;
@@ -1349,6 +1392,15 @@ function vistaHoy(){
     ${alm.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td><td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtFH(r.fecha_entregado)}</td></tr>`).join('')}</table></div>`;
   return h;
 }
+/** Tabla de líneas agrupadas por OC con la numeración del mensaje. */
+function tablaPorOC(rs, motivos){
+  return `<table><tr><th></th><th>OC</th><th class="c">Ítem</th><th>Descripción (código)</th><th class="n">Pendiente</th><th>Requerida</th><th>Prometida</th><th>Estado</th><th></th></tr>` +
+    numerarPorOC(rs).map(({ r, oc, n }) => `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td>${chipSem(r)}</td><td>${n === 1 ? '<b>' + esc(numOC(oc)) + '</b>' : ''}</td><td class="c"><b>${n}</b></td>
+      <td>${esc(recortar(r.descripcion, 45))} <span class="mut peq">(${esc(r.item)})</span></td><td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td>
+      <td class="${reqVencida(r) ? 'rojo' : ''}">${fechaPalabras(reqEf(r))}${reqVencida(r) ? ` <span class="peq">(plan. ${fmtC(r.fecha_requerida)})</span>` : ''}</td>
+      <td class="${enRiesgo(r) || (r.fecha_prometida && r.fecha_prometida < hoy()) ? 'rojo' : ''}">${r.fecha_prometida ? fechaPalabras(r.fecha_prometida) : '<span class="mut">Sin confirmar</span>'}</td>
+      <td>${chipEstado(estadoVisible(r))}</td><td class="peq mut">${esc((motivos && motivos[r.clave]) || '')}</td></tr>`).join('') + '</table>';
+}
 function filaLinea(r, n, extra){
   const venc = vencida(r);
   return `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td class="c"><b>${n}</b></td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(recortar(r.descripcion, 60))}</td>
@@ -1363,8 +1415,9 @@ function tarjetaProveedor(g){
     <span class="mut peq">${esc(g.proveedor)} · ${esc(p.contacto || 'sin contacto')} · ${cel ? '+' + cel : '<span class="rojo">sin celular válido en config</span>'} · comprador: ${esc(g.comprador || '—')}</span>
     <span class="sp"></span>${g.hoy.length ? `<span class="chip NUEVA">${g.hoy.length} para preguntar hoy</span>` : ''}${g.esperando ? ' <span class="chip ESPERANDO_FECHA">esperando respuesta</span>' : ''}</div>`;
   if (g.hoy.length){
-    const pl = plantillaPara(g.hoy), msg = construirMensaje(g.proveedor, g.hoy, pl);
-    h += `<h3>Para preguntar hoy · plantilla «${pl}»</h3><table>${CAB_LINEAS}${g.hoy.map((r, i) => filaLinea(r, i + 1, g.motivos[r.clave])).join('')}</table>
+    const pl = plantillaPara(g.envio), msg = construirMensaje(g.proveedor, g.envio, pl);
+    h += `<h3>Siguiente mensaje · ${g.envio.length} línea(s) en ${new Set(g.envio.map(r => r.oc)).size} OC · plantilla «${pl}»</h3>${tablaPorOC(g.envio, g.motivos)}
+      ${g.resto ? `<p class="peq mut">Quedan ${g.resto} línea(s) para el siguiente envío (tope de ${R().max_lineas_mensaje} líneas y ${R().max_oc_mensaje} OC por mensaje).</p>` : ''}
       <div class="fila" style="margin-top:8px"><button class="b wa" data-acc="wa" ${cel ? '' : 'disabled'}>Abrir WhatsApp</button>
       <button class="b" data-acc="copiar">Copiar mensaje</button><button class="b" data-acc="vermsg">${UI.verMsg[k] ? 'Ocultar' : 'Ver'} mensaje</button>
       ${msg.length > 3500 ? '<span class="rojo peq">Mensaje largo: WhatsApp puede recortarlo.</span>' : ''}</div>
@@ -1415,13 +1468,13 @@ function enlazarHoy(){
       if (acc === 'vermsg'){ UI.verMsg[k] = !UI.verMsg[k]; renderTodo(); }
       else if (acc === 'wa' || acc === 'copiar'){
         if (!S.comprador){ alert('Elija primero su nombre de comprador (arriba a la derecha).'); return; }
-        const pl = plantillaPara(g.hoy), msg = construirMensaje(g.proveedor, g.hoy, pl);
+        const pl = plantillaPara(g.envio), msg = construirMensaje(g.proveedor, g.envio, pl);
         if (acc === 'wa'){
           window.open(`https://wa.me/${celularWa((provCfg(g.proveedor) || {}).celular)}?text=${encodeURIComponent(msg)}`, '_blank');
-          registrarPregunta(g.nombreExp, g.hoy, pl, msg);
+          registrarPregunta(g.nombreExp, g.envio, pl, msg);
         } else {
           try{ await navigator.clipboard.writeText(msg); }catch(e){ prompt('Copie el mensaje:', msg); }
-          if (confirm('Mensaje copiado. ¿Registrar la pregunta como enviada ahora?')) registrarPregunta(g.nombreExp, g.hoy, pl, msg);
+          if (confirm('Mensaje copiado. ¿Registrar la pregunta como enviada ahora?')) registrarPregunta(g.nombreExp, g.envio, pl, msg);
         }
         renderTodo();
       }
@@ -1586,7 +1639,7 @@ function provsExplosion(){
 }
 function lineasEjemplo(prov){
   const g = gestionHoy(true, true).find(x => normH(x.proveedor) === normH(prov));
-  if (g && g.hoy.length) return g.hoy;
+  if (g && g.envio.length) return g.envio;
   return Object.values(S.seg).filter(r => normH(r.proveedor) === normH(prov) && ACTIVOS.has(r.estado)).sort(ordenUrgencia).slice(0, 5);
 }
 function previaPlantilla(){
@@ -1753,7 +1806,7 @@ async function init(){
 window.App = { S, R, parseFecha, parseFechaHora, procesarOC, procesarExplosion, calcularFechasRequeridas, leerMatriz, textoAMatriz, normItem, numOC, reqEf, semaforo, estadoVisible, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
   conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
   revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, interpretarRespuesta,
-  previaRespuesta, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
+  previaRespuesta, loteMensaje, numerarPorOC, detalleMensaje, fechaPalabras, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
 init();
 </script>
 </body>

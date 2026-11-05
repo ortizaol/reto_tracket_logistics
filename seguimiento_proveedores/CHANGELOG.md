@@ -56,3 +56,10 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - Explosión de 26 MB / 170.000 filas: se guarda un índice compacto en el navegador; la primera lectura tarda ~9 s y las siguientes ~0,2 s.
 - Cabecera con "OC abiertas: fecha · Explosión: fecha" y alerta si alguno tiene más de `dias_alerta_archivos` (4) días.
 - **Motivo:** el listado de OC es lo que el proveedor debe entregar; la explosión dice cuándo se necesita. Usar el amarre de planeación evita inventar prioridades.
+
+### Bloque 2 · Mensaje agrupado por OC
+- Mensaje por proveedor agrupado por OC (número corto: `OC 51420`), con líneas numeradas dentro de cada OC: `• Ítem 1 · Descripción (código Siesa) · 500 und · Requerida 18 nov · Confirmada: 20 nov | Sin confirmar`.
+- Fechas en palabras ("hoy", "20 nov"); la fecha de planeación se muestra como "Requerida". Descripción recortada a ~30 caracteres.
+- Tope por mensaje: `max_lineas_mensaje` (15) y `max_oc_mensaje` (6), las más urgentes primero; el resto queda para el siguiente envío (se indica en la tarjeta).
+- Plantillas nuevas con `{proveedor}` y `{ejemplos}`: ejemplos de respuesta en lenguaje natural armados con los números reales de OC del mensaje.
+- **Motivo:** el proveedor piensa en OC, no en líneas sueltas; un mensaje corto, ordenado por urgencia y con ejemplos reales responde más rápido y con menos ambigüedad.
