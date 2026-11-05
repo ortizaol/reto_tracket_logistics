@@ -1176,117 +1176,269 @@ function gestionHoy(verTodos, mostrarSinGestion){
 }
 
 /* =========================================================================
-   Intérprete de respuestas
+   Intérprete de respuestas en lenguaje natural (reglas, sin IA)
    ========================================================================= */
-/** Fecha de respuesta d/m, dd/mm, dd-mm o dd/mm/aaaa → AAAA-MM-DD (año inferido: el más cercano a hoy). */
+/** Fecha numérica d/m, dd-mm o dd/mm/aaaa → AAAA-MM-DD (sin año: la más cercana a hoy). */
 function fechaRespuesta(s){
   const m = /^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/.exec(s);
   if (!m) return '';
-  const d = +m[1], mo = +m[2];
-  if (m[3]){ let y = +m[3]; if (y < 100) y += 2000; return fechaValida(y, mo, d) ? `${y}-${pad(mo)}-${pad(d)}` : ''; }
-  const h = hoy(); let y = +h.slice(0,4);
-  if (!fechaValida(y, mo, d) && !fechaValida(y + 1, mo, d)) return '';
-  let f = `${y}-${pad(mo)}-${pad(d)}`;
-  if (fechaValida(y, mo, d)){ const dif = diasEntre(h, f); if (dif < -180) f = `${y+1}-${pad(mo)}-${pad(d)}`; else if (dif > 185) f = `${y-1}-${pad(mo)}-${pad(d)}`; }
-  else f = `${y+1}-${pad(mo)}-${pad(d)}`;
-  return fechaValida(+f.slice(0,4), mo, d) ? f : '';
+  return fechaDiaMes(+m[1], +m[2], m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : null);
 }
-/** Quita los encabezados que agrega WhatsApp al copiar ("[4/11/26, 10:15] Nombre: " o "4/11/26 10:15 - Nombre: "). */
-function limpiarWhatsApp(t){
-  return String(t || '').split(/\r?\n/).map(l => l
-    .replace(/^\s*\[[^\]]{4,40}\]\s*[^:\n]{1,60}:\s*/, '')
-    .replace(/^\s*\d{1,2}\/\d{1,2}\/\d{2,4},?\s+\d{1,2}:\d{2}(?:\s*[ap]\.?\s*m\.?)?\s+-\s+[^:\n]{1,60}:\s*/i, '')).join('\n');
+/** Día + mes (+ año opcional) → AAAA-MM-DD. Sin año: el año que deja la fecha más cerca de hoy. */
+function fechaDiaMes(d, mo, y){
+  if (y) return fechaValida(y, mo, d) ? `${y}-${pad(mo)}-${pad(d)}` : '';
+  const h = hoy(), y0 = +h.slice(0,4);
+  let mejor = '';
+  for (const yy of [y0 - 1, y0, y0 + 1]){
+    if (!fechaValida(yy, mo, d)) continue;
+    const f = `${yy}-${pad(mo)}-${pad(d)}`;
+    if (!mejor || Math.abs(diasEntre(h, f)) < Math.abs(diasEntre(h, mejor))) mejor = f;
+  }
+  return mejor;
+}
+/** Solo día ("el 25"): mes actual, o el siguiente si ese día ya pasó. */
+function fechaSoloDia(d){
+  const h = hoy(); let y = +h.slice(0,4), mo = +h.slice(5,7);
+  if (d < +h.slice(8,10)){ mo++; if (mo > 12){ mo = 1; y++; } }
+  return fechaValida(y, mo, d) ? `${y}-${pad(mo)}-${pad(d)}` : '';
+}
+const MES_NUM = { ENE:1, ENERO:1, FEB:2, FEBRERO:2, MAR:3, MARZO:3, ABR:4, ABRIL:4, MAY:5, MAYO:5, JUN:6, JUNIO:6, JUL:7, JULIO:7,
+  AGO:8, AGOSTO:8, SEP:9, SEPT:9, SEPTIEMBRE:9, SETIEMBRE:9, OCT:10, OCTUBRE:10, NOV:11, NOVIEMBRE:11, DIC:12, DICIEMBRE:12 };
+const RX_MES = 'ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE|ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEPT|SEP|OCT|NOV|DIC';
+const DIAS_SEM = { DOMINGO:0, LUNES:1, MARTES:2, MIERCOLES:3, JUEVES:4, VIERNES:5, SABADO:6 };
+function proximoDiaSemana(n){ const h = hoy(); const dw = new Date(isoUTC(h)).getUTCDay(); let d = (n - dw + 7) % 7; if (d === 0) d = 7; return addDias(h, d); }
+
+const RX_VAGA = /\b(PROXIMA SEMANA|LA OTRA SEMANA|SEMANA ENTRANTE|SIGUIENTE SEMANA|ESTA SEMANA|EN \d+ (DIAS|SEMANAS)|EN UNOS DIAS|APENAS|CUANDO (SALGA|ESTE|TENGAMOS|LLEGUE)|PRONTO|FIN(ALES)? DE( MES)?|PRINCIPIOS DE|MEDIADOS DE|LO ANTES POSIBLE|NO SABEMOS|NO TENEMOS FECHA|SIN FECHA|POR CONFIRMAR|POR DEFINIR|ESTAMOS REVISANDO|MAS TARDE|(LUEGO|DESPUES) (LE|TE|LES) CONFIRM\w*)\b/;
+const RX_SI_FUERTE = /\b(SIN NOVEDAD(ES)?|NO HAY NOVEDAD(ES)?|NINGUNA NOVEDAD|NO HAY CAMBIOS?|SIN CAMBIOS?|TODO IGUAL|TODO BIEN|SE MANTIENEN?)\b/;
+const RX_ENT = /\b(ENTREGAD[OA]S?|SE ENTREGO|SE ENTREGARON|YA (LA |LO |LAS |LOS |SE )?(ENTREGAMOS|ENTREGARON|LLEGO|LLEGARON|RECIBIERON)|LLEGO|LLEGARON|RECIBID[OA]S?|YA ESTA(N)? EN (PLANTA|BUSSCAR))\b/;
+const RX_ENT_PRESENTE = /\b(ENTREGAMOS|ENTREGAN)\b/;
+const RX_DESP = /\b(DESPACHAD[OA]S?|DESPACHAMOS|YA (SALIO|SALIERON|DESPACHAMOS)|EN CAMINO|EN TRANSITO|VA EN CAMINO|VAN EN CAMINO)\b/;
+const RX_SI = /\b(TODO IGUAL|TODO BIEN|TODAS? IGUAL(ES)?|IGUAL(ES)?|OK|OKAY|OKEY|SE MANTIENEN?|SE MANTIENE IGUAL|MANTENEMOS|SI|SII|CONFIRMAD[OA]S?|CONFIRMO|CONFIRMAMOS|SIN CAMBIOS?|CORRECTO|DE ACUERDO|LISTO)\b/;
+const RX_NO = /\b(NO SE MANTIENE|NO)\b/;
+const RX_TODO = /\b(TODO|TODOS|TODAS|TODA|LO DEMAS|LAS DEMAS|LOS DEMAS|EL RESTO|LO RESTANTE)\b/;
+const RX_PARCIAL = /\b(PARCIAL|PARCIALES|PARCIALMENTE|UNA PARTE|FALTA(N)? \d+)\b/;
+
+/** Extrae fechas de una cláusula (texto normalizado). Devuelve { fechas:[{f, txt}], resto, invalidas:[txt] }. */
+function extraerFechas(t){
+  const fechas = [], invalidas = [];
+  const tomar = (rx, fn) => { t = t.replace(rx, (...m) => { const f = fn(m); if (f) fechas.push({ f, txt:m[0].trim() }); else invalidas.push(m[0].trim()); return ' '; }); };
+  tomar(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/g, m => fechaDiaMes(+m[1], +m[2], m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : null));
+  tomar(new RegExp(`\\b(\\d{1,2})\\s*(?:DE\\s+)?(${RX_MES})\\b\\.?(?:\\s*(?:DE|DEL)?\\s*(\\d{4}))?`, 'g'), m => fechaDiaMes(+m[1], MES_NUM[m[2]], m[3] ? +m[3] : null));
+  tomar(new RegExp(`\\b(${RX_MES})\\s+(\\d{1,2})\\b`, 'g'), m => fechaDiaMes(+m[2], MES_NUM[m[1]], null));
+  tomar(/\bPASADO MANANA\b/g, () => addDias(hoy(), 2));
+  tomar(/\bMANANA\b/g, () => addDias(hoy(), 1));
+  tomar(/\bHOY\b/g, () => hoy());
+  tomar(/\b(?:EL\s+)?(LUNES|MARTES|MIERCOLES|JUEVES|VIERNES|SABADO)\b/g, m => proximoDiaSemana(DIAS_SEM[m[1]]));
+  // "el 25" como fecha solo si va después de un verbo de entrega o de "para/hasta/el día"
+  tomar(/\b(?:(?:LLEGA\w*|ENTREGA\w*|DESPACH\w*|SALE\w*|SALDRIA\w*|ESTARIA\w*|ESTA\w*|QUEDA\w*|PARA|HASTA|ANTES DEL?|DESDE)\s+(?:EL\s+)?(?:DIA\s+)?|EL DIA\s+)(\d{1,2})\b(?!\s*(?:UND|UNIDADES|UN\b|KG|M\b|METROS|PZ|PIEZAS))/g, m => fechaSoloDia(+m[1]));
+  return { fechas, resto:t, invalidas };
 }
 /**
- * Interpreta la respuesta del proveedor.
- * Formatos: "1 SI" · "1 NO 25/11" · "1 ENT" · "TODO SI" · "2 25/11". Tolerante a mayúsculas, tildes, espacios,
- * separadores (1. 1) 1: 1-) y a varias líneas con la misma acción ("1 y 2 SI").
- * Devuelve { acciones: {n: {accion, fecha}}, errores: {n: motivo}, todo: accion|null, ignorado: [texto], fueraDeRango: [n] }.
+ * Interpreta la respuesta de UN proveedor.
+ * ctx = { proveedor, alcance:[{r, oc, n}] (líneas de los mensajes vigentes con su numeración por OC),
+ *         lineasProv:[r] (líneas abiertas del proveedor), ocAjenas:{numOC: proveedor}, itemsAjenos:Set }
+ * Devuelve { filas:[{clave, r, accion, fecha, error, revisar, nota, origen}], bloqueos:[texto], ignorado:[texto], sinRespuesta:[r] }.
+ * Precedencia: ítem > OC > "todo"; a igual nivel gana la última mención.
  */
-function interpretarRespuesta(texto, n){
-  const t = norm(limpiarWhatsApp(texto));
-  const RX = /(\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?)(?!\d)|(\d{1,3})(?![\/\-]?\d)|([A-Z]+)|(\S)/g;
-  const tokens = []; let m;
-  while ((m = RX.exec(t))){
-    if (m[1]) tokens.push({ t:'F', v:m[1] });
-    else if (m[2]) tokens.push({ t:'N', v:+m[2] });
-    else if (m[3]){
-      const w = m[3];
-      if (w === 'SI' || w === 'OK' || w === 'CONFIRMO' || w === 'CONFIRMADO') tokens.push({ t:'A', v:'SI' });
-      else if (w === 'NO') tokens.push({ t:'A', v:'NO' });
-      else if (/^ENT/.test(w)) tokens.push({ t:'A', v:'ENT' });
-      else if (/^TOD[OA]S?$/.test(w)) tokens.push({ t:'TODO' });
-      else tokens.push({ t:'W', v:w });
+function interpretarNatural(texto, ctx){
+  const bloqueos = [], ignorado = [], errGlobal = [];
+  const alcance = ctx.alcance, lineasProv = ctx.lineasProv;
+  const ocsProv = {}; lineasProv.forEach(r => { (ocsProv[numOC(r.oc)] || (ocsProv[numOC(r.oc)] = [])).push(r); });
+  alcance.forEach(({ r }) => { (ocsProv[numOC(r.oc)] || (ocsProv[numOC(r.oc)] = [])).includes(r) || ocsProv[numOC(r.oc)].push(r); });
+  const itemsProv = {}; [...lineasProv, ...alcance.map(x => x.r)].forEach(r => { const k = normItem(r.item); (itemsProv[k] || (itemsProv[k] = new Set())).add(r); });
+  const ocsAlcance = [...new Set(alcance.map(x => numOC(x.oc)))];
+  // 1. Cláusulas: renglones y oraciones; "excepto / menos / salvo / pero" abren una cláusula nueva.
+  const crudo = String(texto || '').replace(/\r/g, '');
+  const clausulas = [];
+  for (const linea of crudo.split('\n')){
+    for (const parte of linea.split(/(?<=[.;!?])\s+|(?<=[;!?])/)){
+      const n = norm(parte).replace(/[¿¡"“”]/g, ' ');
+      if (!n.trim()) continue;
+      n.split(/\b(?=EXCEPTO\b|MENOS\b|SALVO\b|PERO\b)/).forEach(x => x.trim() && clausulas.push({ txt:parte.trim(), n:x.replace(/\b(EXCEPTO|MENOS|SALVO|PERO)\b/, ' ') }));
     }
   }
-  const grupos = []; let g = null, todo = null, enTodo = false;
-  const ignorado = [];
-  for (const k of tokens){
-    if (k.t === 'N'){
-      if (!g || g.accion || g.fecha){ g = { nums:[], accion:null, fecha:null, extra:[] }; grupos.push(g); }
-      g.nums.push(k.v); enTodo = false;
-    } else if (k.t === 'TODO'){ enTodo = true; g = null; }
-    else if (k.t === 'A'){
-      if (enTodo){ todo = k.v; enTodo = false; continue; }
-      if (!g){ ignorado.push(k.v); continue; }
-      if (g.accion && g.accion !== k.v) g.extra.push(k.v); else g.accion = k.v;
-    } else if (k.t === 'F'){
-      if (!g){ ignorado.push(k.v); continue; }
-      if (g.fecha) g.extra.push(k.v); else g.fecha = k.v;
-    } else if (k.t === 'W'){
-      if (!['Y','E','LINEA','LINEAS','LA','EL','LAS','LOS','ITEM'].includes(k.v)) ignorado.push(k.v);
+  // 2. Análisis de cada segmento. Una cláusula se parte en "," / " y " cuando cada parte trae su propia referencia
+  //    y su propia acción ("la 51420 llega el 25 y la 51425 ya la entregamos").
+  const analizar = c => {
+    let t = ' ' + c.n.replace(/(\d)[.,](\d{3})\b/g, '$1$2') + ' ';
+    t = t.replace(/\b\d{1,2}:\d{2}\s*(A\.? ?M\.?|P\.? ?M\.?)?/g, ' ');                       // horas
+    const vaga = RX_VAGA.test(t);
+    const fx = extraerFechas(t); t = fx.resto;
+    const a = { txt:c.txt, vaga, fechas:fx.fechas, invalidas:fx.invalidas, refsOC:[], refsItem:[], refsNumItem:[], todo:RX_TODO.test(t), parcial:RX_PARCIAL.test(t) };
+    // Referencias a OC explícitas
+    t = t.replace(/\b(?:OC|O C|ORDEN(?: DE COMPRA)?|ORDENES|PEDIDO)\s*[-#:.°º]*\s*(?:N[O°º]?\.?\s*)?((?:0*\d{3,8}(?:\s*(?:,|Y|E|\/)\s*)?)+)/g, (m, nums) => {
+      nums.match(/\d+/g).forEach(x => a.refsOC.push({ num:x.replace(/^0+/, ''), explicita:true })); return ' ';
+    });
+    // Ítems por posición: "ítem 2", "ítems 1 y 3", "el ítem 18"
+    t = t.replace(/\b(?:ITEMS?|ITEN|LINEAS?|POSICION(?:ES)?)\s*[#:.°º]*\s*(?:N[O°º]?\.?\s*)?((?:\d{1,8}\b(?:\s*(?:,|Y|E)\s*)?)+)/g, (m, nums) => {
+      nums.match(/\d+/g).forEach(x => { if (x.length >= 4) a.refsItem.push(normItem(x)); else a.refsNumItem.push(+x); }); return ' ';
+    });
+    // Códigos de ítem explícitos: "código 0054740", "ref 54740"
+    t = t.replace(/\b(?:CODIGO|COD|REF|REFERENCIA)\s*[#:.]*\s*(\d{4,8})\b/g, (m, x) => { a.refsItem.push(normItem(x)); return ' '; });
+    // Cantidades ("200 unidades") se ignoran
+    t = t.replace(/\b\d+\s*(UND|UNDS|UNIDADES|UNIDAD|UN|KG|KILOS|M|MTS|METROS|PZ|PZS|PIEZAS|LAMINAS|JUEGOS)\b/g, ' ');
+    // Números sueltos de 4+ dígitos: OC del proveedor, ítem del proveedor, o ajenos (candado)
+    t = t.replace(/\b0*(\d{4,8})\b/g, (m, x) => {
+      if (/^(19|20)\d\d$/.test(x) && !ocsProv[x] && !itemsProv[x]) return ' ';
+      if (ocsProv[x]) a.refsOC.push({ num:x });
+      else if (itemsProv[x]) a.refsItem.push(x);
+      else if (ctx.ocAjenas[x]) a.refsOC.push({ num:x, ajena:ctx.ocAjenas[x] });
+      else if (ctx.itemsAjenos.has(x)) a.refsItem.push(x);
+      else a.desconocidos = (a.desconocidos || []).concat(x);
+      return ' ';
+    });
+    // "el 18" sin verbo de entrega antes → ítem por posición
+    t = t.replace(/\b(?:EL|LA)\s+(\d{1,2})\b/g, (m, x) => { a.refsNumItem.push(+x); return ' '; });
+    // Acción
+    const ya = /\bYA\b/.test(t);
+    if (RX_DESP.test(t) && (!a.fechas.length || ya)) a.accion = 'DESP';
+    else if (RX_ENT.test(t) && (!a.fechas.length || ya)) a.accion = 'ENT';
+    else if (a.fechas.length) a.accion = 'FECHA';
+    else if (a.vaga) a.accion = 'VAGA';
+    else if (RX_ENT_PRESENTE.test(t) && ya) a.accion = 'ENT';
+    else if (RX_SI_FUERTE.test(t)) a.accion = 'SI';
+    else if (RX_NO.test(t) && !RX_SI.test(t)) a.accion = 'NO';
+    else if (RX_SI.test(t)) a.accion = 'SI';
+    a.tieneRefs = a.refsOC.length + a.refsItem.length + a.refsNumItem.length > 0;
+    a.resto = t.replace(/\b(BUENOS? (DIAS|TARDES|NOCHES)|BUEN DIA|HOLA|GRACIAS|MUCHAS|SALUDOS|CORDIAL|ATENTAMENTE|DON|DONA|SENOR\w*|QUE|LA|EL|LAS|LOS|DE|DEL|Y|E|A|EN|SE|LO|LE|LES|PARA|POR|CON|YA|ESTA|ESTAN|LLEGA|LLEGAN|ES|SON|NOS|LA OC)\b/g, ' ').replace(/[^A-Z0-9]+/g, ' ').trim();
+    return a;
+  };
+  const analizadas = [];
+  for (const c of clausulas){
+    const piezas = c.n.split(/\s*,\s*|\s+\bY\b\s+/).filter(x => x.trim());
+    let cur = null;
+    for (const p of piezas){
+      const ap = analizar({ txt:p, n:p });
+      if (cur && ap.tieneRefs && cur.a.tieneRefs && cur.a.accion){ analizadas.push(cur.a); cur = null; }
+      if (!cur) cur = { n:p, a:ap };
+      else { cur.n += ' Y ' + p; cur.a = analizar({ txt:cur.n, n:cur.n }); }
     }
+    if (cur) analizadas.push(cur.a);
+    // texto original para mostrar
+    analizadas.slice(-1)[0] && analizadas.filter(a => !a.txtOrig).forEach(a => a.txtOrig = c.txt);
   }
-  const acciones = {}, errores = {}, fueraDeRango = [];
-  for (const gr of grupos){
-    for (const num of gr.nums){
-      if (num < 1 || num > n){ fueraDeRango.push(num); continue; }
-      const f = gr.fecha ? fechaRespuesta(gr.fecha) : '';
-      delete errores[num]; delete acciones[num];
-      if (gr.fecha && !f){ errores[num] = `fecha no válida «${gr.fecha}»`; continue; }
-      if (gr.extra.length){ errores[num] = 'respuesta ambigua: ' + [gr.accion, gr.fecha, ...gr.extra].filter(Boolean).join(' '); continue; }
-      if (gr.accion === 'ENT') acciones[num] = { accion:'ENT', fecha:'' };
-      else if (gr.accion === 'SI') acciones[num] = f ? { accion:'FECHA', fecha:f } : { accion:'SI', fecha:'' };
-      else if (gr.accion === 'NO'){ if (f) acciones[num] = { accion:'NO', fecha:f }; else errores[num] = 'dice NO pero falta la nueva fecha'; }
-      else if (f) acciones[num] = { accion:'FECHA', fecha:f };
-      else errores[num] = 'no se reconoce SI / NO fecha / ENT / fecha';
+  // 3. Cláusula con referencias pero sin acción + siguiente con acción y sin referencias → se unen
+  for (let i = 0; i < analizadas.length - 1; i++){
+    const a = analizadas[i], b = analizadas[i + 1];
+    if (a.tieneRefs && !a.accion && b.accion && !b.tieneRefs && !b.todo){ Object.assign(a, { accion:b.accion, fechas:b.fechas, vaga:b.vaga }); b.usada = true; }
+  }
+  // 4. Resolver referencias → líneas, con nivel de precedencia
+  const asign = {};   // clave -> {nivel, orden, accion, fecha, nota, origen, error, revisar}
+  const poner = (r, nivel, orden, val) => {
+    const e = asign[r.clave];
+    if (!e || nivel > e.nivel || (nivel === e.nivel && orden >= e.orden)) asign[r.clave] = { r, nivel, orden, ...val };
+  };
+  analizadas.forEach((a, orden) => {
+    if (a.usada) return;
+    a.refsOC.filter(x => x.ajena).forEach(x => bloqueos.push(`La OC ${x.num} es de ${x.ajena}, no de este proveedor. Posible cruce de mensajes: verifique antes de continuar.`));
+    if (a.invalidas.length) a.invalidas.forEach(x => errGlobal.push(`Fecha no válida: «${x}»`));
+    if (!a.accion && !a.tieneRefs){ if (a.resto) ignorado.push(a.txt); return; }
+    let val;
+    if (a.accion === 'FECHA'){
+      if (a.fechas.length > 1 && new Set(a.fechas.map(x => x.f)).size > 1) val = { accion:'FECHA', fecha:'', error:'varias fechas en la misma frase: ' + a.fechas.map(x => x.txt).join(', ') };
+      else val = { accion:'FECHA', fecha:a.fechas[0].f, nota:'«' + a.fechas[0].txt.toLowerCase() + '»' };
+    } else if (a.accion === 'VAGA') val = { accion:'FECHA', fecha:'', revisar:true, nota:'fecha vaga: elija la fecha' };
+    else if (a.accion === 'ENT') val = { accion:'ENT', fecha:'' };
+    else if (a.accion === 'DESP') val = { accion:'ENT', fecha:'', nota:'despachada (confirmar recibo)' };
+    else if (a.accion === 'SI') val = { accion:'SI', fecha:'' };
+    else if (a.accion === 'NO') val = { accion:'FECHA', fecha:'', error:'dice que no se mantiene, pero no da nueva fecha' };
+    else val = { accion:'NINGUNA', fecha:'', error:'no se reconoce qué pasa con esta referencia' };
+    if (a.parcial) val = { ...val, revisar:true, nota:((val.nota || '') + ' · menciona entrega parcial').trim() };
+    val.origen = a.txtOrig || a.txt;
+    if (!a.tieneRefs){ alcance.forEach(({ r }) => poner(r, 0, orden, val)); return; }
+    // OC
+    const ocsClausula = [];
+    for (const x of a.refsOC){
+      if (x.ajena) continue;
+      const rs = (ocsProv[x.num] || []).filter(r => !CERRADOS.has(r.estado));
+      if (!rs.length){ errGlobal.push(`La OC ${x.num} no tiene líneas abiertas de este proveedor.`); continue; }
+      ocsClausula.push(x.num);
+      if (!a.refsNumItem.length && !a.refsItem.length){
+        const enAlcance = rs.filter(r => alcance.some(y => y.r === r));
+        (enAlcance.length ? enAlcance : rs.filter(r => !r.sinNecesidad)).forEach(r => poner(r, 1, orden, { ...val, nota:[val.nota, enAlcance.length ? '' : 'OC no estaba en el mensaje'].filter(Boolean).join(' · ') }));
+      }
     }
-  }
-  return { acciones, errores, todo, ignorado, fueraDeRango };
+    // Ítem por código
+    for (const code of a.refsItem){
+      const rs = [...(itemsProv[code] || [])].filter(r => !CERRADOS.has(r.estado) && (!ocsClausula.length || ocsClausula.includes(numOC(r.oc))));
+      if (!rs.length){ bloqueos.push(`El ítem ${code} no corresponde a líneas abiertas de este proveedor. Posible cruce de mensajes.`); continue; }
+      rs.forEach(r => poner(r, 2, orden, val));
+    }
+    // Ítem por posición en el mensaje
+    for (const n of a.refsNumItem){
+      const cands = alcance.filter(x => x.n === n && (!ocsClausula.length || ocsClausula.includes(numOC(x.oc))));
+      if (cands.length === 1) poner(cands[0].r, 2, orden, val);
+      else if (!cands.length) errGlobal.push(`«${a.txt}»: el ítem ${n} no existe en ${ocsClausula.length ? 'la OC ' + ocsClausula.join(', ') : 'el mensaje'}.`);
+      else cands.forEach(x => poner(x.r, 2, orden, { ...val, revisar:true, nota:`ambiguo: hay ítem ${n} en ${cands.map(c => numOC(c.oc)).join(' y ')}; deje solo el correcto` }));
+    }
+    if (a.desconocidos) a.desconocidos.forEach(x => errGlobal.push(`El número ${x} no es una OC ni un ítem de este proveedor.`));
+  });
+  const filas = Object.values(asign).map(e => ({ clave:e.r.clave, r:e.r, ...ajustarAccion(e.r, e) }));
+  const sinRespuesta = alcance.map(x => x.r).filter(r => !asign[r.clave]);
+  return { filas, bloqueos, errores:errGlobal, ignorado, sinRespuesta };
 }
-/** Ajusta la acción interpretada al estado de la línea y la valida. */
+/** Mensajes vigentes de un proveedor: los enviados después de su última respuesta (o el último enviado). */
+function mensajesVigentes(prov){
+  const k = normH(prov);
+  const preg = S.eventos.filter(e => e.tipo === 'PREGUNTA' && normH(e.proveedor) === k).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
+  if (!preg.length) return [];
+  const ultResp = S.eventos.filter(e => e.tipo === 'RESPUESTA' && normH(e.proveedor) === k).reduce((m, e) => maxStr(m, e.fecha_hora), '');
+  const v = preg.filter(e => e.fecha_hora > ultResp);
+  return v.length ? v : [preg[preg.length - 1]];
+}
+/** Contexto para interpretar la respuesta de un proveedor (alcance numerado + candados contra cruces). */
+function ctxProveedor(prov){
+  const k = normH(prov), porOC = {};
+  for (const ev of mensajesVigentes(prov)) for (const x of numerarPorOC(lineasDeMensaje(ev))) {
+    if (!porOC[x.oc] || porOC[x.oc].ev !== ev) porOC[x.oc] = { ev, items:[] };
+    porOC[x.oc].items.push(x);
+  }
+  const alcance = Object.values(porOC).flatMap(o => o.items);
+  const todas = Object.values(S.seg);
+  const lineasProv = todas.filter(r => normH(r.proveedor) === k && !CERRADOS.has(r.estado));
+  const itemsProv = new Set(todas.filter(r => normH(r.proveedor) === k).map(r => normItem(r.item)));
+  const ocAjenas = {}, itemsAjenos = new Set();
+  for (const r of todas){
+    if (normH(r.proveedor) === k) continue;
+    ocAjenas[numOC(r.oc)] = r.proveedor;
+    if (!itemsProv.has(normItem(r.item))) itemsAjenos.add(normItem(r.item));
+  }
+  for (const n of Object.keys(ocAjenas)) if (todas.some(r => normH(r.proveedor) === k && numOC(r.oc) === n)) delete ocAjenas[n];
+  return { proveedor:prov, alcance, lineasProv, ocAjenas, itemsAjenos };
+}
+/** Adaptador temporal para la tarjeta por proveedor (se reemplaza por el pegado general en el bloque 4). */
+function previaRespuesta(texto, mapa){
+  const prov = mapa[0] ? mapa[0].proveedor : '';
+  const res = interpretarNatural(texto, ctxProveedor(prov));
+  const filas = mapa.map((r, i) => { const f = res.filas.find(x => x.clave === r.clave);
+    return { n:i + 1, clave:r.clave, ...(f ? { accion:f.accion, fecha:f.fecha, error:f.error || (f.revisar ? 'revisar: ' + f.nota : ''), nota:f.nota, origen:f.origen } : { accion:'NINGUNA', fecha:'', error:'' }) }; });
+  return { texto, filas, ignorado:[...res.bloqueos, ...res.errores, ...res.ignorado], fueraDeRango:[] };
+}
+/** Ajusta la acción interpretada al estado de la línea (SI sin fecha, fecha igual a la prometida, línea cerrada). */
+function ajustarAccion(r, e){
+  const o = { accion:e.accion, fecha:e.fecha || '', error:e.error || '', revisar:!!e.revisar, nota:e.nota || '', origen:e.origen || '' };
+  if (o.error) return o;
+  if (CERRADOS.has(r.estado)) return { ...o, accion:'NINGUNA', nota:'línea ya cerrada; no se modifica' };
+  if (o.accion === 'SI' && !r.fecha_prometida)
+    return { ...o, accion:'FECHA', fecha:reqEf(r), revisar:true, nota:'dice que se mantiene, pero no tenía fecha confirmada: se propone la requerida' };
+  if (o.accion === 'FECHA' && o.fecha && r.fecha_prometida){
+    if (o.fecha === r.fecha_prometida) return { ...o, accion:'SI' };
+    return { ...o, accion:'NO' };
+  }
+  return o;
+}
+/** Validación de una fila editada a mano en la vista previa. */
 function validarAccion(r, accion, fecha){
   if (accion === 'NINGUNA') return { accion, fecha:'', error:'' };
   if (!r) return { accion, fecha, error:'línea no encontrada' };
   if (CERRADOS.has(r.estado)) return { accion:'NINGUNA', fecha:'', error:'', nota:'línea ya cerrada; no se modifica' };
   if (accion === 'ENT') return { accion, fecha:'', error:'' };
-  if (accion === 'SI'){
-    if (!r.fecha_prometida) return { accion, fecha:'', error:'SI sin fecha prometida: indique la fecha' };
-    return { accion, fecha:r.fecha_prometida, error:'' };
-  }
+  if (accion === 'SI') return r.fecha_prometida ? { accion, fecha:r.fecha_prometida, error:'' } : { accion, fecha:'', error:'no tiene fecha confirmada: indique la fecha' };
   if (!fecha) return { accion, fecha:'', error:'falta la fecha' };
-  if (accion === 'FECHA' || accion === 'NO'){
-    if (!r.fecha_prometida) return { accion:'FECHA', fecha, error:'' };
-    if (fecha === r.fecha_prometida) return { accion:'SI', fecha, error:'' };
-    return { accion:'NO', fecha, error:'' };
-  }
-  return { accion, fecha, error:'acción desconocida' };
+  if (!r.fecha_prometida) return { accion:'FECHA', fecha, error:'' };
+  return fecha === r.fecha_prometida ? { accion:'SI', fecha, error:'' } : { accion:'NO', fecha, error:'' };
 }
-/** Construye la vista previa de una respuesta para las líneas del mensaje. */
-function previaRespuesta(texto, rs){
-  const p = interpretarRespuesta(texto, rs.length);
-  const filas = rs.map((r, i) => {
-    const n = i + 1;
-    let base;
-    if (p.errores[n]) base = { accion:'NINGUNA', fecha:'', error:p.errores[n] };
-    else if (p.acciones[n]) base = validarAccion(r, p.acciones[n].accion, p.acciones[n].fecha);
-    else if (p.todo) base = validarAccion(r, p.todo, '');
-    else base = { accion:'NINGUNA', fecha:'', error:'' };
-    return { n, clave:r.clave, ...base };
-  });
-  return { texto, filas, ignorado:p.ignorado, fueraDeRango:p.fueraDeRango };
-}
-const ACC_ETQ = { NINGUNA:'Sin cambio', SI:'SI (mantiene)', NO:'NO (nueva fecha)', FECHA:'Fecha (primera)', ENT:'ENT (entregado)' };
+const ACC_ETQ = { NINGUNA:'Sin cambio', SI:'Se mantiene', NO:'Nueva fecha (cambio)', FECHA:'Fecha (primera)', ENT:'Entregado / despachado' };
 function resultadoAccion(r, a){
   if (a.accion === 'SI') return { estado:'CONFIRMADA', fecha:r.fecha_prometida };
   if (a.accion === 'FECHA') return { estado:'CONFIRMADA', fecha:a.fecha };
@@ -1294,19 +1446,23 @@ function resultadoAccion(r, a){
   if (a.accion === 'ENT') return { estado:'ENTREGADO_POR_CONFIRMAR', fecha:r.fecha_prometida };
   return { estado:r.estado, fecha:r.fecha_prometida };
 }
-/** Aplica una acción confirmada a la línea y registra el evento. */
-function aplicarAccion(r, a, prov, texto){
-  const ant = r.estado, fAnt = r.fecha_prometida, ts = ahora();
+const CAMPOS_DESHACER = ['estado','fecha_prometida','fecha_prometida_anterior','contador_cambios','ultima_respuesta','fecha_entregado','nota'];
+/** Aplica una acción confirmada a la línea y registra el evento (con el estado anterior, para poder deshacer). */
+function aplicarAccion(r, a, prov, texto, lote){
   if (a.accion === 'NINGUNA') return false;
+  const ant = r.estado, fAnt = r.fecha_prometida, ts = ahora();
+  const antes = {}; CAMPOS_DESHACER.forEach(c => antes[c] = r[c]);
   if (a.accion === 'SI') r.estado = 'CONFIRMADA';
   else if (a.accion === 'FECHA'){ r.fecha_prometida = a.fecha; r.estado = 'CONFIRMADA'; }
   else if (a.accion === 'NO'){
     r.fecha_prometida_anterior = fAnt; r.fecha_prometida = a.fecha;
     r.contador_cambios = (+r.contador_cambios || 0) + 1; r.estado = 'CAMBIADA';
   } else if (a.accion === 'ENT'){ r.estado = 'ENTREGADO_POR_CONFIRMAR'; r.fecha_entregado = ts; }
+  if (a.nota && /despach|parcial/.test(a.nota)) r.nota = a.nota;
   r.ultima_respuesta = ts; tocar(r);
   registrarEvento({ tipo:'RESPUESTA', proveedor:prov, clave:r.clave, estado_anterior:ant, estado_nuevo:r.estado,
-    fecha_anterior:fAnt, fecha_nueva:r.fecha_prometida, plantilla:a.accion, texto:String(texto || '').slice(0, 500) });
+    fecha_anterior:fAnt, fecha_nueva:r.fecha_prometida, plantilla:a.accion, texto:String(a.origen || texto || '').slice(0, 500),
+    lote: lote || '', antes: JSON.stringify(antes) });
   return true;
 }
 
@@ -1805,8 +1961,8 @@ async function init(){
 }
 window.App = { S, R, parseFecha, parseFechaHora, procesarOC, procesarExplosion, calcularFechasRequeridas, leerMatriz, textoAMatriz, normItem, numOC, reqEf, semaforo, estadoVisible, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
   conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
-  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, interpretarRespuesta,
-  previaRespuesta, loteMensaje, numerarPorOC, detalleMensaje, fechaPalabras, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
+  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor,
+  interpretarNatural, loteMensaje, numerarPorOC, detalleMensaje, fechaPalabras, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
 init();
 </script>
 </body>

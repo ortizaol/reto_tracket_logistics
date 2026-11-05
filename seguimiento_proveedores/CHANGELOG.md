@@ -63,3 +63,12 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - Tope por mensaje: `max_lineas_mensaje` (15) y `max_oc_mensaje` (6), las más urgentes primero; el resto queda para el siguiente envío (se indica en la tarjeta).
 - Plantillas nuevas con `{proveedor}` y `{ejemplos}`: ejemplos de respuesta en lenguaje natural armados con los números reales de OC del mensaje.
 - **Motivo:** el proveedor piensa en OC, no en líneas sueltas; un mensaje corto, ordenado por urgencia y con ejemplos reales responde más rápido y con menos ambigüedad.
+
+### Bloque 3 · Intérprete de respuestas en lenguaje natural (reglas, sin IA)
+- Referencias por OC ("OC 51420", "la 51420", con o sin ceros) y por ítem ("ítem 2", "el 18", "ítems 1 y 3", o el código Siesa). Solo OC → todos sus ítems del mensaje; ítem → solo ese ítem. Precedencia: ítem > OC > "todo"; a igual nivel gana la última mención.
+- Mantener: "todo igual", "todo bien", "ok", "se mantienen", "sí", "confirmado", "sin novedad". Entregado: "ya la entregamos", "entregada", "ya llegó"; "despachada / en camino" = entregado por confirmar con nota.
+- Fechas: 25/11, 25-11, "25 de noviembre", "25 nov", "el 25" (mes actual o siguiente), "mañana", "hoy", días de la semana. Fechas vagas ("la próxima semana", "en 15 días", "apenas salga") → amarillo, el comprador elige la fecha.
+- Frases con varias órdenes ("la 51420 llega el 25 y la 51425 ya la entregamos") y excepciones ("todo igual excepto la 51425 que llega el 28").
+- "Todo igual" en una línea que nunca tuvo fecha → amarillo con la requerida propuesta (no se asume).
+- **Candado:** una OC o un ítem que pertenece a otro proveedor bloquea la respuesta completa.
+- **Motivo:** los proveedores no van a responder con un formato rígido; reglas explícitas (sin IA) dan resultados predecibles y explicables, y lo que no es seguro queda en amarillo o rojo para el comprador.
