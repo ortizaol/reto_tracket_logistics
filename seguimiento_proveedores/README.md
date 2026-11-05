@@ -1,93 +1,101 @@
 # Seguimiento de entregas · Proveedores nacionales (Busscar de Colombia)
 
 Herramienta web de **un solo archivo** (`seguimiento.html`): sin servidor ni instalación. Su única dependencia es SheetJS,
-que se carga por CDN. Sirve para preguntar y registrar por WhatsApp las fechas de entrega de las OC nacionales.
+que se carga por CDN. Sirve para preguntar por WhatsApp las fechas de entrega de las OC nacionales y registrar las respuestas.
 
-> La **fuente de verdad de las fechas prometidas** son los archivos de seguimiento (`respuestas/`), no la explosión.
-> La explosión de Siesa solo agrega líneas nuevas y cierra las recibidas, porque las entradas a almacén no se registran a diario.
+- **Base del seguimiento:** el listado de **OC abiertas** de Siesa (lo que el proveedor debe entregar).
+- **Fecha requerida:** la **Fecha Planeación** de la explosión de abastecimiento (cuándo se necesita en planta), sin colchón.
+- **Fuente de verdad de las fechas prometidas:** los archivos de seguimiento en `respuestas/`.
+
+Paso a paso para compradores (para principiantes): [INSTRUCTIVO.md](INSTRUCTIVO.md). Historial: [CHANGELOG.md](CHANGELOG.md).
 
 ## Estructura de carpetas en OneDrive
 
 ```
-Seguimiento_Proveedores/            ← carpeta compartida (sincronizada con OneDrive)
-├── seguimiento.html                ← la herramienta (abrir con Edge o Chrome)
-├── config.xlsx                     ← solo lo edita el administrador (permiso de solo lectura para compradores)
-├── explosiones/                    ← ABASTECIMIENTO_ddmmaaaa.xlsx (también se aceptan en la raíz)
-└── respuestas/                     ← seguimiento_<comprador>_<aaaammdd_hhmm>.xlsx (uno por comprador y por día)
+Seguimiento_Proveedores/          ← carpeta compartida (sincronizada con OneDrive)
+├── seguimiento.html              ← la herramienta (abrir con Edge o Chrome)
+├── config.xlsx                   ← solo lo edita el administrador (compradores: solo lectura)
+├── oc_abiertas/                  ← OC_ddmmaaaa.txt   (listado de OC abiertas exportado de Siesa)
+├── explosiones/                  ← ABASTECIMIENTO_ddmmaaaa.xlsx (también .csv o .zip con el .csv)
+├── respuestas/                   ← seguimiento_<comprador>_<aaaammdd>.xlsx (se guardan solos)
+└── depuracion/                   ← depuracion_<proveedor>_<aaaammdd>.xlsx (Excel para conciliar por llamada)
 ```
 
-Opcional: si la red bloquea los CDN, copie `xlsx.full.min.js` (SheetJS) junto a `seguimiento.html`.
+La herramienta toma siempre el archivo **más reciente por la fecha del nombre**. Si el listado de OC o la explosión tienen
+más de 4 días, muestra una alerta roja. Si la red bloquea los CDN, copie `xlsx.full.min.js` (SheetJS) junto al HTML.
 
-## Cómo lo usa el comprador
+## Cómo se calcula la fecha requerida
 
-1. Abra `seguimiento.html` en **Edge o Chrome**, con WhatsApp Web abierto en el número corporativo de WhatsApp Business.
-2. La primera vez: **Conectar carpeta** y elija `Seguimiento_Proveedores`. El navegador recuerda la carpeta; en adelante basta
-   con **Reconectar** (un clic). La herramienta carga sola la explosión más reciente (por la fecha del nombre), `config.xlsx`
-   y consolida todos los archivos de `respuestas/` (por línea gana el registro más reciente).
-   *Sin Edge/Chrome:* use **Cargar archivos…** y seleccione la explosión, `config.xlsx` y los archivos de `respuestas/`.
-3. Elija su nombre en **Comprador**.
-4. **Gestión de hoy**: una tarjeta por proveedor con las líneas a preguntar, numeradas y ordenadas por urgencia.
-   - **Abrir WhatsApp** abre el chat con el mensaje listo y registra la pregunta (fecha/hora y comprador).
-   - Cuando el proveedor responda, copie su respuesta, péguela en **Pegar respuesta** y pulse **Interpretar**.
-     Revise la vista previa (estado y fecha anterior → nueva, desfase contra la fecha requerida). Lo que esté en rojo se
-     corrige con la lista y la fecha, o se marca «Sin cambio». Luego **Guardar respuesta**.
-5. Al terminar: **Exportar mi seguimiento** (lo guarda en `respuestas/`; si no hay carpeta conectada, se descarga y hay
-   que moverlo a `respuestas/`). La barra superior avisa si quedan cambios sin exportar.
+1. Del listado de OC abiertas entran las líneas con prefijo `OC-` (parámetro `prefijos_oc`; `OCI-` nunca) y cantidad pendiente > 0.
+   Clave interna: **OC | ítem | Nro solicitud** (Siesa no trae número de línea).
+2. La explosión trae `TD_FECHAS.Nro orden`: **cada necesidad viene amarrada a una OC**. La fecha requerida de una línea es la
+   Fecha Planeación de la primera necesidad pendiente (`Cant Penditiente - Inventario` > 0) que cubre esa OC + ítem.
+   Si varias líneas comparten OC + ítem (distinta solicitud), se reparten en orden FIFO por fecha de entrega.
+3. Si la explosión no trae la columna de OC, se usa FIFO por ítem: necesidades por fecha de planeación contra OC por fecha de OC.
+4. Si la planeación ya pasó, la requerida es **hoy**. Línea sin necesidad → **Sin necesidad en planeación** (no se pregunta;
+   candidata a aplazar o cancelar, visible en el tablero).
+5. Semáforo: 🟢 prometida ≤ requerida · 🔴 prometida > requerida, o requerida vencida sin fecha (llamar) · ⚪ aún sin fecha.
 
-Formatos de respuesta que entiende (mayúsculas, tildes y espacios dan igual):
+La explosión real (~26 MB, 170.000 filas) tarda unos 10 s la primera vez; después se usa un índice guardado en el navegador (0,2 s).
 
-| Respuesta | Significa |
+## Cómo trabaja el comprador (resumen)
+
+1. Abrir `seguimiento.html` en Edge/Chrome → **Conectar carpeta** (la primera vez) o **Reconectar** → elegir su nombre en **Comprador**.
+2. **Depuración inicial** (una vez por proveedor, antes del primer WhatsApp): descargar el Excel, conciliar por llamada
+   (ENTREGADO / NUEVA FECHA / CANCELAR) y cargarlo.
+3. **Abrir WhatsApp** en cada tarjeta: el mensaje va agrupado por OC, con máximo 15 líneas y 6 OC (las más urgentes).
+   Si quedan líneas, la tarjeta ofrece el siguiente envío.
+4. Cuando el proveedor responda: en WhatsApp Web **seleccionar los mensajes** (flecha ⌄ → «Seleccionar mensajes») → Ctrl+C →
+   pegar en **Pegar respuestas de WhatsApp** → **Analizar respuestas** → revisar → **Confirmar respuesta de <PROVEEDOR>**.
+5. Todo se guarda solo en `respuestas/`. Si se equivocó: **Deshacer última respuesta** en la tarjeta del proveedor.
+
+### Lo que entiende el intérprete (reglas, sin IA)
+
+| El proveedor escribe | Resultado |
 |---|---|
-| `1 SI` | la línea 1 mantiene su fecha |
-| `1 NO 25/11` | la línea 1 cambia al 25/11 (cuenta como cambio de fecha) |
-| `1 ENT` | la línea 1 ya se entregó (queda «entregado por confirmar» hasta que la explosión la muestre en 0) |
-| `TODO SI` | se mantienen todas las líneas con fecha |
-| `2 25/11` | fecha para una línea que no tenía fecha |
+| «Todo igual», «ok», «se mantienen», «sí», «confirmado», «sin novedad» | Se mantienen las fechas (si una línea no tenía fecha → amarillo, se propone la requerida) |
+| «La 51420 llega el 25 de noviembre» | Todas las líneas de la OC 51420 del mensaje → 25/11 |
+| «El ítem 2 de la 51420 llega el 21» · «el ítem 18 llega el 21» | Solo ese ítem |
+| «La 51425 ya la entregamos» · «entregada» · «ya llegó» | Entregado por confirmar (se cierra cuando Siesa ya no la muestre abierta) |
+| «Despachada» · «en camino» | Entregado por confirmar, con nota |
+| 25/11 · 25-11 · «25 nov» · «el 25» · «mañana» · «hoy» · «el viernes» | Fecha (sin año: la más cercana) |
+| «La próxima semana» · «en 15 días» · «apenas salga» | **Amarillo**: el comprador elige la fecha |
+| «Todo igual excepto la 51425 que llega el 28» | Excepciones y varias órdenes en una frase |
 
-También acepta `d/m`, `dd-mm`, `dd/mm/aaaa`, `1 y 2 SI`, `1.` / `1)` y los encabezados que agrega WhatsApp al copiar.
-
-### Qué se pregunta cada día
-- Líneas con fecha requerida ≤ hoy + horizonte (4 semanas por defecto) y todas las vencidas.
-- Sin fecha prometida: si nunca se preguntó, o recordatorio después de 24 h sin fecha.
-- Con fecha prometida: en los hitos configurados (7, 2 y 0 días antes) si no hubo contacto desde el hito; vencidas cada 2 días.
-- Nunca dos veces el mismo día. Un solo mensaje por proveedor.
-
-### Estados de una línea (clave OC + línea)
-`NUEVA → ESPERANDO_FECHA → CONFIRMADA → (SI) CONFIRMADA | (NO + fecha) CAMBIADA | (ENT) ENTREGADO_POR_CONFIRMAR → CERRADA`.
-Si desaparece de la explosión sin ENT: `CERRADA_POR_EXPLOSION`. Si un «entregado» sigue pendiente más de 7 días: alerta
-**Revisar con almacén**. Si una línea cerrada vuelve a aparecer pendiente, se reabre.
+### Candados contra cruces de proveedor
+- Un solo cuadro de pegado: el proveedor **no se elige**, se identifica por el **remitente** del mensaje copiado
+  (celular, prioridad 1; `nombre_whatsapp` de config.xlsx, prioridad 2). Varios proveedores en un pegado → un panel por cada uno.
+- Se ignoran los mensajes propios de Busscar (`nombre_cuenta_busscar`) y los anteriores a la última pregunta.
+- **Bloquea:** pegado sin encabezado de WhatsApp, remitente desconocido, OC o ítem que pertenece a otro proveedor,
+  Excel de depuración de otro proveedor.
+- Confirmación con el nombre del proveedor en grande; deshabilitada mientras haya filas en rojo o amarillo.
 
 ## Cómo se administra
 
-Pestaña **Administrador** (PIN inicial `1234`; es solo un freno visual: la seguridad real es que únicamente el
-administrador tenga permiso de escritura sobre `config.xlsx` en OneDrive).
+Pestaña **Administrador** (PIN inicial `1234`; es un freno visual: la seguridad real es que solo el administrador pueda
+escribir `config.xlsx` en OneDrive).
 
-- **Proveedores**: nombre exacto como sale en la explosión, alias, activo SI/NO, contacto, celular (10 dígitos), comprador, trato usted/tú.
-  La herramienta indica si el nombre aparece en la explosión y lista los proveedores nacionales aún no configurados.
-- **Reglas**: horizonte (3–6 semanas), días de repregunta, frecuencia de vencidas, horas para recordatorio, días para
-  «revisar con almacén», tratamiento de duplicados (MAX/SUMA) y PIN.
-- **Plantillas** (`primera_solicitud`, `repregunta`, `recordatorio`, `vencida`; versión usted y tú) con vista previa con datos reales.
-  Campos: `{contacto}` `{comprador}` `{detalle}` `{n_lineas}` `{formato}`. El aviso «Este seguimiento no reemplaza la
-  facturación en la plataforma de proveedores.» se agrega siempre si la plantilla no lo trae.
-- **Exclusiones**: OC, ítems u OC|línea que no se deben preguntar.
-- **Exportar config.xlsx** sobrescribe el archivo de la carpeta (o lo descarga). Mientras no se exporte, los cambios
-  solo existen en ese navegador.
-
-Si la explosión cambia de columnas, la herramienta muestra un **mapeo manual** y lo recuerda en ese navegador.
+- **Proveedores:** nombre exacto como en el listado de Siesa, alias, activo, contacto, **celular**, **nombre_whatsapp**
+  (como aparece el contacto en WhatsApp Web, ej. `PRAMEC - Carlos`; varios separados por `;`), comprador y trato usted/tú.
+- **Reglas:** `prefijos_oc`, horizonte (3–6 semanas), días de repregunta (7,2,0), frecuencia de vencidas, horas para recordatorio,
+  días para «revisar con almacén», `max_lineas_mensaje` (15), `max_oc_mensaje` (6), `dias_alerta_archivos` (4),
+  `nombre_cuenta_busscar`, `formato_fecha_whatsapp` (d/m) y PIN.
+- **Plantillas** (primera solicitud, repregunta, recordatorio, vencida; usted y tú). Campos: `{contacto}` `{proveedor}`
+  `{detalle}` `{ejemplos}` `{n_lineas}` `{n_oc}` `{comprador}`. El aviso de la plataforma de proveedores se agrega siempre.
+- **Exclusiones** (OC, ítem o línea) y **fecha simulada** para pruebas (franja roja; apaga el guardado automático).
+- **Exportar config.xlsx** para publicar los cambios.
 
 ## Supuestos a validar en el piloto
-- La OC trae el prefijo en el mismo campo (`OC-12345`, `OCI-…`). Si en Siesa el tipo de documento y el número vienen separados, hay que ajustar.
-- Si no hay columna de línea, la clave es OC + ítem.
-- Si la explosión repite OC + línea (p. ej., por varios requerimientos), se toma el **mayor** pendiente y la fecha requerida más temprana (regla `duplicados_pendiente`, cambiable a SUMA).
-- El cierre automático usa la fecha del nombre de la explosión; una explosión más antigua que el seguimiento no cierra líneas.
+- El encabezado copiado de WhatsApp Web tiene la forma `[10:15 a. m., 5/11/2026] Nombre: texto`. **No se ha visto aún un
+  pegado real**; si el formato difiere (p. ej. orden de fecha), se ajusta con `formato_fecha_whatsapp` o en código.
+- Al copiar, los mensajes propios aparecen con el nombre configurado en `nombre_cuenta_busscar` (por defecto «Compras Busscar»).
+- Las necesidades con `TD_FECHAS.Nro orden` de prefijo OC/OM/OCA/OCM cuentan para el amarre; las de OCI no.
+- Una respuesta deshecha no cuenta como respondida en el tablero.
 
 ## Pruebas (para quien mantenga la herramienta)
 ```
 npm install     # instala SheetJS solo para las pruebas
-npm run datos   # regenera datos_prueba/ (3 proveedores del piloto + 1 inactivo, datos ficticios)
-npm test        # 86 verificaciones: intérprete, todos los estados, consolidación, cierres, tablero, interfaz
+npm run datos   # regenera datos_prueba/ (datos ficticios con el formato real de Siesa)
+npm test        # 60 verificaciones: fuentes, FIFO/amarre, mensaje, intérprete, candados, deshacer, depuración, guardado, interfaz
+REAL_OC=… REAL_EXPL=… node pruebas/pruebas_reales.js   # mismos controles con los archivos reales (no se suben al repositorio)
 ```
-`datos_prueba/` sirve también para probar a mano: **Cargar archivos…** o **Conectar carpeta** sobre esa carpeta.
-Para simular otra fecha: `seguimiento.html?hoy=2026-11-10`.
-
-Historial de versiones: [CHANGELOG.md](CHANGELOG.md).

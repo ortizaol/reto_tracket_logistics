@@ -1937,7 +1937,7 @@ function metricasProveedores(){
     if (!TAB.inactivos && !provActivo(nombre)) continue;
     const lin = Object.values(S.seg).filter(r => normH(r.proveedor) === k);
     const preg = S.eventos.filter(e => e.tipo === 'PREGUNTA' && normH(e.proveedor) === k).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
-    const resp = S.eventos.filter(e => e.tipo === 'RESPUESTA' && normH(e.proveedor) === k).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
+    const resp = respuestasProv(nombre).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);   // sin respuestas deshechas
     let respondidas = 0, sumDias = 0;
     preg.forEach((q, i) => {
       const hasta = preg[i + 1] ? preg[i + 1].fecha_hora : '9999';
@@ -2230,7 +2230,7 @@ async function init(){
 }
 window.App = { S, R, parseFecha, parseFechaHora, procesarOC, procesarExplosion, calcularFechasRequeridas, leerMatriz, textoAMatriz, normItem, numOC, reqEf, semaforo, estadoVisible, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
   conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
-  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor, separarWhatsApp, identificarRemitente, analizarPegado, confirmarPanel, deshacerUltima, ultimoLote, mensajesVigentes, guardadoAutomatico, libroDepuracion, analizarDepuracion, depuracionPendiente, lineasDepuracion, aplicarFechaSimulada, fechaSimulada, archivoDelDia,
+  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor, separarWhatsApp, identificarRemitente, analizarPegado, confirmarPanel, deshacerUltima, ultimoLote, mensajesVigentes, guardadoAutomatico, marcarDepuracion, libroDepuracion, analizarDepuracion, depuracionPendiente, lineasDepuracion, aplicarFechaSimulada, fechaSimulada, archivoDelDia,
   interpretarNatural, loteMensaje, numerarPorOC, detalleMensaje, fechaPalabras, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
 init();
 </script>

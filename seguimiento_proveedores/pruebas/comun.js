@@ -9,7 +9,7 @@ const RAIZ = path.resolve(__dirname, '..');
 const HTML = path.join(RAIZ, 'seguimiento.html');
 const XLSX_JS = require.resolve('xlsx/dist/xlsx.full.min.js', { paths: [RAIZ] });
 
-async function abrirPagina({ hoy = '2026-11-04', ancho = 1366, alto = 900 } = {}){
+async function abrirPagina({ hoy = '2026-11-05', ancho = 1366, alto = 900 } = {}){
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: ancho, height: alto }, deviceScaleFactor: 1 });
   const errores = [];
@@ -17,67 +17,100 @@ async function abrirPagina({ hoy = '2026-11-04', ancho = 1366, alto = 900 } = {}
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errores.push(m.text()); });
   const lib = fs.readFileSync(XLSX_JS);
   await page.route(/(cdn\.sheetjs\.com|cdnjs\.cloudflare\.com)\/.*xlsx\.full\.min\.js/, r => r.fulfill({ body: lib, contentType: 'application/javascript' }));
-  await page.goto('file://' + HTML + '?hoy=' + hoy);
+  await page.goto('file://' + HTML + (hoy ? '?hoy=' + hoy : ''));
   await page.waitForFunction(() => window.App && window.XLSX);
   return { browser, page, errores };
 }
 
-/* ---- Datos ficticios de prueba (3 proveedores del piloto + 1 no activo) ---- */
-// Columnas tal como podrían venir de Siesa (con el nombre literal "Cant Penditiente - Inventario").
-const ENCABEZADOS = ['Bodega','Proveedor','Comprador','OC','Línea','Ítem','Descripción','U.M.','Cant OC','Cant Penditiente - Inventario','Fecha Entrega','Observación'];
-const PRAMEC = 'PRAMEC SAS', INTRALUM = 'INDUSTRIA TRANSFORMADORA DE ALUMINIO S A S', VISEG = 'VIDRIOS DE SEGURIDAD S.A';
-const LAURA = 'Laura Gómez (prueba)', ANDRES = 'Andrés Ruiz (prueba)';
-// [proveedor, comprador, oc, linea, item, descripcion, um, cantOC, pendiente, fechaReq]
-const BASE = {
-  P1: [PRAMEC, LAURA, 'OC-1001', 1, 'PRM-100', 'SOPORTE ASIENTO PASAJERO', 'UN', 40, 40, '2026-10-28'],
-  P2: [PRAMEC, LAURA, 'OC-1001', 2, 'PRM-101', 'BISAGRA PUERTA SERVICIO', 'UN', 120, 120, '2026-11-06'],
-  P3: [PRAMEC, LAURA, 'OC-1002', 1, 'PRM-200', 'PLATINA 3/16 X 2"', 'KG', 15, 15, '2026-11-20'],
-  P4: [PRAMEC, LAURA, 'OC-1003', 1, 'PRM-300', 'TAPA REGISTRO MOTOR', 'UN', 10, 10, '2026-12-20'],
-  P5: [PRAMEC, LAURA, 'OC-1004', 1, 'PRM-400', 'GUARDAPOLVO (ya recibido)', 'UN', 8, 0, '2026-11-05'],
-  PI: [PRAMEC, LAURA, 'OCI-9001', 1, 'IMP-001', 'PIEZA IMPORTADA', 'UN', 5, 5, '2026-11-10'],
-  I1: [INTRALUM, LAURA, 'OC-2001', 1, 'INT-500', 'PERFIL VENTANA 6 M', 'UN', 300, 300, '2026-11-10'],
-  I2: [INTRALUM, LAURA, 'OC-2001', 2, 'INT-501', 'PERFIL MARCO VENTANA', 'UN', 150, 150, '2026-11-12'],
-  I3a:[INTRALUM, LAURA, 'OC-2002', 1, 'INT-600', 'MOLDURA INTERIOR', 'M', 80, 80, '2026-11-15'],
-  I3b:[INTRALUM, LAURA, 'OC-2002', 1, 'INT-600', 'MOLDURA INTERIOR', 'M', 80, 50, '2026-11-18'],
-  V1: [VISEG, ANDRES, 'OC-3001', 1, 'VIS-10', 'VIDRIO PARABRISAS', 'UN', 4, 4, '2026-11-06'],
-  V2: [VISEG, ANDRES, 'OC-3002', 1, 'VIS-20', 'VIDRIO LATERAL TEMPLADO', 'UN', 12, 12, '2026-11-25'],
-  V3: [VISEG, ANDRES, 'OC-3003', 1, 'VIS-30', 'VIDRIO CLARABOYA (excluida)', 'UN', 2, 2, '2026-11-09'],
-  V4: [VISEG, ANDRES, 'OC-3004', 1, 'VIS-40', 'ESPEJO RETROVISOR', 'UN', 6, 6, '2026-11-20'],
-  M1: ['METALES FICTICIOS SAS', ANDRES, 'OC-4001', 1, 'MET-1', 'LAMINA CR CAL 18', 'KG', 500, 500, '2026-11-08'],
+/* =========================================================================
+   Datos ficticios de prueba (3 proveedores del piloto + 1 no activo)
+   ========================================================================= */
+const PRAMEC = 'PRAMEC SAS', INTRALUM = 'INDUSTRIA TRANSFORMADORA DE ALUMINIO S A S', VISEG = 'VIDRIOS DE SEGURIDAD S.A', METALES = 'METALES FICTICIOS SAS';
+const COMP_A = 'COMPRADORA A (PRUEBA)', COMP_B = 'COMPRADORA B (PRUEBA)';
+
+// Listado de OC abiertas, con las columnas reales de Siesa.
+const ENC_OC = ['Fecha orden','Nro orden','Razón social proveedor','Bodega','Item','Desc. item','U.M.','Cant. ordenada','Cant. entrada','Cant. pendiente','Precio unit.','Estado','Fecha entrega','comprador','Nro solicitud','Notas movto.','Fecha actualización','Usuario actualización','Usuario anulación','Fecha cumplido','Usuario cumplido','Notas documento',''];
+// [fechaOC, OC, proveedor, item, descripción, UM, pendiente, fechaEntrega, comprador, solicitud]
+const OC_BASE = {
+  // Pramec: ítem 0010001 en dos OC (FIFO con 3 necesidades); 0010003 sin necesidad
+  P1: ['01/10/2026','OC-00051420',PRAMEC,'0010001','TORNILLO HEF 8X50 ZINCADO','Und','100,00','10/11/2026',COMP_A,'001-SC-00016001'],
+  P2: ['01/10/2026','OC-00051420',PRAMEC,'0010002','TUERCA M8 AUTOFRENANTE','Und','200,00','10/11/2026',COMP_A,'001-SC-00016001'],
+  P3: ['10/10/2026','OC-00051421',PRAMEC,'0010001','TORNILLO HEF 8X50 ZINCADO','Und','100,00','20/11/2026',COMP_A,'001-SC-00016050'],
+  P4: ['15/10/2026','OC-00051422',PRAMEC,'0010003','SOPORTE ASIENTO PASAJERO','Und','40,00','25/11/2026',COMP_A,'001-SC-00016070'],
+  // Intralum: necesidad vencida; misma OC+ítem con dos solicitudes
+  I1: ['20/09/2026','OC-00052001',INTRALUM,'0020001','PERFIL VENTANA 6 M','m','300,00','25/10/2026',COMP_A,'001-SC-00015900'],
+  I2: ['02/10/2026','OC-00052002',INTRALUM,'0020002','PERFIL MARCO VENTANA','m','150,00','12/11/2026',COMP_A,'001-SC-00016010'],
+  I3: ['02/10/2026','OC-00052002',INTRALUM,'0020002','PERFIL MARCO VENTANA','m','50,00','19/11/2026',COMP_A,'001-SC-00016020'],
+  // Viseg: una OC con varios ítems
+  V1: ['05/10/2026','OC-00053001',VISEG,'0030001','VIDRIO PARABRISAS LAMINADO','Und','4,00','15/11/2026',COMP_B,'001-SC-00016100'],
+  V2: ['05/10/2026','OC-00053001',VISEG,'0030002','VIDRIO LATERAL TEMPLADO','Und','12,00','15/11/2026',COMP_B,'001-SC-00016100'],
+  V3: ['05/10/2026','OC-00053001',VISEG,'0030003','VIDRIO CLARABOYA','Und','2,00','15/11/2026',COMP_B,'001-SC-00016100'],
+  V4: ['12/10/2026','OC-00053002',VISEG,'0030004','ESPEJO RETROVISOR','Und','6,00','28/11/2026',COMP_B,'001-SC-00016150'],
+  // Proveedor no activo (sirve para el candado de OC ajena)
+  M1: ['01/10/2026','OC-00054001',METALES,'0040001','LAMINA CR CAL 18','Kg','500,00','18/11/2026',COMP_B,'001-SC-00016200'],
+  // Excluidas por prefijo
+  X1: ['01/10/2026','OCI-00010520',PRAMEC,'0010009','PIEZA IMPORTADA','Und','5,00','10/12/2026',COMP_A,'001-OCI-10126'],
+  X2: ['01/10/2026','OM-00001024',VISEG,'0030009','SERVICIO MAQUILA','Und','5,00','10/12/2026',COMP_B,'001-OMI-997'],
 };
-const EXPLOSIONES = {
-  'ABASTECIMIENTO_02112026.xlsx': ['P1','P2','P3','P4','P5','PI','I1','I2','I3a','I3b','V1','V2','V3','M1'],
-  'ABASTECIMIENTO_09112026.xlsx': ['P2','P3','P4','I1','I3a','V1','V2','V3','V4','M1'],          // P1 recibido, I2 desaparece
-  'ABASTECIMIENTO_17112026.xlsx': ['P2','P3','P4','I1','I2','I3a','V2','V3','V4','M1'],          // I2 reaparece, V1 recibido
+const LISTADOS = {
+  'OC_04112026.txt': ['P1','P2','P3','P4','I1','I2','I3','V1','V2','V3','V4','M1','X1','X2'],
+  'OC_09112026.txt': ['P2','P3','P4','I1','I2','I3','V1','V2','V4','M1','X1','X2'],   // P1 recibido; V3 desaparece
 };
+function textoListadoOC(claves){
+  const filas = [ENC_OC.join('\t'), ['Gran total','','','','','','','1.234,00','0,00','1.234,00','','','','','','','','','','','','',''].join('\t')];
+  for (const k of claves){
+    const b = OC_BASE[k];
+    filas.push([b[0], b[1], b[2], '001  ', b[3], b[4], b[5], b[6], '0,00', b[6], '1.000', 'Aprobado', b[7], b[8], b[9], 'CRONOGRAMA_PRUEBA', '01/10/2026 2:16 p. m.', 'usuario', '', '', '', '', ''].join('\t'));
+  }
+  return Buffer.from(filas.join('\r\n') + '\r\n', 'latin1');    // Siesa exporta en Latin-1
+}
+// Explosión: necesidades por OP con la OC amarrada (TD_FECHAS.Nro orden). Ítems sin ceros a la izquierda, como en el archivo real.
+const ENC_EXP = ['Tipo Demanda','OP / DOC','EP','Item','Descripción','Und Inv','Cantidad Requerida','Cantidad Pendiente','Cant Penditiente - Inventario','Fecha Requerido','Fecha Planeación','Estado cobertura','TD_FECHAS.Nro orden','Proveedor'];
+// [OP, item, pendiente-inventario, fechaPlaneacion, OC amarrada]
+const NECESIDADES = [
+  ['OP-1001','10001', 60,'2026-11-15','OC-00051420'],   // ítem en 2 OC, 3 necesidades
+  ['OP-1002','10001', 80,'2026-11-20','OC-00051420'],
+  ['OP-1002','10001', 40,'2026-11-20','OC-00051421'],
+  ['OP-1003','10001', 50,'2026-11-30','OC-00051421'],
+  ['OP-1001','10002',200,'2026-11-16','OC-00051420'],
+  ['OP-0990','20001',300,'2026-10-28','OC-00052001'],   // necesidad vencida
+  ['OP-1001','20002',120,'2026-11-12','OC-00052002'],   // misma OC+ítem, 2 solicitudes
+  ['OP-1004','20002', 60,'2026-11-26','OC-00052002'],
+  ['OP-1001','30001',  4,'2026-11-10','OC-00053001'],   // OC con varios ítems
+  ['OP-1001','30002', 12,'2026-11-13','OC-00053001'],
+  ['OP-1005','30003',  2,'2026-11-24','OC-00053001'],
+  ['OP-1005','30004',  6,'2026-12-20','OC-00053002'],   // fuera del horizonte de 4 semanas
+  ['OP-1001','40001',500,'2026-11-18','OC-00054001'],
+  ['OP-1006','99999', 10,'2026-11-18','0'],              // necesidad sin OC (no afecta)
+  ['OP-1007','10003',  0,'2026-11-18','OC-00051422'],   // pendiente-inventario 0: cubierta por inventario
+];
 const CONFIG = {
   proveedores: [
-    { proveedor: PRAMEC, alias: 'Pramec', activo: 'SI', contacto: 'Carlos (ficticio)', celular: '3000000001', comprador: LAURA, trato: 'usted' },
-    { proveedor: INTRALUM, alias: 'Intralum', activo: 'SI', contacto: 'Diana (ficticia)', celular: '300 000 0002', comprador: LAURA, trato: 'tu' },
-    { proveedor: VISEG, alias: 'Viseg', activo: 'SI', contacto: 'Jorge (ficticio)', celular: '+57 300 000 0003', comprador: ANDRES, trato: 'usted' },
-    { proveedor: 'METALES FICTICIOS SAS', alias: 'Metales', activo: 'NO', contacto: '', celular: '', comprador: ANDRES, trato: 'usted' },
+    { proveedor: PRAMEC, alias: 'Pramec', activo: 'SI', contacto: 'Carlos (ficticio)', celular: '3000000001', nombre_whatsapp: 'PRAMEC - Carlos', comprador: COMP_A, trato: 'usted' },
+    { proveedor: INTRALUM, alias: 'Intralum', activo: 'SI', contacto: 'Diana (ficticia)', celular: '300 000 0002', nombre_whatsapp: 'INTRALUM - Diana', comprador: COMP_A, trato: 'tu' },
+    { proveedor: VISEG, alias: 'Viseg', activo: 'SI', contacto: 'Jorge (ficticio)', celular: '+57 300 000 0003', nombre_whatsapp: 'VISEG - Jorge;Viseg Despachos', comprador: COMP_B, trato: 'usted' },
+    { proveedor: METALES, alias: 'Metales', activo: 'NO', contacto: '', celular: '', nombre_whatsapp: '', comprador: COMP_B, trato: 'usted' },
   ],
-  exclusiones: [{ tipo: 'OC', valor: 'OC-3003', motivo: 'Prueba: OC en negociación' }],
+  exclusiones: [],
 };
 
 /** Construye en la página los libros de prueba y devuelve {nombre: base64}. */
 async function construirLibros(page){
-  return page.evaluate(({ ENCABEZADOS, BASE, EXPLOSIONES, CONFIG }) => {
+  const libros = await page.evaluate(({ ENC_EXP, NECESIDADES, CONFIG }) => {
     const serial = iso => (Date.UTC(+iso.slice(0,4), +iso.slice(5,7)-1, +iso.slice(8,10)) - Date.UTC(1899,11,30)) / 864e5;
     const out = {};
-    for (const [nombre, claves] of Object.entries(EXPLOSIONES)){
-      const f = nombre.slice(15, 23);
-      const aoa = [['EXPLOSIÓN DE ABASTECIMIENTO - DATOS FICTICIOS DE PRUEBA'], ['Generado: ' + f.slice(0,2) + '/' + f.slice(2,4) + '/' + f.slice(4)], [], ENCABEZADOS];
-      for (const k of claves){ const b = BASE[k]; aoa.push(['BOD-01', b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], serial(b[9]), '']); }
-      const ws = XLSX.utils.aoa_to_sheet(aoa);
-      for (let r = 4; r < aoa.length; r++){ const c = ws[XLSX.utils.encode_cell({ r, c:10 })]; if (c) c.z = 'dd/mm/yyyy'; }
-      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Explosion');
-      out[nombre] = XLSX.write(wb, { bookType:'xlsx', type:'base64' });
-    }
+    const aoa = [ENC_EXP];
+    for (const [op, it, c, f, oc] of NECESIDADES) aoa.push(['OPFI', op, 'EP1', +it, 'ITEM ' + it, 'Und', c, c, c, serial(f) + 7, serial(f), c > 0 ? 'Transito' : 'Cubierto', oc, '']);
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    for (let r = 1; r < aoa.length; r++) for (const c of [9, 10]){ const cell = ws[XLSX.utils.encode_cell({ r, c })]; if (cell) cell.z = 'dd/mm/yyyy'; }
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Explosión');
+    out['ABASTECIMIENTO_04112026.xlsx'] = XLSX.write(wb, { bookType:'xlsx', type:'base64' });
     const base = JSON.parse(JSON.stringify(App.S.config));
     out['config.xlsx'] = XLSX.write(App.libroConfig({ ...base, proveedores: CONFIG.proveedores, exclusiones: CONFIG.exclusiones }), { bookType:'xlsx', type:'base64' });
     return out;
-  }, { ENCABEZADOS, BASE, EXPLOSIONES, CONFIG });
+  }, { ENC_EXP, NECESIDADES, CONFIG });
+  for (const [n, claves] of Object.entries(LISTADOS)) libros[n] = textoListadoOC(claves).toString('base64');
+  return libros;
 }
 
-module.exports = { abrirPagina, construirLibros, RAIZ, BASE, CONFIG, PRAMEC, INTRALUM, VISEG, LAURA, ANDRES };
+module.exports = { abrirPagina, construirLibros, RAIZ, OC_BASE, NECESIDADES, CONFIG, PRAMEC, INTRALUM, VISEG, METALES, COMP_A, COMP_B };

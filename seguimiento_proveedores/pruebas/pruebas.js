@@ -1,11 +1,11 @@
-// Pruebas de extremo a extremo de seguimiento.html con datos ficticios.
-// Cubre: lectura de explosión (filtros, duplicados, mapeo manual), config, qué preguntar hoy,
-// mensajes, intérprete de respuestas, todos los estados, consolidación de archivos de seguimiento,
-// cierre/reapertura por explosión, "revisar con almacén", tablero y exportaciones.
+// Pruebas de extremo a extremo de seguimiento.html (v0.6) con datos ficticios.
+// Cubre: listado de OC (Latin-1, prefijos), explosión con amarre y FIFO, fecha requerida, semáforo, mensaje por OC,
+// intérprete en lenguaje natural, candados contra cruces, confirmación y deshacer, depuración inicial,
+// guardado automático, fecha simulada, consolidación, cierres por listado, tablero e interfaz.
 // Uso: npm test   (requiere: npm install; Chromium/Playwright preinstalado)
 const fs = require('fs');
 const path = require('path');
-const { abrirPagina, construirLibros, RAIZ, PRAMEC, INTRALUM, VISEG, LAURA, ANDRES } = require('./comun');
+const { abrirPagina, construirLibros, RAIZ, PRAMEC, INTRALUM, VISEG, COMP_A, COMP_B } = require('./comun');
 
 let ok = 0, fallos = 0;
 function check(nombre, cond, detalle){
@@ -13,278 +13,223 @@ function check(nombre, cond, detalle){
   else { fallos++; console.log('  ✗ ' + nombre + (detalle !== undefined ? '  → ' + JSON.stringify(detalle) : '')); }
 }
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const K = { P1:'OC-00051420|10001|001-SC-00016001', P2:'OC-00051420|10002|001-SC-00016001', P3:'OC-00051421|10001|001-SC-00016050', P4:'OC-00051422|10003|001-SC-00016070',
+  I1:'OC-00052001|20001|001-SC-00015900', I2:'OC-00052002|20002|001-SC-00016010', I3:'OC-00052002|20002|001-SC-00016020',
+  V1:'OC-00053001|30001|001-SC-00016100', V2:'OC-00053001|30002|001-SC-00016100', V3:'OC-00053001|30003|001-SC-00016100', V4:'OC-00053002|30004|001-SC-00016150' };
 
 (async () => {
-  const { browser, page, errores } = await abrirPagina({ hoy: '2026-11-04' });
+  const { browser, page, errores } = await abrirPagina({ hoy: '2026-11-05' });
   const libros = await construirLibros(page);
   await page.evaluate(() => localStorage.clear());
-
-  // Ayudantes dentro de la página
-  await page.evaluate(() => {
+  await page.evaluate(([l, K]) => {
+    window.K = K;
     window.T = {
+      libros: l, seguimientos: [],
       archivo(nombre, b64, lm){ const bin = atob(b64); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new File([u], nombre, { lastModified: lm || Date.now() }); },
-      libros: {}, seguimientos: [],
-      async cargar(explosiones){
-        const c = { explosiones: explosiones.map(n => T.archivo(n, T.libros[n])), config: T.archivo('config.xlsx', T.libros['config.xlsx'], 1),
-          seguimientos: T.seguimientos.map(s => T.archivo(s.nombre, s.b64)) };
-        await App.procesar(c);
+      async cargar(ocs, exps){
+        await App.procesar({ ocs: ocs.map(n => T.archivo(n, T.libros[n])), explosiones: (exps || ['ABASTECIMIENTO_04112026.xlsx']).map(n => T.archivo(n, T.libros[n])),
+          config: T.archivo('config.xlsx', T.libros['config.xlsx'], 1), seguimientos: T.seguimientos.map(s => T.archivo(s.nombre, s.b64)) });
       },
-      est(){ const o = {}; for (const [k, r] of Object.entries(App.S.seg)) o[k] = r.estado; return o; },
-      reg(k){ return { ...App.S.seg[k] }; },
-      hoyDe(prov){ const g = App.gestionHoy(true, false).find(x => x.proveedor === prov); return g ? g.hoy.map(r => r.clave) : []; },
-      preguntar(prov){ const g = App.gestionHoy(true, false).find(x => x.proveedor === prov); const pl = App.plantillaPara(g.hoy);
-        const msg = App.construirMensaje(prov, g.hoy, pl); App.registrarPregunta(prov, g.hoy, pl, msg); return { pl, msg, claves: g.hoy.map(r => r.clave) }; },
-      responder(prov, texto, ajustes){
-        const g = App.gestionHoy(true, true).find(x => x.proveedor === prov);
-        const mapa = App.lineasDeMensaje(g.pregunta);
-        const pv = App.previaRespuesta(texto, mapa);
-        for (const [n, a] of Object.entries(ajustes || {})){ const f = pv.filas.find(x => x.n === +n); Object.assign(f, App.validarAccion(mapa[f.n - 1], a.accion, a.fecha || '')); }
-        const errores = pv.filas.filter(f => f.error).map(f => ({ n: f.n, error: f.error }));
-        if (!errores.length) pv.filas.forEach(f => App.aplicarAccion(mapa[f.n - 1], f, prov, texto));
-        App.renderTodo();
-        return { filas: pv.filas.map(f => ({ n: f.n, accion: f.accion, fecha: f.fecha, error: f.error })), errores, ignorado: pv.ignorado };
-      }
+      reg(k){ const r = App.S.seg[K[k] || k]; return r ? { ...r } : null; },
+      est(k){ const r = App.S.seg[K[k] || k]; return r ? r.estado : null; },
+      g(prov){ return App.gestionHoy(true, true).find(x => x.proveedor === prov); },
+      preguntar(prov){ const g = T.g(prov); const pl = App.plantillaPara(g.envio); const msg = App.construirMensaje(prov, g.envio, pl); App.registrarPregunta(prov, g.envio, pl, msg); return { pl, msg, claves: g.envio.map(r => r.clave) }; },
+      panel(a, prov){ return a.paneles.find(p => p.prov === prov); },
+      resumen(p){ return p.filas.map(f => ({ k: Object.keys(K).find(x => K[x] === f.clave), a: f.accion, f: f.fecha, err: f.error || '', amar: !!f.revisar })); }
     };
-  });
-  await page.evaluate(l => { T.libros = l; }, libros);
+  }, [libros, K]);
 
   /* ------------------------------------------------------------------ */
-  console.log('\n1. Intérprete de respuestas (hoy = 04/11/2026)');
-  const casos = [
-    ['1 SI', 4, { a: { 1: ['SI', ''] } }],
-    ['1 sí\n2 NO 25/11\n3 ent', 4, { a: { 1: ['SI', ''], 2: ['NO', '2026-11-25'], 3: ['ENT', ''] } }],
-    ['TODO SI', 4, { todo: 'SI', a: {} }],
-    ['Todos sí, excepto 2 no 30-11', 4, { todo: 'SI', a: { 2: ['NO', '2026-11-30'] } }],
-    ['2 25/11', 4, { a: { 2: ['FECHA', '2026-11-25'] } }],
-    ['1. 5/1', 4, { a: { 1: ['FECHA', '2027-01-05'] } }],
-    ['1) NO 03/12/2026', 4, { a: { 1: ['NO', '2026-12-03'] } }],
-    ['4 NO', 4, { e: [4] }],
-    ['7 SI', 4, { fuera: [7], a: {} }],
-    ['[4/11/26, 10:15 a. m.] Carlos Pramec: 1 SI 2 ENT', 4, { a: { 1: ['SI', ''], 2: ['ENT', ''] } }],
-    ['4/11/26 10:15 - Carlos: 3 Entregado', 4, { a: { 3: ['ENT', ''] } }],
-    ['1 y 2 SI', 4, { a: { 1: ['SI', ''], 2: ['SI', ''] } }],
-    ['Buenos días. 1 31/02', 4, { e: [1] }],
-    ['1 SI 25/11', 4, { a: { 1: ['FECHA', '2026-11-25'] } }],
-    ['1 no 25/11 2 NO 26-11 3 si 4 ENT', 4, { a: { 1: ['NO', '2026-11-25'], 2: ['NO', '2026-11-26'], 3: ['SI', ''], 4: ['ENT', ''] } }],
-    ['1:SI 2-SI', 4, { a: { 1: ['SI', ''], 2: ['SI', ''] } }],
-    ['1 NO 25/11/26', 4, { a: { 1: ['NO', '2026-11-25'] } }],
-    ['3', 4, { e: [3] }],
-  ];
-  for (const [txt, n, esp] of casos){
-    const r = await page.evaluate(([t, n]) => App.interpretarRespuesta(t, n), [txt, n]);
-    const a = {}; for (const [k, v] of Object.entries(r.acciones)) a[k] = [v.accion, v.fecha];
-    let bien = true;
-    if (esp.a && !eq(a, Object.fromEntries(Object.entries(esp.a).map(([k, v]) => [k, v])))) bien = false;
-    if (esp.todo !== undefined && r.todo !== esp.todo) bien = false;
-    if (esp.e && !esp.e.every(k => r.errores[k])) bien = false;
-    if (esp.fuera && !eq(r.fueraDeRango, esp.fuera)) bien = false;
-    check(`«${txt.replace(/\n/g, ' ⏎ ')}»`, bien, { acciones: a, todo: r.todo, errores: r.errores, fuera: r.fueraDeRango, ignorado: r.ignorado });
-  }
-  const ign = await page.evaluate(() => App.interpretarRespuesta('Buenos días, 1 SI gracias', 2).ignorado);
-  check('texto libre se reporta como no interpretado', ign.includes('BUENOS') && ign.includes('GRACIAS'), ign);
-
-  /* ------------------------------------------------------------------ */
-  console.log('\n2. Carga de explosión 02/11 + config (día 04/11 09:00)');
-  await page.evaluate(() => App.setAhora('2026-11-04T09:00:00'));
-  await page.evaluate(() => T.cargar(['ABASTECIMIENTO_02112026.xlsx']));
-  const st = await page.evaluate(() => App.S.explosion.stats);
-  check('filtra OC nacionales con pendiente > 0', st.nacionales === 11 && st.oci === 1 && st.cero === 1 && st.duplicadas === 1, st);
-  const i3 = await page.evaluate(() => T.reg('OC-2002|1'));
-  check('duplicado OC+línea: pendiente MAX y fecha más temprana', i3.cantidad_pendiente === 80 && i3.fecha_requerida === '2026-11-15', i3);
-  const cfg = await page.evaluate(() => ({ n: App.S.config.proveedores.length, trato: App.S.config.proveedores[1].trato, ex: App.S.config.exclusiones, r: App.R() }));
-  check('config.xlsx leído (proveedores, trato, exclusiones, reglas)', cfg.n === 4 && cfg.trato === 'tu' && cfg.ex[0].valor === 'OC-3003' && cfg.r.horizonte_semanas === 4 && eq(cfg.r.dias_antes_repregunta, [7, 2, 0]), cfg);
-  check('todas las líneas nuevas en estado NUEVA', Object.values(await page.evaluate(() => T.est())).every(e => e === 'NUEVA'));
-  check('elige la explosión más reciente por nombre', await page.evaluate(() => App.elegirExplosion([{ name:'ABASTECIMIENTO_09112026.xlsx' }, { name:'ABASTECIMIENTO_17112026.xlsx' }, { name:'ABASTECIMIENTO_30102026.xlsx' }]).name) === 'ABASTECIMIENTO_17112026.xlsx');
-
-  console.log('\n3. Qué preguntar hoy');
-  check('Pramec: vencida primero, fuera de horizonte excluida', eq(await page.evaluate(p => T.hoyDe(p), PRAMEC), ['OC-1001|1', 'OC-1001|2', 'OC-1002|1']));
-  check('Intralum: 3 líneas en horizonte', eq(await page.evaluate(p => T.hoyDe(p), INTRALUM), ['OC-2001|1', 'OC-2001|2', 'OC-2002|1']));
-  check('Viseg: excluye OC-3003 (exclusiones)', eq(await page.evaluate(p => T.hoyDe(p), VISEG), ['OC-3001|1', 'OC-3002|1']));
-  check('proveedor no activo no aparece', !(await page.evaluate(() => App.gestionHoy(true, false).some(g => /METALES/.test(g.proveedor)))));
-  check('filtro por comprador (Andrés ve solo Viseg)', eq(await page.evaluate(a => { App.S.comprador = a; const r = App.gestionHoy(false, false).map(g => g.proveedor); return r; }, ANDRES), [VISEG]));
-
-  console.log('\n4. Mensajes y registro de la pregunta');
-  await page.evaluate(l => { App.S.comprador = l; }, LAURA);
-  const mP = await page.evaluate(p => T.preguntar(p), PRAMEC);
-  check('plantilla «vencida» cuando hay vencidas', mP.pl === 'vencida', mP.pl);
-  check('mensaje incluye aviso de plataforma, detalle numerado y formato', mP.msg.includes('Este seguimiento no reemplaza la facturación en la plataforma de proveedores.') && mP.msg.includes('1) OC-1001 L1') && mP.msg.includes('dd/mm → fecha de entrega') && mP.msg.includes('Carlos (ficticio)'), mP.msg);
-  const mI = await page.evaluate(p => T.preguntar(p), INTRALUM);
-  check('plantilla «primera_solicitud» con trato tú', mI.pl === 'primera_solicitud' && /^Hola Diana/.test(mI.msg) && mI.msg.includes('Responde con'), mI.msg.slice(0, 80));
-  await page.evaluate(a => { App.S.comprador = a; }, ANDRES);
-  await page.evaluate(p => T.preguntar(p), VISEG);
-  const r1 = await page.evaluate(() => T.reg('OC-1001|1'));
-  check('NUEVA → ESPERANDO_FECHA, registra fecha/hora y comprador', r1.estado === 'ESPERANDO_FECHA' && r1.ultima_pregunta === '2026-11-04T09:00:00' && r1.preguntado_por === LAURA, r1);
-  check('no se pregunta dos veces el mismo día', (await page.evaluate(p => T.hoyDe(p), PRAMEC)).length === 0 && /ya se preguntó hoy/.test(await page.evaluate(() => App.evaluarLinea(App.S.seg['OC-1001|1']).motivo)));
-  const ev = await page.evaluate(() => App.S.eventos.filter(e => e.tipo === 'PREGUNTA').map(e => [e.proveedor, e.comprador, e.lineas]));
-  check('evento PREGUNTA guarda la numeración del mensaje', ev.length === 3 && ev[0][2] === 'OC-1001|1 ; OC-1001|2 ; OC-1002|1', ev);
-
-  console.log('\n5. Respuestas (04/11 15:00)');
-  await page.evaluate(() => App.setAhora('2026-11-04T15:00:00'));
-  await page.evaluate(l => { App.S.comprador = l; }, LAURA);
-  const rP = await page.evaluate(p => T.responder(p, '1 ENT\n2 6/11\n3 NO 25/11'), PRAMEC);
-  check('respuesta Pramec sin errores', rP.errores.length === 0, rP);
-  let e = await page.evaluate(() => T.est());
-  check('ENT → ENTREGADO_POR_CONFIRMAR', e['OC-1001|1'] === 'ENTREGADO_POR_CONFIRMAR');
-  check('fecha a línea sin fecha → CONFIRMADA', e['OC-1001|2'] === 'CONFIRMADA' && (await page.evaluate(() => T.reg('OC-1001|2').fecha_prometida)) === '2026-11-06');
-  const p3 = await page.evaluate(() => ({ r: T.reg('OC-1002|1'), riesgo: App.enRiesgo(App.S.seg['OC-1002|1']) }));
-  check('«NO fecha» en línea sin fecha se toma como primera fecha (no cuenta cambio) y marca riesgo', p3.r.estado === 'CONFIRMADA' && p3.r.contador_cambios === 0 && p3.riesgo, p3);
-  const rI = await page.evaluate(p => T.responder(p, '1 10/11 2 SI'), INTRALUM);
-  check('«SI» en línea sin fecha prometida se marca en rojo', rI.errores.length === 1 && rI.errores[0].n === 2, rI);
-  const rI2 = await page.evaluate(p => T.responder(p, '1 10/11 2 SI', { 2: { accion: 'FECHA', fecha: '2026-11-12' } }), INTRALUM);
-  check('corrección manual en la vista previa permite guardar', rI2.errores.length === 0 && (await page.evaluate(() => T.reg('OC-2001|2').fecha_prometida)) === '2026-11-12', rI2);
-  check('línea sin respuesta queda ESPERANDO_FECHA', (await page.evaluate(() => T.est()))['OC-2002|1'] === 'ESPERANDO_FECHA');
-
-  console.log('\n6. Día siguiente (05/11 10:00): recordatorios y repreguntas');
-  await page.evaluate(() => App.setAhora('2026-11-05T10:00:00'));
-  check('Viseg sin respuesta > 24 h → recordatorio', eq(await page.evaluate(p => T.hoyDe(p), VISEG), ['OC-3001|1', 'OC-3002|1']) && (await page.evaluate(p => App.plantillaPara(App.gestionHoy(true,false).find(g => g.proveedor === p).hoy), VISEG)) === 'recordatorio');
-  check('Intralum: hito de 7 días de la línea prometida el 12/11 + recordatorio de la línea sin fecha', eq(await page.evaluate(p => T.hoyDe(p), INTRALUM), ['OC-2001|2', 'OC-2002|1']), await page.evaluate(p => T.hoyDe(p), INTRALUM));
-  check('Intralum: línea prometida el 10/11 no se pregunta (hito de 7 días cubierto por la respuesta del 04/11)', !(await page.evaluate(() => App.evaluarLinea(App.S.seg['OC-2001|1']).preguntar)));
-  check('Pramec: confirmada hace 1 día no se repregunta (hito 2 días ya cubierto)', (await page.evaluate(p => T.hoyDe(p), PRAMEC)).length === 0, await page.evaluate(() => App.evaluarLinea(App.S.seg['OC-1001|2'])));
-  await page.evaluate(a => { App.S.comprador = a; }, ANDRES);
-  await page.evaluate(p => T.preguntar(p), VISEG);
-  await page.evaluate(l => { App.S.comprador = l; }, LAURA);
-  await page.evaluate(p => T.preguntar(p), INTRALUM);
-
-  console.log('\n7. 06/11 08:00: repregunta el día prometido y cambio de fecha');
-  await page.evaluate(() => App.setAhora('2026-11-06T08:00:00'));
-  check('Pramec: línea con entrega prometida hoy', eq(await page.evaluate(p => T.hoyDe(p), PRAMEC), ['OC-1001|2']) && /prometida hoy/.test(await page.evaluate(() => App.evaluarLinea(App.S.seg['OC-1001|2']).motivo)));
-  const mR = await page.evaluate(p => T.preguntar(p), PRAMEC);
-  check('plantilla «repregunta» con opciones SI/NO', mR.pl === 'repregunta' && mR.msg.includes('1 SI → se mantiene') && mR.msg.includes('1 NO dd/mm'), mR.msg);
-  await page.evaluate(() => App.setAhora('2026-11-06T11:30:00'));
-  await page.evaluate(p => T.responder(p, '1 NO 10/11'), PRAMEC);
-  const p2 = await page.evaluate(() => T.reg('OC-1001|2'));
-  check('NO + fecha → CAMBIADA, contador 1, guarda fecha anterior', p2.estado === 'CAMBIADA' && p2.contador_cambios === 1 && p2.fecha_prometida_anterior === '2026-11-06' && p2.fecha_prometida === '2026-11-10', p2);
-
-  console.log('\n8. 08/11 09:00: TODO SI y repreguntas por hitos');
-  await page.evaluate(() => App.setAhora('2026-11-08T09:00:00'));
-  check('Intralum: hito 2 días (I1) y recordatorio (I3); I2 ya preguntada tras su hito', eq(await page.evaluate(p => T.hoyDe(p), INTRALUM), ['OC-2001|1', 'OC-2002|1']), await page.evaluate(() => ['OC-2001|1','OC-2001|2','OC-2002|1'].map(k => App.evaluarLinea(App.S.seg[k]))));
-  await page.evaluate(p => T.preguntar(p), INTRALUM);
-  const rT = await page.evaluate(p => T.responder(p, 'Hola, todo sí. 2 20/11'), INTRALUM);
-  e = await page.evaluate(() => T.est());
-  check('TODO SI mantiene las que tienen fecha y la 3 recibe fecha', rT.errores.length === 0 && e['OC-2001|1'] === 'CONFIRMADA' && e['OC-2002|1'] === 'CONFIRMADA' && (await page.evaluate(() => T.reg('OC-2002|1').fecha_prometida)) === '2026-11-20', rT);
-  check('Pramec: cambiada a 10/11 → hito 2 días hoy', eq(await page.evaluate(p => T.hoyDe(p), PRAMEC), ['OC-1001|2']));
-  await page.evaluate(p => T.preguntar(p), PRAMEC);
-  await page.evaluate(p => T.responder(p, '1 ent'), PRAMEC);
-  check('segunda ENT de Pramec', (await page.evaluate(() => T.est()))['OC-1001|2'] === 'ENTREGADO_POR_CONFIRMAR');
-
-  console.log('\n9. Vencidas cada N días');
-  // Viseg nunca respondió; V1 requerida 06/11 → vencida sin fecha
-  await page.evaluate(() => App.setAhora('2026-11-12T09:00:00'));
-  // Damos a Viseg una fecha prometida pasada para probar la frecuencia de vencidas
-  await page.evaluate(a => { App.S.comprador = a; const r = App.S.seg['OC-3001|1']; r.fecha_prometida = '2026-11-10'; r.estado = 'CONFIRMADA'; r.ultima_respuesta = '2026-11-08T10:00:00'; r.ultima_pregunta = '2026-11-08T09:00:00'; }, ANDRES);
-  const v1 = await page.evaluate(() => App.evaluarLinea(App.S.seg['OC-3001|1']));
-  check('vencida hace 2 días con último contacto hace 4 → preguntar', v1.preguntar && /vencida/.test(v1.motivo), v1);
-  await page.evaluate(() => { App.S.seg['OC-3001|1'].ultima_pregunta = '2026-11-11T09:00:00'; });
-  const v1b = await page.evaluate(() => App.evaluarLinea(App.S.seg['OC-3001|1']));
-  check('vencida preguntada ayer (frecuencia 2) → no preguntar', !v1b.preguntar, v1b);
-  await page.evaluate(() => { const r = App.S.seg['OC-3001|1']; r.fecha_prometida = ''; r.estado = 'ESPERANDO_FECHA'; r.ultima_respuesta = ''; });
-
-  console.log('\n10. Exportar seguimiento y consolidar archivos');
-  await page.evaluate(l => { App.S.comprador = l; }, LAURA);
-  const exp = await page.evaluate(() => { const d = App.datosMiSeguimiento(); const b64 = XLSX.write(App.libroSeguimiento(d.lineas, d.eventos), { bookType:'xlsx', type:'base64' }); return { b64, n: d.lineas.length, ev: d.eventos.length, provs: [...new Set(d.lineas.map(r => r.proveedor))] }; });
-  // Incluye las líneas de Laura y todo lo modificado en este navegador desde la última exportación (aquí también Viseg).
-  check('exporta las líneas de Laura (Pramec + Intralum), lo modificado sin exportar y los eventos', exp.n >= 8 && exp.provs.includes(PRAMEC) && exp.provs.includes(INTRALUM) && exp.ev > 0, { n: exp.n, provs: exp.provs, ev: exp.ev });
-  const rt = await page.evaluate(b64 => { const wb = XLSX.read(b64, { type:'base64' }); const d = App.leerSeguimiento(wb); const r = d.lineas.find(x => x.clave === 'OC-1001|2'); return { r, ev: d.eventos.length, orig: App.S.seg['OC-1001|2'] }; }, exp.b64);
-  const campos = ['estado','fecha_prometida','fecha_prometida_anterior','contador_cambios','ultima_pregunta','ultima_respuesta','fecha_entregado','actualizado','fecha_requerida'];
-  check('ida y vuelta Excel conserva estados, fechas y horas', campos.every(c => rt.r[c] === rt.orig[c]), campos.map(c => [c, rt.r[c], rt.orig[c]]));
-  const expA = await page.evaluate(a => { App.S.comprador = a; const d = App.datosMiSeguimiento(); return XLSX.write(App.libroSeguimiento(d.lineas, d.eventos), { bookType:'xlsx', type:'base64' }); }, ANDRES);
-  // Archivo "viejo" de otro día con un estado anterior para OC-1001|2: no debe ganar.
-  const viejo = await page.evaluate(() => { const r = { ...App.S.seg['OC-1001|2'], estado:'CONFIRMADA', fecha_prometida:'2026-11-06', actualizado:'2026-11-04T15:00:00' }; return XLSX.write(App.libroSeguimiento([r], []), { bookType:'xlsx', type:'base64' }); });
-  // Archivo de otro comprador más reciente para OC-1002|1: debe ganar.
-  const nuevo = await page.evaluate(() => { const r = { ...App.S.seg['OC-1002|1'], estado:'CAMBIADA', fecha_prometida:'2026-11-28', fecha_prometida_anterior:'2026-11-25', contador_cambios:1, actualizado:'2026-11-12T08:00:00' }; return XLSX.write(App.libroSeguimiento([r], []), { bookType:'xlsx', type:'base64' }); });
-  await page.evaluate(([a, b, c, d]) => {
-    localStorage.clear(); App.S.modificadas.clear();
-    T.seguimientos = [
-      { nombre:'seguimiento_ZZ_20261104_1500.xlsx', b64:c },               // viejo (nombre posterior a propósito)
-      { nombre:'seguimiento_LAURA_GOMEZ_PRUEBA_20261112_0900.xlsx', b64:a },
-      { nombre:'seguimiento_ANDRES_RUIZ_PRUEBA_20261112_0900.xlsx', b64:b },
-      { nombre:'seguimiento_OTRO_20261112_0800.xlsx', b64:d }];
-  }, [exp.b64, expA, viejo, nuevo]);
-  await page.evaluate(() => T.cargar(['ABASTECIMIENTO_02112026.xlsx']));
-  e = await page.evaluate(() => T.est());
-  check('consolidación sin trabajo local reconstruye los estados', e['OC-1001|1'] === 'ENTREGADO_POR_CONFIRMAR' && e['OC-2001|2'] === 'CONFIRMADA' && e['OC-3001|1'] === 'ESPERANDO_FECHA', e);
-  check('gana el registro más reciente aunque el archivo viejo se lea después', e['OC-1001|2'] === 'ENTREGADO_POR_CONFIRMAR', await page.evaluate(() => T.reg('OC-1001|2')));
-  check('registro más reciente de otro archivo gana (OC-1002|1 CAMBIADA 28/11)', e['OC-1002|1'] === 'CAMBIADA' && (await page.evaluate(() => T.reg('OC-1002|1').fecha_prometida)) === '2026-11-28');
-  const nEv = await page.evaluate(() => App.S.eventos.length);
-  await page.evaluate(() => T.cargar(['ABASTECIMIENTO_02112026.xlsx']));
-  check('eventos sin duplicar al recargar', nEv === await page.evaluate(() => App.S.eventos.length), nEv);
-
-  console.log('\n11. Explosión 09/11: cierres y líneas nuevas');
-  await page.evaluate(() => T.cargar(['ABASTECIMIENTO_02112026.xlsx', 'ABASTECIMIENTO_09112026.xlsx']));
-  e = await page.evaluate(() => T.est());
-  check('usa la explosión más reciente', (await page.evaluate(() => App.S.explosion.nombre)) === 'ABASTECIMIENTO_09112026.xlsx');
-  check('ENTREGADO_POR_CONFIRMAR y pendiente 0 → CERRADA', e['OC-1001|1'] === 'CERRADA', e['OC-1001|1']);
-  check('desaparece sin ENT → CERRADA_POR_EXPLOSION', e['OC-2001|2'] === 'CERRADA_POR_EXPLOSION', e['OC-2001|2']);
-  check('línea nueva → NUEVA', e['OC-3004|1'] === 'NUEVA');
-  check('ENT hace 1 día y sigue pendiente: aún no «revisar con almacén»', !(await page.evaluate(() => App.revisarAlmacen(App.S.seg['OC-1001|2']))));
-  const ce = await page.evaluate(() => App.S.eventos.filter(e => e.tipo === 'CIERRE').length);
-  check('eventos de cierre registrados', ce >= 2, ce);
-
-  console.log('\n12. Explosión 17/11: reapertura y revisar con almacén; explosión vieja no cierra');
-  await page.evaluate(() => App.setAhora('2026-11-17T09:00:00'));
-  await page.evaluate(() => T.cargar(['ABASTECIMIENTO_09112026.xlsx', 'ABASTECIMIENTO_17112026.xlsx']));
-  e = await page.evaluate(() => T.est());
-  check('ENT hace 9 días (> 7) y sigue pendiente → revisar con almacén', await page.evaluate(() => App.revisarAlmacen(App.S.seg['OC-1001|2'])));
-  check('línea cerrada que reaparece → reabierta CONFIRMADA (tenía fecha)', e['OC-2001|2'] === 'CONFIRMADA', e['OC-2001|2']);
-  check('V1 recibido sin ENT → CERRADA_POR_EXPLOSION', e['OC-3001|1'] === 'CERRADA_POR_EXPLOSION');
-  await page.evaluate(([a, v]) => { App.S.comprador = a; T.preguntar(v); }, [ANDRES, VISEG]);
-  check('OC-3004|1 (nueva) preguntada', (await page.evaluate(() => T.est()))['OC-3004|1'] === 'ESPERANDO_FECHA');
-  const viejas = await page.evaluate(async () => { await T.cargar(['ABASTECIMIENTO_02112026.xlsx']); return { av: App.S.avisos.join(' '), e: T.est()['OC-3004|1'] }; });
-  check('explosión más antigua que el seguimiento no cierra líneas vistas después', viejas.e === 'ESPERANDO_FECHA' && /más antigua/.test(viejas.av), viejas);
-  await page.evaluate(() => T.cargar(['ABASTECIMIENTO_17112026.xlsx']));
-
-  console.log('\n13. Mapeo manual de columnas');
-  const mp = await page.evaluate(() => {
-    const ws = XLSX.utils.aoa_to_sheet([['Nro Documento','Proveedor','Ítem','Descripción','Cant Penditiente - Inventario','Fecha Entrega'], ['OC-1','PRAMEC SAS','X1','Algo',3,'20/11/2026']]);
-    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'h');
-    const a = App.leerExplosion(wb, {});
-    const b = App.leerExplosion(wb, { oc:'Nro Documento', linea:'__NINGUNA__', unidad:'__NINGUNA__', comprador:'__NINGUNA__' });
-    return { a: { necesita: a.necesitaMapeo, faltan: a.faltan }, b: { ok: b.ok, l: b.ok && Object.values(b.lineas)[0] } };
+  console.log('\n1. Listado de OC abiertas (Latin-1, prefijos) y explosión con amarre');
+  await page.evaluate(() => T.cargar(['OC_04112026.txt']));
+  const st = await page.evaluate(() => ({ stats: App.S.ocs.stats, modo: App.S.explosion.modo, desc: T.reg('P1').descripcion, prov: T.reg('I1').proveedor }));
+  check('lee el texto de Siesa: 12 líneas OC-, ignora «Gran total», excluye OCI- y OM-', st.stats.abiertas === 12 && st.stats.oci === 1 && st.stats.excluidasPrefijo === 1, st.stats);
+  check('decodifica Latin-1 (tildes) y conserva nombres', st.prov === INTRALUM && st.desc === 'TORNILLO HEF 8X50 ZINCADO', st);
+  check('explosión en modo amarre (TD_FECHAS.Nro orden)', st.modo === 'amarre', st.modo);
+  const req = await page.evaluate(() => Object.fromEntries(['P1','P2','P3','P4','I1','I2','I3','V1','V2','V3','V4'].map(k => [k, T.reg(k).sinNecesidad ? 'SIN' : T.reg(k).fecha_requerida])));
+  check('ítem en 2 OC con 3 necesidades: OC 51420 → 15/11, OC 51421 → 20/11', req.P1 === '2026-11-15' && req.P3 === '2026-11-20', req);
+  check('misma OC + ítem con 2 solicitudes: FIFO por fecha de entrega (12/11 y 26/11)', req.I2 === '2026-11-12' && req.I3 === '2026-11-26', req);
+  check('línea sin necesidad (pendiente-inventario 0) → «Sin necesidad en planeación»', req.P4 === 'SIN' && (await page.evaluate(() => App.estadoVisible(App.S.seg[K.P4]))) === 'SIN_NECESIDAD');
+  const venc = await page.evaluate(() => ({ ef: App.reqEf(App.S.seg[K.I1]), sem: App.semaforo(App.S.seg[K.I1]), sem2: App.semaforo(App.S.seg[K.P1]) }));
+  check('necesidad vencida → requerida = hoy y semáforo rojo; sin fecha a futuro → gris', venc.ef === '2026-11-05' && venc.sem === 'rojo' && venc.sem2 === 'gris', venc);
+  const fifo = await page.evaluate(() => {
+    const ex = { modo:'fifo', filas:[['', '10001', '2026-11-25', 30], ['', '10001', '2026-11-12', 30], ['', '10001', '2026-11-28', 150]] };
+    const f = App.calcularFechasRequeridas(App.S.ocs.lineas, ex); return { P1: f[K.P1], P3: f[K.P3], P2: f[K.P2] };
   });
-  check('detecta columnas faltantes y pide mapeo', mp.a.necesita && mp.a.faltan.includes('oc'), mp.a);
-  check('con el mapeo recordado lee la explosión (clave OC+ítem, fecha texto)', mp.b.ok && mp.b.l.clave === 'OC-1|X1' && mp.b.l.fecha_requerida === '2026-11-20', mp.b);
+  check('modo FIFO (sin OC amarrada): necesidades por fecha vs OC por fecha de OC', fifo.P1 === '2026-11-12' && fifo.P3 === '2026-11-28' && fifo.P2 === null, fifo);
+  const pref = await page.evaluate(async () => { App.S.config.reglas.prefijos_oc = 'OC-,OM-'; const n = App.procesarOC(await App.leerMatriz(T.archivo('OC_04112026.txt', T.libros['OC_04112026.txt']), []), {}).stats.abiertas; App.S.config.reglas.prefijos_oc = 'OC-'; return n; });
+  check('prefijos configurables (OC-,OM- incluye la OM)', pref === 13, pref);
+  const fuentes = await page.evaluate(() => document.querySelector('#estadoCarga').textContent);
+  check('cabecera muestra «OC abiertas: 04/11/2026 · Explosión: 04/11/2026»', /OC abiertas: 04\/11\/2026/.test(fuentes) && /Explosión: 04\/11\/2026/.test(fuentes), fuentes.slice(0, 120));
+  const alerta = await page.evaluate(() => { App.setAhora('2026-11-10T09:00:00'); const a = App.S && document.querySelector('#estadoCarga') && (App.renderTodo(), document.querySelector('#main').textContent); App.setAhora('2026-11-05T09:00:00'); App.renderTodo(); return /desactualizados/.test(a); });
+  check('alerta si los archivos tienen más de 4 días', alerta);
 
-  console.log('\n14. Config y tablero');
-  const rc = await page.evaluate(() => { const wb = XLSX.read(XLSX.write(App.libroConfig(App.S.config), { bookType:'xlsx', type:'array' }), { type:'array' }); const c = App.leerConfig(wb); return { igual: JSON.stringify(c.proveedores) === JSON.stringify(App.S.config.proveedores) && JSON.stringify(c.plantillas) === JSON.stringify(App.S.config.plantillas), c: c.proveedores[1] }; });
-  check('config.xlsx ida y vuelta', rc.igual, rc.c);
-  const tb = await page.evaluate(() => { const m = App.metricasProveedores(); return { m: m.map(x => ({ a: x.alias, preg: x.preguntas, resp: x.respondidas, pct: x.pctResp, dias: x.diasResp && Math.round(x.diasResp * 100) / 100, riesgo: x.riesgo, cambios: x.cambios, epc: x.epc, alm: x.almacen })) }; });
-  const pr = tb.m.find(x => x.a === 'Pramec'), vi = tb.m.find(x => x.a === 'Viseg'), it = tb.m.find(x => x.a === 'Intralum');
-  check('tablero Pramec: 3 mensajes, 3 respondidos, 2 cambios (1 + 1 del otro archivo), 1 entregado por confirmar, 1 revisar almacén', pr.preg === 3 && pr.resp === 3 && pr.cambios === 2 && pr.epc === 1 && pr.alm === 1, pr);
-  check('tablero Viseg: 0 % de respuesta', vi.preg === 3 && vi.resp === 0 && vi.pct === 0, vi);
-  check('tablero Intralum: días promedio de respuesta calculados', it.dias != null && it.dias > 0, it);
-  const rl = await page.evaluate(() => App.lineasRiesgo().map(r => r.clave));
-  check('riesgo de faltante ordenado por desfase (OC-1002|1 +8, OC-2002|1 +5)', eq(rl, ['OC-1002|1', 'OC-2002|1']), rl);
-  const xt = await page.evaluate(() => App.libroTablero().SheetNames);
-  check('exportación del tablero con 4 hojas', eq(xt, ['resumen_proveedores', 'riesgo_faltante', 'cambios_por_linea', 'detalle_lineas']), xt);
+  console.log('\n2. Mensaje por OC');
+  await page.evaluate(c => { App.S.comprador = c; }, COMP_A);
+  const gP = await page.evaluate(p => { const g = T.g(p); return { envio: g.envio.map(r => Object.keys(K).find(k => K[k] === r.clave)), dep: App.depuracionPendiente(p) }; }, PRAMEC);
+  check('Pramec: líneas ordenadas por fecha requerida, sin la de «sin necesidad»', eq(gP.envio, ['P1', 'P2', 'P3']), gP);
+  check('depuración inicial pendiente antes del primer envío', gP.dep === true);
+  const msg = await page.evaluate(p => { const g = T.g(p); return App.construirMensaje(p, g.envio, App.plantillaPara(g.envio)); }, PRAMEC);
+  check('agrupa por OC con número corto y numera ítems dentro de cada OC', /OC 51420\n• Ítem 1 · TORNILLO HEF 8X50 ZINCADO \(0010001\) · 100 und · Requerida 15 nov · Sin confirmar\n• Ítem 2 · TUERCA M8 AUTOFRENANTE \(0010002\)/.test(msg) && /OC 51421\n• Ítem 1 · TORNILLO/.test(msg), msg);
+  check('ejemplos con números reales y aviso de la plataforma', /"La 51420 llega el/.test(msg) && /"El ítem 2 de la 51420/.test(msg) && msg.includes('Este seguimiento no reemplaza la facturación en la plataforma de proveedores.'), msg.slice(-300));
+  const msgI = await page.evaluate(p => { const g = T.g(p); return App.construirMensaje(p, g.envio, App.plantillaPara(g.envio)); }, INTRALUM);
+  check('Intralum (tú): vencida se muestra «Requerida hoy»; nunca dice «planeación»', /^Hola Diana/.test(msgI) && /Requerida hoy/.test(msgI) && !/planeaci/i.test(msgI), msgI.slice(0, 200));
+  const tope = await page.evaluate(p => { App.S.config.reglas.max_lineas_mensaje = 2; const a = T.g(p); App.S.config.reglas.max_lineas_mensaje = 15; App.S.config.reglas.max_oc_mensaje = 1; const b = T.g(p); App.S.config.reglas.max_oc_mensaje = 6; return { a: [a.envio.length, a.resto], b: [b.envio.length, b.resto, [...new Set(b.envio.map(r => r.oc))].length] }; }, PRAMEC);
+  check('tope de líneas (2) y de OC (1) por mensaje; el resto queda para el siguiente envío', eq(tope.a, [2, 1]) && eq(tope.b, [2, 1, 1]), tope);
 
-  console.log('\n15. Interfaz (sin errores de JavaScript) y botón WhatsApp');
-  await page.evaluate(l => { App.S.comprador = l; localStorage.setItem('segprov.comprador', JSON.stringify(l)); }, ANDRES);
-  await page.evaluate(() => { App.setAhora('2026-11-19T09:00:00'); App.S.tab = 'hoy'; App.renderTodo(); window.__abiertas = []; window.open = u => { window.__abiertas.push(u); return null; }; });
+  console.log('\n3. Depuración inicial (Viseg)');
+  const dep = await page.evaluate(p => {
+    const wb = App.libroDepuracion(p);
+    const aoa = XLSX.utils.sheet_to_json(wb.Sheets.depuracion, { header:1, raw:true });
+    const fila = k => aoa.findIndex(r => r[12] === K[k]);
+    aoa[fila('V3')][9] = 'CANCELAR'; aoa[fila('V3')][11] = 'Duplicada con OC 53002';
+    aoa[fila('V2')][9] = 'nueva fecha'; aoa[fila('V2')][10] = '12/11/2026';
+    aoa[fila('V4')][9] = 'ENTREGADO';
+    const wb2 = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb2, XLSX.utils.aoa_to_sheet(aoa), 'depuracion');
+    const panel = App.analizarDepuracion(wb2, p);
+    const filas = T.resumen(panel);
+    const n = App.confirmarPanel(panel);
+    const cruce = App.analizarDepuracion(wb2, 'PRAMEC SAS');
+    return { lineas: aoa.length - 1, hojas: wb.SheetNames, filas, n, V3: T.est('V3'), V2: T.reg('V2').fecha_prometida, V4: T.est('V4'), pend: App.depuracionPendiente(p), cruce: cruce.bloqueos };
+  }, VISEG);
+  check('Excel de depuración con todas las líneas abiertas e instrucciones', dep.lineas === 4 && eq(dep.hojas, ['depuracion', 'instrucciones']), dep);
+  check('ENTREGADO / NUEVA FECHA / CANCELAR aplicados', dep.n === 3 && dep.V3 === 'POR_CANCELAR' && dep.V2 === '2026-11-12' && dep.V4 === 'ENTREGADO_POR_CONFIRMAR', dep);
+  check('depuración registrada: ya no está pendiente', dep.pend === false);
+  check('candado: Excel de Viseg cargado en Pramec se bloquea', dep.cruce.length === 1 && /otro proveedor/.test(dep.cruce[0]), dep.cruce);
+  await page.evaluate(([a, b]) => { App.marcarDepuracion(a, 'omitida (prueba)'); App.marcarDepuracion(b, 'omitida (prueba)'); }, [PRAMEC, INTRALUM]);
+
+  console.log('\n4. Envío (05/11 09:00)');
+  await page.evaluate(([pr, it, vi, a, b]) => {
+    App.setAhora('2026-11-05T09:00:00'); App.S.comprador = a; T.preguntar(pr);
+    App.setAhora('2026-11-05T09:05:00'); T.preguntar(it);
+    App.setAhora('2026-11-05T09:10:00'); App.S.comprador = b; T.preguntar(vi);
+  }, [PRAMEC, INTRALUM, VISEG, COMP_A, COMP_B]);
+  const env = await page.evaluate(() => ({ P1: T.est('P1'), V3: App.evaluarLinea(App.S.seg[K.V3]).motivo, vig: App.mensajesVigentes('VIDRIOS DE SEGURIDAD S.A').length, envV: App.lineasDeMensaje(App.mensajesVigentes('VIDRIOS DE SEGURIDAD S.A')[0]).map(r => r.clave) }));
+  check('NUEVA → ESPERANDO_FECHA al registrar la pregunta', env.P1 === 'ESPERANDO_FECHA');
+  check('«Por cancelar» y «entregado» no se preguntan; V2 (fecha 12/11 de la depuración, hito de 7 días ya cubierto) tampoco: Viseg solo V1', eq(env.envV, [K.V1]) && /Por cancelar/.test(env.V3), env);
+
+  console.log('\n5. Pegado general con varios proveedores (05/11 10:40)');
+  await page.evaluate(() => App.setAhora('2026-11-05T10:40:00'));
+  const PEGADO1 = `[8:30 a. m., 5/11/2026] PRAMEC - Carlos: hola, mensaje viejo: todo igual
+[9:00 a. m., 5/11/2026] Compras Busscar: Buenos días Carlos, le escribe Compras Busscar...
+[10:15 a. m., 5/11/2026] PRAMEC - Carlos: Buenos días. La 51420 llega el 18 de noviembre
+y el ítem 1 de la 51421 ya lo entregamos
+[10:20 a. m., 5/11/2026] INTRALUM - Diana: la 52001 la próxima semana, la 52002 el 20/11
+[10:22 a. m., 5/11/2026] Viseg Despachos: Todo igual
+[10:30 a. m., 5/11/2026] Pedro Desconocido: hola`;
+  const a1 = await page.evaluate(t => { const a = App.analizarPegado(t); window.__a1 = a;
+    return { general: a.general, paneles: a.paneles.map(p => ({ prov: p.prov || p.titulo, bloq: p.bloqueos, usados: p.usados ? p.usados.length : 0, viejos: p.viejos, por: p.por, filas: p.filas ? T.resumen(p) : [] })) }; }, PEGADO1);
+  const pp = a1.paneles.find(p => p.prov === PRAMEC), pi = a1.paneles.find(p => p.prov === INTRALUM), pv = a1.paneles.find(p => p.prov === VISEG), pd = a1.paneles.find(p => p.prov === 'Pedro Desconocido');
+  check('mensajes propios de Busscar ignorados', a1.general.some(g => /1 mensaje\(s\) propios/.test(g)), a1.general);
+  check('un panel por proveedor (Pramec, Intralum, Viseg) + remitente desconocido', !!pp && !!pi && !!pv && !!pd, a1.paneles.map(p => p.prov));
+  check('remitente desconocido → bloqueado con instrucción', pd && /no reconocido/.test(pd.bloq[0]), pd);
+  check('Pramec: ignora el mensaje anterior a la pregunta y une el mensaje de dos renglones', pp.viejos === 1 && pp.usados === 1, pp);
+  check('Pramec: «La 51420 llega el 18 de noviembre» aplica a sus 2 ítems; «ítem 1 de la 51421 ya lo entregamos» → entregado',
+    eq(pp.filas.map(f => [f.k, f.a, f.f]).sort(), [['P1','FECHA','2026-11-18'], ['P2','FECHA','2026-11-18'], ['P3','ENT','']]), pp.filas);
+  check('Intralum: fecha vaga → amarillo; «la 52002 el 20/11» → sus 2 líneas', pi.filas.find(f => f.k === 'I1').amar && pi.filas.filter(f => f.f === '2026-11-20').length === 2, pi.filas);
+  check('Viseg identificado por su segundo nombre de WhatsApp; «Todo igual» sin fecha previa → amarillo con la requerida (10/11)', pv.por === 'nombre' && eq(pv.filas, [{ k:'V1', a:'FECHA', f:'2026-11-10', err:'', amar:true }]), pv);
+  check('«Todo igual» solo afecta las líneas del mensaje (V2 no estaba)', !pv.filas.some(f => f.k === 'V2'));
+  // Confirmaciones
+  const conf = await page.evaluate(([pr, it, vi]) => {
+    const a = window.__a1;
+    const nP = App.confirmarPanel(T.panel(a, pr));
+    const pI = T.panel(a, it); pI.filas.filter(f => f.revisar).forEach(f => { f.fecha = '2026-11-13'; f.revisar = false; });
+    const nI = App.confirmarPanel(pI);
+    return { nP, nI, P1: T.reg('P1'), P3: T.est('P3'), I1: T.reg('I1').fecha_prometida, riesgo: App.enRiesgo(App.S.seg[K.P1]), sem: App.semaforo(App.S.seg[K.P1]) };
+  }, [PRAMEC, INTRALUM, VISEG]);
+  check('confirmar Pramec: 3 líneas; P1 CONFIRMADA 18/11 (riesgo: requerida 15/11 → semáforo rojo)', conf.nP === 3 && conf.P1.estado === 'CONFIRMADA' && conf.P1.fecha_prometida === '2026-11-18' && conf.riesgo && conf.sem === 'rojo', conf);
+  check('entregado → ENTREGADO_POR_CONFIRMAR', conf.P3 === 'ENTREGADO_POR_CONFIRMAR');
+  check('Intralum: el comprador eligió la fecha vaga (13/11) antes de confirmar', conf.nI === 3 && conf.I1 === '2026-11-13', conf);
+
+  console.log('\n6. Candados y casos especiales');
+  await page.evaluate(() => App.setAhora('2026-11-05T11:00:00'));
+  const cruce = await page.evaluate(() => App.analizarPegado('[11:00 a. m., 5/11/2026] PRAMEC - Carlos: la 54001 llega mañana').paneles[0]);
+  check('OC de otro proveedor → panel BLOQUEADO (posible cruce)', cruce.bloqueado && /54001 es de METALES FICTICIOS SAS/.test(cruce.bloqueos[0]), cruce.bloqueos);
+  const sinEnc = await page.evaluate(() => App.analizarPegado('La 51420 llega el 25'));
+  check('pegado sin encabezado → bloqueado con instrucción de cómo copiar', sinEnc.paneles.length === 0 && /Seleccionar mensajes/.test(sinEnc.general[0]), sinEnc);
+  const tel = await page.evaluate(() => { const p = App.analizarPegado('[11:05 a. m., 5/11/2026] +57 300 0000001: la 51420 se mantiene').paneles[0]; return { prov: p.prov, por: p.por, filas: T.resumen(p) }; });
+  check('remitente por celular (+57 300 0000001) → Pramec', tel.prov === PRAMEC && tel.por === 'celular', tel);
+  check('«se mantiene» sobre fecha confirmada → Se mantiene (SI)', tel.filas.length === 2 && tel.filas.every(f => f.a === 'SI'), tel.filas);
+  const viejos = await page.evaluate(() => App.analizarPegado('[8:00 a. m., 5/11/2026] INTRALUM - Diana: todo igual').paneles[0]);
+  check('mensajes anteriores a la última pregunta → no hay respuesta nueva', viejos.bloqueado && /anteriores a la última pregunta/.test(viejos.bloqueos[0]), viejos.bloqueos);
+  const m24 = await page.evaluate(() => App.separarWhatsApp('[14:30, 5/11/2026] VISEG - Jorge: ok').mensajes[0]);
+  check('encabezado en formato 24 h', m24 && m24.ts === '2026-11-05T14:30:00', m24);
+
+  console.log('\n7. Deshacer');
+  const des = await page.evaluate(p => { const antes = App.ultimoLote(p).eventos.length; const n = App.deshacerUltima(p); return { antes, n, P1: T.reg('P1'), P3: T.est('P3'), hist: App.S.eventos.filter(e => e.tipo === 'DESHACER').length, otro: App.ultimoLote(p) }; }, PRAMEC);
+  check('deshacer la última respuesta de Pramec restaura las 3 líneas', des.n === 3 && des.P1.estado === 'ESPERANDO_FECHA' && des.P1.fecha_prometida === '' && des.P3 === 'ESPERANDO_FECHA', des);
+  check('queda en el historial (eventos DESHACER) y no hay más lotes por deshacer', des.hist === 3 && des.otro === null, des.hist);
+  const item = await page.evaluate(() => { const p = App.analizarPegado('[11:10 a. m., 5/11/2026] PRAMEC - Carlos: El ítem 2 llega el 21').paneles[0]; return T.resumen(p); });
+  check('tras deshacer, el mensaje vuelve a estar vigente: «El ítem 2 llega el 21» → TUERCA (única OC con ítem 2)', eq(item, [{ k:'P2', a:'FECHA', f:'2026-11-21', err:'', amar:false }]), item);
+
+  console.log('\n8. Guardado automático y fecha simulada');
+  const auto = await page.evaluate(async c => {
+    const archivos = {};
+    const dir = n => ({ name:n, async getDirectoryHandle(x){ return dir(x); }, async getFileHandle(x){ return { async createWritable(){ let b; return { async write(d){ b = d; }, async close(){ archivos[n + '/' + x] = b; } }; } }; } });
+    App.S.dirHandle = dir('raiz'); App.S.comprador = c;
+    App.setAhora('2026-11-05T11:00:00');
+    App.guardadoAutomatico(); await new Promise(r => setTimeout(r, 1200));
+    const conSim = Object.keys(archivos).length;
+    App.aplicarFechaSimulada('');
+    App.guardadoAutomatico(); await new Promise(r => setTimeout(r, 1200));
+    const nombres = Object.keys(archivos), b = archivos[nombres[0]];
+    const d = b ? App.leerSeguimiento(XLSX.read(b, { type:'array' })) : null;
+    App.S.dirHandle = null; App.setAhora('2026-11-05T11:00:00');
+    return { conSim, nombres, lineas: d && d.lineas.length, eventos: d && d.eventos.length, pend: App.S.modificadas.size };
+  }, COMP_A);
+  check('con fecha simulada NO se guarda automáticamente', auto.conSim === 0, auto);
+  check('sin fecha simulada guarda respuestas/seguimiento_<comprador>_<aaaammdd>.xlsx', auto.nombres.length === 1 && /^respuestas\/seguimiento_COMPRADORA_A_PRUEBA_\d{8}\.xlsx$/.test(auto.nombres[0]) && auto.lineas > 0 && auto.eventos > 0, auto);
+  const sim = await page.evaluate(() => { App.aplicarFechaSimulada('2026-11-20'); App.renderTodo(); const t = document.querySelector('#estadoCarga').textContent, h = App.hoy(); App.aplicarFechaSimulada(''); App.setAhora('2026-11-05T11:00:00'); App.renderTodo(); return { t, h }; });
+  check('fecha simulada desde el Administrador: cambia «hoy» y muestra la franja roja', sim.h === '2026-11-20' && /FECHA SIMULADA: 20\/11\/2026/.test(sim.t), sim);
+
+  console.log('\n9. Consolidación y cierres por el listado de OC');
+  const exp = await page.evaluate(([a, b]) => { const out = []; for (const c of [a, b]){ App.S.comprador = c; const d = App.datosMiSeguimiento(); out.push({ nombre:`seguimiento_${c.replace(/\W+/g, '_')}_20261105.xlsx`, b64: XLSX.write(App.libroSeguimiento(d.lineas, d.eventos), { bookType:'xlsx', type:'base64' }) }); } return out; }, [COMP_A, COMP_B]);
+  await page.evaluate(e => { localStorage.clear(); App.S.modificadas.clear(); T.seguimientos = e; }, exp);
+  await page.evaluate(() => T.cargar(['OC_04112026.txt']));
+  const cons = await page.evaluate(() => ({ P2: T.reg('P2').estado, I1: T.reg('I1').fecha_prometida, V3: T.est('V3'), lote: App.ultimoLote('PRAMEC SAS'), dep: App.depuracionPendiente('VIDRIOS DE SEGURIDAD S.A') }));
+  check('consolidación sin trabajo local reconstruye estados, deshacer y depuración', cons.P2 === 'ESPERANDO_FECHA' && cons.I1 === '2026-11-13' && cons.V3 === 'POR_CANCELAR' && cons.lote === null && cons.dep === false, cons);
+  await page.evaluate(() => { App.setAhora('2026-11-09T09:00:00'); return T.cargar(['OC_04112026.txt', 'OC_09112026.txt']); });
+  const cie = await page.evaluate(() => ({ nombre: App.S.ocs.nombre, P1: T.est('P1'), V3: T.est('V3'), P3: T.est('P3'), alm: App.revisarAlmacen(App.S.seg[K.V4]) }));
+  check('usa el listado más reciente (09/11)', cie.nombre === 'OC_09112026.txt');
+  check('línea que ya no está abierta → CERRADA_SIESA; «por cancelar» que desaparece → CERRADA_SIESA', cie.P1 === 'CERRADA_SIESA' && cie.V3 === 'CERRADA_SIESA', cie);
+  check('entregado hace 5 días y sigue abierto: aún no «revisar con almacén»', cie.alm === false);
+  T13 = await page.evaluate(() => { T.libros['OC_13112026.txt'] = T.libros['OC_09112026.txt']; App.setAhora('2026-11-13T09:00:00'); return T.cargar(['OC_13112026.txt']).then(() => App.revisarAlmacen(App.S.seg[K.V4])); });
+  check('entregado hace 9 días (> 7) y sigue abierto → «revisar con almacén»', T13 === true);
+
+  console.log('\n10. Tablero');
+  const tb = await page.evaluate(() => { const m = App.metricasProveedores(); return Object.fromEntries(m.map(x => [x.alias, { preg:x.preguntas, resp:x.respondidas, sinNec:x.sinNecesidad, porCanc:x.porCancelar, epc:x.epc, alm:x.almacen, rojas:x.rojas }])); });
+  check('Pramec: 1 línea sin necesidad en planeación; respuesta deshecha no cuenta', tb.Pramec.sinNec === 1 && tb.Pramec.resp === 0, tb.Pramec);
+  check('Viseg: entregado por confirmar con «revisar con almacén»', tb.Viseg.epc === 1 && tb.Viseg.alm === 1, tb.Viseg);
+  const hojas = await page.evaluate(() => App.libroTablero().SheetNames);
+  check('exportación del tablero con 4 hojas', eq(hojas, ['resumen_proveedores', 'riesgo_faltante', 'cambios_por_linea', 'detalle_lineas']), hojas);
+
+  console.log('\n11. Interfaz');
+  await page.evaluate(() => { App.setAhora('2026-11-13T10:00:00'); window.__abiertas = []; window.open = u => { window.__abiertas.push(u); return null; }; App.S.comprador = 'COMPRADORA A (PRUEBA)'; App.S.tab = 'hoy'; App.renderTodo(); });
   const capt = path.join(RAIZ, 'pruebas', 'capturas'); fs.mkdirSync(capt, { recursive: true });
   await page.screenshot({ path: path.join(capt, '1_gestion_hoy.png'), fullPage: true });
-  const btn = await page.$('[data-prov] button[data-acc=wa]');
-  check('hay tarjeta con botón «Abrir WhatsApp»', !!btn);
+  const btn = await page.$('[data-prov] button[data-acc=wa]:not([disabled])');
+  check('tarjeta con botón «Abrir WhatsApp» habilitado', !!btn);
   if (btn){
     await btn.click();
     const url = await page.evaluate(() => window.__abiertas[0]);
     const txt = decodeURIComponent((url || '').split('?text=')[1] || '');
-    check('abre https://wa.me/57<celular>?text=… con el mensaje', /^https:\/\/wa\.me\/573000000003\?text=/.test(url || '') && txt.includes('plataforma de proveedores'), url && url.slice(0, 60));
+    check('abre https://wa.me/57<celular>?text=… con el mensaje por OC', /^https:\/\/wa\.me\/57300000000[12]\?text=/.test(url || '') && /OC 5\d{4}\n• Ítem 1/.test(txt), (url || '').slice(0, 60));
   }
-  await page.fill('[data-prov] textarea', '1 SI 2 NO');
-  await page.click('[data-prov] button[data-acc=interpretar]');
-  await page.waitForSelector('tr.err');
-  check('vista previa marca en rojo lo no entendido', (await page.$$('tr.err')).length >= 1);
-  await page.screenshot({ path: path.join(capt, '2_vista_previa.png'), fullPage: true });
+  await page.evaluate(() => App.setAhora('2026-11-13T11:00:00'));
+  await page.fill('#txtPegado', `[11:00 a. m., 13/11/2026] PRAMEC - Carlos: La 51420 llega la próxima semana\n[11:01 a. m., 13/11/2026] INTRALUM - Diana: la 54001 llega mañana\n[11:02 a. m., 13/11/2026] Pedro: hola`);
+  await page.click('#btnAnalizar');
+  await page.waitForSelector('.prov-grande');
+  check('panel con el nombre del proveedor en grande y botón «Confirmar respuesta de …» deshabilitado si hay amarillo', !!(await page.$('button[data-acc=confirmar][disabled]')) && /PRAMEC SAS/.test(await page.textContent('.confirmar .prov-grande')));
+  check('panel bloqueado para la OC ajena y el remitente desconocido', (await page.$$('.bloqueo')).length === 2);
+  await page.screenshot({ path: path.join(capt, '2_pegado_y_candados.png'), fullPage: true });
   for (const t of ['lineas', 'tablero']){ await page.click(`#tabs button[data-tab=${t}]`); await page.screenshot({ path: path.join(capt, `3_${t}.png`), fullPage: true }); }
-  await page.click('#tabs button[data-tab=tablero]'); await page.click('[data-tv=riesgo]'); await page.screenshot({ path: path.join(capt, '4_riesgo.png'), fullPage: true });
   await page.click('#tabs button[data-tab=admin]'); await page.fill('#admPin', '1234'); await page.click('#admEntrar');
-  check('modo administrador se desbloquea con PIN', !!(await page.$('#admExportar')));
-  await page.selectOption('#pvProv', INTRALUM); await page.selectOption('#pvPl', 'repregunta');
-  check('vista previa de plantilla con datos reales', /Hola Diana/.test(await page.textContent('#pvMsg')) && /OC-20/.test(await page.textContent('#pvMsg')));
-  await page.screenshot({ path: path.join(capt, '5_admin.png'), fullPage: true });
+  check('Administrador: fecha simulada, reglas nuevas y columna nombre_whatsapp', !!(await page.$('#admSim')) && !!(await page.$('[data-regla=max_lineas_mensaje]')) && !!(await page.$('[data-f=nombre_whatsapp]')));
+  await page.screenshot({ path: path.join(capt, '4_admin.png'), fullPage: true });
   check('sin errores de JavaScript en la página', errores.length === 0, errores);
 
   await browser.close();
   console.log(`\nResultado: ${ok} correctas, ${fallos} fallidas`);
   process.exit(fallos ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });
+let T13;

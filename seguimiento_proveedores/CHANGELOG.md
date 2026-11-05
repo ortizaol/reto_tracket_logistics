@@ -94,3 +94,11 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - Opción "Omitir depuración" (queda registrada). El botón de WhatsApp se habilita al terminar u omitir la depuración.
 - Tablero: columnas de semáforo (verde/rojo), "Sin necesidad en planeación" y "Por cancelar"; Administrador: columna `nombre_whatsapp`.
 - **Motivo:** el listado de Siesa trae líneas viejas o ya recibidas; depurarlas por llamada una sola vez evita que el primer WhatsApp llegue lleno de ruido y le quite credibilidad al proceso.
+
+### Bloque 7 · Datos de prueba, pruebas e instructivo
+- `datos_prueba/` nuevo, ficticio y con el formato real de Siesa: `oc_abiertas/OC_04112026.txt` (Latin-1, tabuladores, "Gran total", ítems con ceros), `explosiones/ABASTECIMIENTO_04112026.xlsx` con amarre `TD_FECHAS.Nro orden` (un ítem en 2 OC con 3 necesidades, una línea sin necesidad, una necesidad vencida, una OC con varios ítems, misma OC + ítem con dos solicitudes) y `config.xlsx` con `nombre_whatsapp`.
+- `pruebas/pruebas.js`: 60 verificaciones (fuentes, amarre y FIFO, mensaje, depuración, intérprete, candados, deshacer, guardado automático, fecha simulada, consolidación, cierres, tablero e interfaz).
+- `pruebas/pruebas_reales.js`: mismos controles con los archivos reales filtrados a Pramec, Intralum y Viseg (rutas por variable de entorno; los archivos reales no se versionan).
+- Corrección: el tablero ya no cuenta como respondida una respuesta deshecha.
+- `INSTRUCTIVO.md` paso a paso (contactos «PROVEEDOR - Nombre», cómo copiar desde WhatsApp Web, dónde dejar los archivos) y README actualizado.
+- **Motivo:** dejar el piloto verificable con datos reales y explicable para compradores sin experiencia técnica.
