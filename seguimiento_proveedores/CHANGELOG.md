@@ -72,3 +72,12 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - "Todo igual" en una línea que nunca tuvo fecha → amarillo con la requerida propuesta (no se asume).
 - **Candado:** una OC o un ítem que pertenece a otro proveedor bloquea la respuesta completa.
 - **Motivo:** los proveedores no van a responder con un formato rígido; reglas explícitas (sin IA) dan resultados predecibles y explicables, y lo que no es seguro queda en amarillo o rojo para el comprador.
+
+### Bloque 4 · Candados contra cruces de proveedor
+- Un solo cuadro "Pegar respuestas de WhatsApp" (se eliminan los cuadros por tarjeta, que era donde nacía el error de pegar en el proveedor equivocado).
+- El texto se separa por los encabezados de WhatsApp Web (`[10:15 a. m., 5/11/2026] PRAMEC - Carlos: …`) y **el proveedor se identifica por el remitente**: celular (prioridad 1) o `nombre_whatsapp` de config.xlsx (prioridad 2), normalizando tildes, mayúsculas, espacios y +57.
+- Se ignoran los mensajes propios de Busscar (`nombre_cuenta_busscar`) y los anteriores a la última pregunta enviada a ese proveedor.
+- Bloqueos: pegado sin encabezado (con instrucción de cómo copiar), remitente no reconocido, OC o ítem de otro proveedor. Varios proveedores en un pegado → un panel por proveedor.
+- Confirmación con el nombre del proveedor en grande, resumen y líneas a cambiar; botón "Confirmar respuesta de <PROVEEDOR>", deshabilitado mientras haya filas en rojo o amarillo.
+- "Deshacer última respuesta" por proveedor: restaura el estado anterior de cada línea y queda en el historial (evento DESHACER).
+- **Motivo:** eliminar por diseño el error de cruzar respuestas entre proveedores sin depender de la API de WhatsApp.

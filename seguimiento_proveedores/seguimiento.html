@@ -56,6 +56,12 @@ td.c,th.c{text-align:center}
 .chip.CERRADA,.chip.CERRADA_SIESA{background:#eceef1;color:var(--mut)}
 .chip.SIN_NECESIDAD{background:#f1ecf9;color:#5b3d8a}
 .chip.POR_CANCELAR{background:#fdecea;color:#8a1c12}
+.bloqueo{background:var(--errbg);border:2px solid var(--err);border-radius:8px;padding:10px 14px;margin-top:10px}
+.confirmar{background:#f7faff;border:2px solid var(--pri);border-radius:8px;padding:10px 14px;margin-top:10px}
+.prov-grande{font-size:20px;font-weight:700;margin-bottom:4px}
+tr.amar td{background:var(--warnbg)}
+.amar-tx{color:var(--warn);font-weight:600}
+button.b.grande{font-size:15px;padding:8px 16px}
 .sem{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:middle}
 .sem.verde{background:#1e9e5a}.sem.rojo{background:#d92d20}.sem.gris{background:#c3c8d2}
 .chip.rojo{background:var(--errbg);color:var(--err)}
@@ -1070,8 +1076,8 @@ function ultimaPregunta(prov){
   return u;
 }
 function ultimaRespuestaDesde(prov, desde){
-  let u = null; const k = normH(prov);
-  for (const e of S.eventos) if (e.tipo === 'RESPUESTA' && normH(e.proveedor) === k && e.fecha_hora >= desde && (!u || e.fecha_hora > u.fecha_hora)) u = e;
+  let u = null;
+  for (const e of respuestasProv(prov)) if (e.fecha_hora >= desde && (!u || e.fecha_hora > u.fecha_hora)) u = e;
   return u;
 }
 /** Líneas (en orden) del último mensaje enviado al proveedor: la numeración que usa la respuesta. */
@@ -1382,7 +1388,7 @@ function mensajesVigentes(prov){
   const k = normH(prov);
   const preg = S.eventos.filter(e => e.tipo === 'PREGUNTA' && normH(e.proveedor) === k).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
   if (!preg.length) return [];
-  const ultResp = S.eventos.filter(e => e.tipo === 'RESPUESTA' && normH(e.proveedor) === k).reduce((m, e) => maxStr(m, e.fecha_hora), '');
+  const ultResp = respuestasProv(prov).reduce((m, e) => maxStr(m, e.fecha_hora), '');
   const v = preg.filter(e => e.fecha_hora > ultResp);
   return v.length ? v : [preg[preg.length - 1]];
 }
@@ -1405,14 +1411,6 @@ function ctxProveedor(prov){
   }
   for (const n of Object.keys(ocAjenas)) if (todas.some(r => normH(r.proveedor) === k && numOC(r.oc) === n)) delete ocAjenas[n];
   return { proveedor:prov, alcance, lineasProv, ocAjenas, itemsAjenos };
-}
-/** Adaptador temporal para la tarjeta por proveedor (se reemplaza por el pegado general en el bloque 4). */
-function previaRespuesta(texto, mapa){
-  const prov = mapa[0] ? mapa[0].proveedor : '';
-  const res = interpretarNatural(texto, ctxProveedor(prov));
-  const filas = mapa.map((r, i) => { const f = res.filas.find(x => x.clave === r.clave);
-    return { n:i + 1, clave:r.clave, ...(f ? { accion:f.accion, fecha:f.fecha, error:f.error || (f.revisar ? 'revisar: ' + f.nota : ''), nota:f.nota, origen:f.origen } : { accion:'NINGUNA', fecha:'', error:'' }) }; });
-  return { texto, filas, ignorado:[...res.bloqueos, ...res.errores, ...res.ignorado], fueraDeRango:[] };
 }
 /** Ajusta la acción interpretada al estado de la línea (SI sin fecha, fecha igual a la prometida, línea cerrada). */
 function ajustarAccion(r, e){
@@ -1478,8 +1476,7 @@ function registrarPregunta(prov, rs, plantilla, msg){
     tocar(r);
   }
   registrarEvento({ tipo:'PREGUNTA', proveedor:prov, lineas: rs.map(r => r.clave).join(' ; '), plantilla, texto: msg.slice(0, 2000) });
-  delete PREVIA[normH(prov)];
-  guardarLocal();
+  guardarLocal(); guardadoAutomatico();
 }
 const slug = s => norm(s).replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'SIN_NOMBRE';
 const sello = () => { const a = ahora(); return a.slice(0,10).replace(/-/g, '') + '_' + a.slice(11,13) + a.slice(14,16); };
@@ -1500,6 +1497,7 @@ function datosMiSeguimiento(){
   const eventos = S.eventos.filter(e => !e.comprador || norm(e.comprador) === me);
   return { lineas, eventos };
 }
+function guardadoAutomatico(){}
 async function exportarSeguimiento(){
   if (!S.comprador){ alert('Elija primero su nombre de comprador (arriba a la derecha).'); return; }
   const d = datosMiSeguimiento();
@@ -1513,40 +1511,220 @@ async function exportarSeguimiento(){
 }
 
 /* =========================================================================
+   Pegado general de WhatsApp Web y candados contra cruces de proveedor
+   ========================================================================= */
+/** Lotes de respuesta que fueron deshechos. */
+function lotesDeshechos(){ return new Set(S.eventos.filter(e => e.tipo === 'DESHACER').map(e => e.lote)); }
+/** Respuestas vigentes (no deshechas) de un proveedor. */
+function respuestasProv(prov){ const k = normH(prov), d = lotesDeshechos(); return S.eventos.filter(e => e.tipo === 'RESPUESTA' && normH(e.proveedor) === k && !(e.lote && d.has(e.lote))); }
+
+/**
+ * Separa el texto copiado de WhatsApp Web en mensajes.
+ * Encabezado esperado: "[10:15 a. m., 5/11/2026] PRAMEC - Carlos: texto" (también "[5/11/2026, 10:15]" y 24 h).
+ * Las líneas sin encabezado continúan el mensaje anterior. Devuelve { mensajes:[{ts, remitente, texto}], sinEncabezado }.
+ */
+function separarWhatsApp(texto){
+  const mensajes = []; let sinEncabezado = '';
+  const dm = R().formato_fecha_whatsapp;
+  for (const linea of String(texto || '').replace(/\r/g, '').split('\n')){
+    const m = /^\s*\[([^\]]{6,40})\]\s*([^:]{1,80}?):\s?(.*)$/.exec(linea);
+    const ts = m ? fechaHoraWhatsApp(m[1], dm) : '';
+    if (m && ts) mensajes.push({ ts, remitente:m[2].trim(), texto:m[3] });
+    else if (mensajes.length) mensajes[mensajes.length - 1].texto += '\n' + linea;
+    else if (linea.trim()) sinEncabezado += linea + '\n';
+  }
+  return { mensajes, sinEncabezado:sinEncabezado.trim() };
+}
+/** "10:15 a. m., 5/11/2026" → "2026-11-05T10:15:00". */
+function fechaHoraWhatsApp(s, dm){
+  const f = /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/.exec(s), h = /(\d{1,2}):(\d{2})(?::\d{2})?\s*([ap])?\.?\s*m?\.?/i.exec(s.replace(/\d{1,2}\/\d{1,2}\/\d{2,4}/, ''));
+  if (!f || !h) return '';
+  let d = +f[1], mo = +f[2], y = +f[3]; if (y < 100) y += 2000;
+  if (dm === 'm/d'){ const t = d; d = mo; mo = t; }
+  if (!fechaValida(y, mo, d)) return '';
+  let hh = +h[1]; const ap = (h[3] || '').toLowerCase();
+  if (ap === 'p' && hh < 12) hh += 12; if (ap === 'a' && hh === 12) hh = 0;
+  return `${y}-${pad(mo)}-${pad(d)}T${pad(hh)}:${h[2]}:00`;
+}
+/** Identifica al remitente: cuenta propia de Busscar, proveedor (celular = prioridad 1, nombre_whatsapp = prioridad 2) o desconocido. */
+function identificarRemitente(rem){
+  const n = normH(rem);
+  if (R().nombre_cuenta_busscar.includes(n) || /^(TU|YO|USTED)$/.test(n)) return { tipo:'propio' };
+  const dig = String(rem).replace(/\D/g, '');
+  if (dig.length >= 10){
+    const p = (S.config.proveedores || []).find(p => { const c = celularWa(p.celular); return c && c.slice(-10) === dig.slice(-10); });
+    return p ? { tipo:'proveedor', p, por:'celular' } : { tipo:'desconocido' };
+  }
+  const p = (S.config.proveedores || []).find(p => String(p.nombre_whatsapp || '').split(';').map(normH).filter(Boolean).includes(n));
+  return p ? { tipo:'proveedor', p, por:'nombre' } : { tipo:'desconocido' };
+}
+/**
+ * Analiza un pegado completo: separa mensajes, identifica proveedores, descarta propios y anteriores a la última
+ * pregunta, e interpreta cada proveedor por separado. Devuelve { general:[bloqueos generales], paneles:[...] }.
+ */
+function analizarPegado(texto){
+  const sep = separarWhatsApp(texto), general = [];
+  if (!sep.mensajes.length){
+    general.push('No se encontró el encabezado de WhatsApp (fecha y nombre). Copie desde WhatsApp Web seleccionando los mensajes completos: pase el mouse sobre el mensaje → flecha ⌄ → «Seleccionar mensajes» → marque los mensajes → copiar (Ctrl+C). No copie solo el texto del globo.');
+    return { general, paneles:[] };
+  }
+  if (sep.sinEncabezado) general.push('Se ignoró texto antes del primer mensaje con encabezado: «' + recortar(sep.sinEncabezado, 80) + '».');
+  const grupos = {}, desconocidos = {};
+  let propios = 0;
+  for (const m of sep.mensajes){
+    const id = identificarRemitente(m.remitente);
+    if (id.tipo === 'propio'){ propios++; continue; }
+    if (id.tipo === 'desconocido'){ (desconocidos[m.remitente] || (desconocidos[m.remitente] = [])).push(m); continue; }
+    const k = normH(id.p.proveedor);
+    (grupos[k] || (grupos[k] = { p:id.p, por:id.por, remitentes:new Set(), mensajes:[] })).mensajes.push(m);
+    grupos[k].remitentes.add(m.remitente);
+  }
+  if (propios) general.push(`${propios} mensaje(s) propios de Busscar ignorados.`);
+  const paneles = Object.entries(desconocidos).map(([rem, ms]) => ({ bloqueado:true, titulo:rem,
+    bloqueos:[`Remitente «${rem}» no reconocido: no coincide con ningún celular ni nombre_whatsapp de config.xlsx. Guarde el contacto como «PROVEEDOR - Nombre» y pida al administrador registrarlo, o verifique que copió el chat correcto.`], mensajes:ms }));
+  for (const g of Object.values(grupos)){
+    const prov = g.p.proveedor;
+    const preg = ultimaPregunta(prov);
+    const desde = preg ? preg.fecha_hora.slice(0,16) : '';
+    const usados = g.mensajes.filter(m => !desde || m.ts.slice(0,16) >= desde), viejos = g.mensajes.length - usados.length;
+    const panel = { prov, p:g.p, por:g.por, remitentes:[...g.remitentes], usados, viejos, pregunta:preg, bloqueos:[], errores:[], filas:[], sinRespuesta:[] };
+    if (!preg) panel.errores.push('A este proveedor no se le ha enviado ningún mensaje desde la herramienta: solo se reconocen referencias explícitas a sus OC.');
+    if (!usados.length){ panel.bloqueado = true; panel.bloqueos.push(`Todos los mensajes (${viejos}) son anteriores a la última pregunta (${fmtFH(preg.fecha_hora)}). No hay respuesta nueva.`); paneles.push(panel); continue; }
+    const res = interpretarNatural(usados.map(m => m.texto).join('\n'), ctxProveedor(prov));
+    Object.assign(panel, { bloqueos:res.bloqueos, errores:[...panel.errores, ...res.errores], filas:res.filas, sinRespuesta:res.sinRespuesta, ignorado:res.ignorado });
+    panel.bloqueado = res.bloqueos.length > 0;
+    paneles.push(panel);
+  }
+  return { general, paneles };
+}
+/** Confirma la respuesta de un proveedor: aplica todas sus filas como un lote (deshacible). */
+function confirmarPanel(panel){
+  const lote = 'L' + nuevoId();
+  let n = 0;
+  for (const f of panel.filas){ if (S.seg[f.clave] && aplicarAccion(S.seg[f.clave], f, panel.prov, f.origen, lote)) n++; }
+  guardarLocal(); guardadoAutomatico();
+  return n;
+}
+/** Último lote de respuestas de un proveedor que todavía se puede deshacer. */
+function ultimoLote(prov){
+  const evs = respuestasProv(prov).filter(e => e.lote);
+  if (!evs.length) return null;
+  const ult = evs.reduce((m, e) => e.fecha_hora > m.fecha_hora ? e : m);
+  return { lote:ult.lote, fecha:ult.fecha_hora, eventos:evs.filter(e => e.lote === ult.lote) };
+}
+/** Deshace el último lote: restaura el estado anterior de cada línea y lo deja en el historial. */
+function deshacerUltima(prov){
+  const l = ultimoLote(prov); if (!l) return 0;
+  for (const e of l.eventos){
+    const r = S.seg[e.clave]; if (!r) continue;
+    let antes = {}; try{ antes = JSON.parse(e.antes || '{}'); }catch(x){}
+    const est = r.estado;
+    CAMPOS_DESHACER.forEach(c => { if (c in antes) r[c] = antes[c]; });
+    tocar(r);
+    registrarEvento({ tipo:'DESHACER', proveedor:prov, clave:r.clave, lote:l.lote, estado_anterior:est, estado_nuevo:r.estado, fecha_nueva:r.fecha_prometida, texto:'Deshacer respuesta del ' + fmtFH(l.fecha) });
+  }
+  guardarLocal(); guardadoAutomatico();
+  return l.eventos.length;
+}
+
+/* =========================================================================
    Vista "Gestión de hoy"
    ========================================================================= */
-const PREVIA = {};      // normH(proveedor) -> vista previa de respuesta
-const UI = { verTodos:false, sinGestion:false, verMsg:{} };
+const UI = { verTodos:false, sinGestion:false, verMsg:{}, pegado:'', analisis:null, confirmados:{} };
 function vistaHoy(){
-  if (!S.explosion) return S.avisos.length ? '' : '<div class="panel vacio">Cargue la explosión para empezar.</div>';
-  const lista = gestionHoy(UI.verTodos, UI.sinGestion);
-  const nLin = lista.reduce((s, g) => s + g.hoy.length, 0);
-  const nProv = lista.filter(g => g.hoy.length).length;
-  const esperando = lista.filter(g => g.esperando).length;
-  const todas = Object.values(S.seg).filter(r => provActivo(r.proveedor));
-  const epc = todas.filter(r => r.estado === 'ENTREGADO_POR_CONFIRMAR');
-  const alm = epc.filter(revisarAlmacen);
   let h = '';
+  const viejos = archivosViejos();
+  h += `<div class="panel fila"><span>${estadoFuentes()}</span><span class="sp"></span><button class="b pri" id="btnNuevos">Cargar nuevos archivos</button></div>`;
+  if (viejos.length) h += `<div class="error">Archivos desactualizados (más de ${R().dias_alerta_archivos} días): ${esc(viejos.join(' y '))}. Cargue los cortes nuevos de Siesa antes de preguntar a proveedores.</div>`;
+  if (!S.ocs) return h + (S.avisos.length ? '' : '<div class="panel vacio">Cargue el listado de OC abiertas y la explosión para empezar.</div>');
+  const lista = gestionHoy(UI.verTodos, UI.sinGestion);
+  const nLin = lista.reduce((s, g) => s + g.hoy.length, 0), nProv = lista.filter(g => g.hoy.length).length, esperando = lista.filter(g => g.esperando).length;
+  const todas = Object.values(S.seg).filter(r => provActivo(r.proveedor));
+  const epc = todas.filter(r => r.estado === 'ENTREGADO_POR_CONFIRMAR'), alm = epc.filter(revisarAlmacen);
+  const llamar = todas.filter(r => semaforo(r) === 'rojo' && !r.fecha_prometida);
   if (!S.comprador) h += '<div class="aviso">Elija su nombre de comprador (arriba a la derecha) para ver sus proveedores y registrar preguntas.</div>';
   h += `<div class="kpis">
     <div class="kpi"><div class="v">${nProv}</div><div class="l">proveedores a contactar hoy</div></div>
     <div class="kpi"><div class="v">${nLin}</div><div class="l">líneas a preguntar</div></div>
     <div class="kpi"><div class="v">${esperando}</div><div class="l">mensajes esperando respuesta</div></div>
+    <div class="kpi ${llamar.length ? 'rojo' : ''}"><div class="v">${llamar.length}</div><div class="l">requerida vencida sin fecha (llamar)</div></div>
     <div class="kpi"><div class="v">${epc.length}</div><div class="l">entregados por confirmar</div></div>
-    <div class="kpi ${alm.length ? 'rojo' : ''}"><div class="v">${alm.length}</div><div class="l">revisar con almacén</div></div>
-  </div>
-  <div class="panel fila">
+    <div class="kpi ${alm.length ? 'rojo' : ''}"><div class="v">${alm.length}</div><div class="l">revisar con almacén</div></div></div>`;
+  h += vistaPegado();
+  h += `<div class="panel fila">
     <label class="chk"><input type="checkbox" id="chkTodos" ${UI.verTodos ? 'checked' : ''}> Ver proveedores de todos los compradores</label>
     <label class="chk"><input type="checkbox" id="chkSinGestion" ${UI.sinGestion ? 'checked' : ''}> Mostrar también proveedores sin gestión hoy</label>
-    <span class="sp"></span>
-    <button class="b pri" id="btnExportar">Exportar mi seguimiento</button>
-  </div>`;
+    <span class="sp"></span><button class="b" id="btnExportar">${S.dirHandle ? 'Guardar ahora en respuestas/' : 'Exportar mi seguimiento'}</button></div>`;
   if (!lista.length) h += '<div class="panel vacio">No hay proveedores para gestionar hoy con los filtros actuales.</div>';
   for (const g of lista) h += tarjetaProveedor(g);
-  if (alm.length) h += `<div class="panel"><h2>Revisar con almacén</h2><p class="peq mut">El proveedor reportó ENTREGADO hace más de ${R().dias_revisar_almacen} días y la línea sigue pendiente en la explosión.</p>
-    <table><tr><th>Proveedor</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Pend.</th><th>Entregado (según proveedor)</th></tr>
-    ${alm.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td><td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtFH(r.fecha_entregado)}</td></tr>`).join('')}</table></div>`;
+  if (alm.length) h += `<div class="panel"><h2>Revisar con almacén</h2><p class="peq mut">El proveedor reportó ENTREGADO hace más de ${R().dias_revisar_almacen} días y la línea sigue abierta en Siesa.</p>
+    <table><tr><th>Proveedor</th><th>OC</th><th>Ítem</th><th>Descripción</th><th class="n">Pend.</th><th>Entregado (según proveedor)</th></tr>
+    ${alm.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(numOC(r.oc))}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td><td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtFH(r.fecha_entregado)}</td></tr>`).join('')}</table></div>`;
   return h;
+}
+function vistaPegado(){
+  let h = `<div class="panel"><h2>Pegar respuestas de WhatsApp</h2>
+    <p class="peq mut">En WhatsApp Web: pase el mouse sobre un mensaje → flecha ⌄ → «Seleccionar mensajes» → marque los mensajes del proveedor → copiar (Ctrl+C) y pegue aquí. Puede pegar varios proveedores a la vez: cada uno se procesa por separado.</p>
+    <textarea id="txtPegado" rows="5" placeholder="[10:15 a. m., 5/11/2026] PRAMEC - Carlos: La 51420 llega el 25 de noviembre">${esc(UI.pegado)}</textarea>
+    <div class="fila" style="margin-top:6px"><button class="b pri" id="btnAnalizar">Analizar respuestas</button>${UI.analisis ? '<button class="b" id="btnLimpiar">Limpiar</button>' : ''}</div>`;
+  const a = UI.analisis;
+  if (a){
+    a.general.forEach(g => h += `<div class="${/No se encontró/.test(g) ? 'error' : 'aviso'}" style="margin-top:8px">${esc(g)}</div>`);
+    a.paneles.forEach((p, i) => h += panelRespuesta(p, i));
+  }
+  return h + '</div>';
+}
+function panelRespuesta(p, i){
+  if (UI.confirmados[i]) return `<div class="okbox" style="margin-top:10px">✓ Respuesta de <b>${esc(p.prov)}</b> guardada (${UI.confirmados[i]} línea(s)). Puede deshacerla desde la tarjeta del proveedor.</div>`;
+  if (!p.prov) return `<div class="bloqueo"><div class="prov-grande">⛔ ${esc(p.titulo)}</div>${p.bloqueos.map(b => `<p>${esc(b)}</p>`).join('')}</div>`;
+  let h = `<div class="${p.bloqueado ? 'bloqueo' : 'confirmar'}" data-panel="${i}"><div class="prov-grande">${p.bloqueado ? '⛔ ' : ''}${esc(p.prov)} <span class="peq">(${esc(provAlias(p.prov))})</span></div>
+    <p class="peq">Remitente: <b>${esc(p.remitentes.join(', '))}</b> (identificado por ${p.por === 'celular' ? 'celular' : 'nombre de WhatsApp'}) · ${p.usados.length} mensaje(s) usados${p.viejos ? ` · ${p.viejos} anterior(es) a la última pregunta ignorado(s)` : ''}${p.pregunta ? ` · última pregunta: ${fmtFH(p.pregunta.fecha_hora)}` : ''}</p>`;
+  p.bloqueos.forEach(b => h += `<div class="error"><b>BLOQUEADO:</b> ${esc(b)}</div>`);
+  if (p.bloqueado) return h + '</div>';
+  p.errores.forEach(e => h += `<div class="error">${esc(e)}</div>`);
+  if (p.ignorado && p.ignorado.length) h += `<div class="aviso peq">Texto sin información de entregas: «${esc(p.ignorado.join(' / '))}»</div>`;
+  const rojas = p.filas.filter(f => f.error).length, amarillas = p.filas.filter(f => f.revisar && !f.error).length;
+  const cambios = p.filas.filter(f => f.accion !== 'NINGUNA' && !f.error);
+  h += `<p><b>Resumen:</b> ${cambios.length} línea(s) a actualizar` +
+    ['SI','FECHA','NO','ENT'].map(a => { const n = cambios.filter(f => f.accion === a).length; return n ? ` · ${n} ${ACC_ETQ[a].toLowerCase()}` : ''; }).join('') +
+    (rojas ? ` · <span class="rojo">${rojas} en rojo</span>` : '') + (amarillas ? ` · <span class="amar-tx">${amarillas} en amarillo</span>` : '') + (p.sinRespuesta.length ? ` · ${p.sinRespuesta.length} sin respuesta` : '') + '</p>';
+  h += `<table><tr><th>OC</th><th>Ítem</th><th>Descripción</th><th>Acción</th><th>Fecha</th><th>Estado</th><th>Fecha prometida</th><th class="n">vs requerida</th><th>Lo que dijo / observación</th><th></th></tr>`;
+  p.filas.forEach((f, j) => {
+    const r = f.r, res = f.error ? { estado:r.estado, fecha:r.fecha_prometida } : resultadoAccion(r, f), d = f.error ? null : desfase(r, res.fecha);
+    const usaFecha = f.accion === 'NO' || f.accion === 'FECHA';
+    h += `<tr class="${f.error ? 'err' : f.revisar ? 'amar' : ''}" data-fila="${j}"><td>${esc(numOC(r.oc))}</td><td>${esc(r.item)}</td><td>${esc(recortar(r.descripcion, 35))}</td>
+      <td><select data-acc="pv-acc">${Object.keys(ACC_ETQ).map(a => `<option value="${a}" ${a === f.accion ? 'selected' : ''}>${ACC_ETQ[a]}</option>`).join('')}</select></td>
+      <td><input type="date" data-acc="pv-fecha" value="${esc(usaFecha ? f.fecha : '')}" ${usaFecha ? '' : 'disabled'}></td>
+      <td>${chipEstado(r.estado)}${res.estado !== r.estado ? ' → ' + chipEstado(res.estado) : ''}</td>
+      <td>${r.fecha_prometida ? fechaPalabras(r.fecha_prometida) : '—'}${res.fecha && res.fecha !== r.fecha_prometida ? ' → <b>' + fechaPalabras(res.fecha) + '</b>' : ''}</td>
+      <td class="n ${d > 0 ? 'rojo' : d != null ? 'verde' : ''}">${d == null ? '' : d > 0 ? '+' + d + ' d' : 'a tiempo'}</td>
+      <td class="peq">${esc(recortar(f.origen, 70))}${f.error || f.nota ? `<br><span class="${f.error ? 'rojo' : 'mut'}">${esc(f.error || f.nota)}</span>` : ''}</td>
+      <td>${f.revisar && !f.error ? '<button class="b peq" data-acc="pv-ok">Aceptar</button>' : ''}</td></tr>`;
+  });
+  h += '</table>';
+  if (p.sinRespuesta.length) h += `<details><summary class="peq">${p.sinRespuesta.length} línea(s) del mensaje sin respuesta (no cambian)</summary><p class="peq mut">${p.sinRespuesta.map(r => `OC ${numOC(r.oc)} · ${esc(recortar(r.descripcion, 30))}`).join(' · ')}</p></details>`;
+  const bloqueado = rojas || amarillas || !cambios.length;
+  h += `<div class="fila" style="margin-top:8px"><button class="b pri grande" data-acc="confirmar" ${bloqueado ? 'disabled' : ''}>Confirmar respuesta de ${esc(p.prov)}</button>
+    ${bloqueado ? `<span class="peq rojo">${!cambios.length ? 'No hay cambios para guardar.' : 'Resuelva las filas en rojo y amarillo (corrija, «Aceptar» o «Sin cambio»).'}</span>` : ''}</div>`;
+  return h + '</div>';
+}
+function tarjetaProveedor(g){
+  const p = provCfg(g.proveedor) || {}, k = normH(g.proveedor), cel = celularWa(p.celular), lote = ultimoLote(g.nombreExp);
+  let h = `<div class="panel" data-prov="${esc(k)}"><div class="fila"><h2 style="margin:0">${esc(provAlias(g.proveedor))}</h2>
+    <span class="mut peq">${esc(g.proveedor)} · ${esc(p.contacto || 'sin contacto')} · ${cel ? '+' + cel : '<span class="rojo">sin celular válido en config</span>'} · comprador: ${esc(g.comprador || '—')}</span>
+    <span class="sp"></span>${g.hoy.length ? `<span class="chip NUEVA">${g.hoy.length} para preguntar hoy</span>` : ''}${g.esperando ? ' <span class="chip ESPERANDO_FECHA">esperando respuesta</span>' : ''}</div>`;
+  if (g.pregunta) h += `<p class="peq mut">Último mensaje: ${fmtFH(g.pregunta.fecha_hora)} (${lineasDeMensaje(g.pregunta).length} líneas) · ${g.respuesta ? 'respondido ' + fmtFH(g.respuesta.fecha_hora) : '<span class="rojo">sin respuesta</span>'}
+    ${lote ? ` · <button class="b peq" data-acc="deshacer">Deshacer última respuesta (${fmtFH(lote.fecha)}, ${lote.eventos.length} línea(s))</button>` : ''}</p>`;
+  if (g.envio.length){
+    const pl = plantillaPara(g.envio), msg = construirMensaje(g.proveedor, g.envio, pl);
+    h += `<h3>Siguiente mensaje · ${g.envio.length} línea(s) en ${new Set(g.envio.map(r => r.oc)).size} OC · plantilla «${pl}»</h3>${tablaPorOC(g.envio, g.motivos)}
+      ${g.resto ? `<p class="peq mut">Quedan ${g.resto} línea(s) para el siguiente envío (tope de ${R().max_lineas_mensaje} líneas y ${R().max_oc_mensaje} OC por mensaje).</p>` : ''}
+      <div class="fila" style="margin-top:8px"><button class="b wa" data-acc="wa" ${cel ? '' : 'disabled'}>Abrir WhatsApp</button>
+      <button class="b" data-acc="copiar">Copiar mensaje</button><button class="b" data-acc="vermsg">${UI.verMsg[k] ? 'Ocultar' : 'Ver'} mensaje</button>
+      ${msg.length > 3500 ? '<span class="rojo peq">Mensaje largo: WhatsApp puede recortarlo.</span>' : ''}</div>
+      ${UI.verMsg[k] ? `<pre class="msg">${esc(msg)}</pre>` : ''}`;
+  } else if (g.pregunta && g.esperando) h += tablaPorOC(lineasDeMensaje(g.pregunta), null);
+  return h + '</div>';
 }
 /** Tabla de líneas agrupadas por OC con la numeración del mensaje. */
 function tablaPorOC(rs, motivos){
@@ -1557,71 +1735,52 @@ function tablaPorOC(rs, motivos){
       <td class="${enRiesgo(r) || (r.fecha_prometida && r.fecha_prometida < hoy()) ? 'rojo' : ''}">${r.fecha_prometida ? fechaPalabras(r.fecha_prometida) : '<span class="mut">Sin confirmar</span>'}</td>
       <td>${chipEstado(estadoVisible(r))}</td><td class="peq mut">${esc((motivos && motivos[r.clave]) || '')}</td></tr>`).join('') + '</table>';
 }
-function filaLinea(r, n, extra){
-  const venc = vencida(r);
-  return `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td class="c"><b>${n}</b></td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(recortar(r.descripcion, 60))}</td>
-    <td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td class="${venc && !r.fecha_prometida ? 'rojo' : ''}">${fmtF(r.fecha_requerida)}</td>
-    <td class="${r.fecha_prometida && r.fecha_prometida < hoy() ? 'rojo' : enRiesgo(r) ? 'rojo' : ''}">${fmtF(r.fecha_prometida) || '<span class="mut">—</span>'}</td>
-    <td>${chipEstado(r.estado)}${enRiesgo(r) ? ' <span class="chip rojo">+' + desfase(r) + ' d</span>' : ''}</td><td class="peq mut">${esc(extra || '')}</td></tr>`;
-}
-const CAB_LINEAS = '<tr><th class="c">#</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Pendiente</th><th>Requerida</th><th>Prometida</th><th>Estado</th><th></th></tr>';
-function tarjetaProveedor(g){
-  const p = provCfg(g.proveedor) || {}, k = normH(g.proveedor), cel = celularWa(p.celular);
-  let h = `<div class="panel" data-prov="${esc(k)}"><div class="fila"><h2 style="margin:0">${esc(provAlias(g.proveedor))}</h2>
-    <span class="mut peq">${esc(g.proveedor)} · ${esc(p.contacto || 'sin contacto')} · ${cel ? '+' + cel : '<span class="rojo">sin celular válido en config</span>'} · comprador: ${esc(g.comprador || '—')}</span>
-    <span class="sp"></span>${g.hoy.length ? `<span class="chip NUEVA">${g.hoy.length} para preguntar hoy</span>` : ''}${g.esperando ? ' <span class="chip ESPERANDO_FECHA">esperando respuesta</span>' : ''}</div>`;
-  if (g.hoy.length){
-    const pl = plantillaPara(g.envio), msg = construirMensaje(g.proveedor, g.envio, pl);
-    h += `<h3>Siguiente mensaje · ${g.envio.length} línea(s) en ${new Set(g.envio.map(r => r.oc)).size} OC · plantilla «${pl}»</h3>${tablaPorOC(g.envio, g.motivos)}
-      ${g.resto ? `<p class="peq mut">Quedan ${g.resto} línea(s) para el siguiente envío (tope de ${R().max_lineas_mensaje} líneas y ${R().max_oc_mensaje} OC por mensaje).</p>` : ''}
-      <div class="fila" style="margin-top:8px"><button class="b wa" data-acc="wa" ${cel ? '' : 'disabled'}>Abrir WhatsApp</button>
-      <button class="b" data-acc="copiar">Copiar mensaje</button><button class="b" data-acc="vermsg">${UI.verMsg[k] ? 'Ocultar' : 'Ver'} mensaje</button>
-      ${msg.length > 3500 ? '<span class="rojo peq">Mensaje largo: WhatsApp puede recortarlo.</span>' : ''}</div>
-      ${UI.verMsg[k] ? `<pre class="msg">${esc(msg)}</pre>` : ''}`;
-  }
-  const mapa = g.pregunta ? lineasDeMensaje(g.pregunta) : g.hoy;
-  const pv = PREVIA[k];
-  h += `<h3>${g.pregunta ? `Respuesta al mensaje del ${fmtFH(g.pregunta.fecha_hora)} (${mapa.length} líneas)` + (g.respuesta ? ` · <span class="verde">respondido ${fmtFH(g.respuesta.fecha_hora)}</span>` : ' · <span class="rojo">sin respuesta</span>') : 'Registrar respuesta (numeración de la tabla de arriba)'}</h3>`;
-  if (g.pregunta && !g.hoy.length && !pv) h += `<table>${CAB_LINEAS}${mapa.map((r, i) => filaLinea(r, i + 1, '')).join('')}</table>`;
-  h += `<textarea data-acc="texto" placeholder="Pegue aquí la respuesta del proveedor. Ej.: 1 SI · 2 NO 25/11 · 3 ENT · TODO SI · 4 25/11">${esc(pv ? pv.texto : '')}</textarea>
-    <div class="fila" style="margin-top:6px"><button class="b" data-acc="interpretar" ${mapa.length ? '' : 'disabled'}>Interpretar</button>
-    ${pv ? '<button class="b pri" data-acc="guardar">Guardar respuesta</button><button class="b" data-acc="descartar">Descartar</button>' : ''}</div>`;
-  if (pv) h += vistaPrevia(pv, mapa);
-  return h + '</div>';
-}
-function vistaPrevia(pv, mapa){
-  const errores = pv.filas.filter(f => f.error).length;
-  let h = '';
-  if (pv.fueraDeRango.length) h += `<div class="error">Números de línea que no existen en el mensaje: ${pv.fueraDeRango.join(', ')}.</div>`;
-  if (pv.ignorado.length) h += `<div class="aviso peq">Texto no interpretado (revise si contiene información): <b>${esc(pv.ignorado.join(' '))}</b></div>`;
-  if (errores) h += `<div class="error">${errores} línea(s) en rojo: corrija la acción/fecha o elija «Sin cambio» antes de guardar.</div>`;
-  h += `<table><tr><th class="c">#</th><th>OC / línea</th><th>Ítem</th><th>Acción</th><th>Nueva fecha</th><th>Estado</th><th>Fecha prometida</th><th class="n">Desfase vs requerida</th><th>Observación</th></tr>`;
-  for (const f of pv.filas){
-    const r = mapa[f.n - 1]; if (!r) continue;
-    const res = f.error ? { estado:r.estado, fecha:r.fecha_prometida } : resultadoAccion(r, f), d = f.error ? null : desfase(r, res.fecha);
-    h += `<tr class="${f.error ? 'err' : ''}" data-n="${f.n}"><td class="c"><b>${f.n}</b></td><td>${esc(r.oc)} ${esc(r.solicitud)}</td><td>${esc(r.item)} <span class="peq mut">${esc(recortar(r.descripcion, 35))}</span></td>
-      <td><select data-acc="pv-acc">${Object.keys(ACC_ETQ).map(a => `<option value="${a}" ${a === f.accion ? 'selected' : ''}>${ACC_ETQ[a]}</option>`).join('')}</select></td>
-      <td><input type="date" data-acc="pv-fecha" value="${esc(f.accion === 'NO' || f.accion === 'FECHA' ? f.fecha : '')}" ${f.accion === 'NO' || f.accion === 'FECHA' ? '' : 'disabled'}></td>
-      <td>${chipEstado(r.estado)}${res.estado !== r.estado ? ' → ' + chipEstado(res.estado) : ''}</td>
-      <td>${fmtF(r.fecha_prometida) || '—'}${res.fecha !== r.fecha_prometida ? ' → <b>' + fmtF(res.fecha) + '</b>' : ''}</td>
-      <td class="n ${d > 0 ? 'rojo' : d != null ? 'verde' : ''}">${d == null ? '' : (d > 0 ? '+' : '') + d + ' d'}</td>
-      <td class="peq ${f.error ? 'rojo' : 'mut'}">${esc(f.error || f.nota || '')}</td></tr>`;
-  }
-  return h + '</table>';
-}
 function grupoPorClave(k){ return gestionHoy(true, true).find(g => normH(g.proveedor) === k); }
 function enlazarHoy(){
+  const bn = $('#btnNuevos'); if (bn) bn.onclick = () => S.dirHandle ? cargarDesdeCarpeta() : $('#inpArchivos').click();
   const ex = $('#btnExportar'); if (!ex) return;
   ex.onclick = exportarSeguimiento;
   $('#chkTodos').onchange = e => { UI.verTodos = e.target.checked; renderTodo(); };
   $('#chkSinGestion').onchange = e => { UI.sinGestion = e.target.checked; renderTodo(); };
+  $('#btnAnalizar').onclick = () => {
+    UI.pegado = $('#txtPegado').value;
+    if (!UI.pegado.trim()){ alert('Pegue primero las respuestas copiadas de WhatsApp Web.'); return; }
+    UI.analisis = analizarPegado(UI.pegado); UI.confirmados = {}; renderTodo();
+  };
+  const bl = $('#btnLimpiar'); if (bl) bl.onclick = () => { UI.pegado = ''; UI.analisis = null; UI.confirmados = {}; renderTodo(); };
+  document.querySelectorAll('[data-panel]').forEach(div => {
+    const i = +div.dataset.panel, p = UI.analisis.paneles[i];
+    div.addEventListener('change', ev => {
+      const tr = ev.target.closest('tr[data-fila]'); if (!tr) return;
+      const f = p.filas[+tr.dataset.fila];
+      const accion = tr.querySelector('[data-acc=pv-acc]').value, fecha = tr.querySelector('[data-acc=pv-fecha]').value;
+      const usaFecha = accion === 'NO' || accion === 'FECHA';
+      const v = validarAccion(f.r, accion, usaFecha ? fecha : '');
+      Object.assign(f, { accion: usaFecha && !fecha ? accion : v.accion, fecha: v.fecha, error: v.error, revisar:false, nota: v.nota || 'editado a mano' });
+      renderTodo();
+    });
+    div.addEventListener('click', ev => {
+      const acc = ev.target.dataset && ev.target.dataset.acc;
+      if (acc === 'pv-ok'){ const f = p.filas[+ev.target.closest('tr').dataset.fila]; f.revisar = false; f.nota = (f.nota || '') + ' · aceptado'; renderTodo(); }
+      if (acc === 'confirmar'){
+        if (!S.comprador){ alert('Elija primero su nombre de comprador.'); return; }
+        if (!confirm(`¿Confirmar la respuesta de ${p.prov}?\n\nSe actualizarán ${p.filas.filter(f => f.accion !== 'NINGUNA').length} línea(s).`)) return;
+        UI.confirmados[i] = confirmarPanel(p); renderTodo();
+      }
+    });
+  });
   document.querySelectorAll('[data-prov]').forEach(card => {
     const k = card.dataset.prov;
     card.addEventListener('click', async ev => {
       const acc = ev.target.dataset && ev.target.dataset.acc; if (!acc || ev.target.tagName !== 'BUTTON') return;
       const g = grupoPorClave(k); if (!g) return;
-      const mapa = g.pregunta ? lineasDeMensaje(g.pregunta) : g.hoy;
       if (acc === 'vermsg'){ UI.verMsg[k] = !UI.verMsg[k]; renderTodo(); }
+      else if (acc === 'deshacer'){
+        const l = ultimoLote(g.nombreExp);
+        if (l && confirm(`¿Deshacer la respuesta de ${g.proveedor} registrada el ${fmtFH(l.fecha)}?\n\n${l.eventos.length} línea(s) vuelven a su estado anterior. Queda registrado en el historial.`)){
+          const n = deshacerUltima(g.nombreExp); S.avisos = [`Respuesta de ${provAlias(g.proveedor)} deshecha (${n} línea(s)).`]; renderTodo();
+        }
+      }
       else if (acc === 'wa' || acc === 'copiar'){
         if (!S.comprador){ alert('Elija primero su nombre de comprador (arriba a la derecha).'); return; }
         const pl = plantillaPara(g.envio), msg = construirMensaje(g.proveedor, g.envio, pl);
@@ -1634,36 +1793,10 @@ function enlazarHoy(){
         }
         renderTodo();
       }
-      else if (acc === 'interpretar'){
-        const t = card.querySelector('textarea[data-acc=texto]').value;
-        if (!t.trim()){ alert('Pegue primero la respuesta.'); return; }
-        PREVIA[k] = previaRespuesta(t, mapa); renderTodo();
-      }
-      else if (acc === 'descartar'){ delete PREVIA[k]; renderTodo(); }
-      else if (acc === 'guardar'){
-        const pv = PREVIA[k];
-        if (pv.filas.some(f => f.error)){ alert('Hay líneas en rojo: corríjalas o elija «Sin cambio».'); return; }
-        if (!S.comprador){ alert('Elija primero su nombre de comprador.'); return; }
-        let n = 0;
-        pv.filas.forEach(f => { const r = mapa[f.n - 1]; if (r && aplicarAccion(r, f, g.nombreExp, pv.texto)) n++; });
-        delete PREVIA[k]; guardarLocal();
-        S.avisos = [`${provAlias(g.proveedor)}: ${n} línea(s) actualizadas. Recuerde «Exportar mi seguimiento».`];
-        renderTodo();
-      }
-    });
-    card.addEventListener('change', ev => {
-      const acc = ev.target.dataset && ev.target.dataset.acc; const pv = PREVIA[k];
-      if (!pv || (acc !== 'pv-acc' && acc !== 'pv-fecha')) return;
-      const g = grupoPorClave(k); const mapa = g.pregunta ? lineasDeMensaje(g.pregunta) : g.hoy;
-      const tr = ev.target.closest('tr'), f = pv.filas.find(x => x.n === +tr.dataset.n);
-      const accion = tr.querySelector('[data-acc=pv-acc]').value, fecha = tr.querySelector('[data-acc=pv-fecha]').value;
-      const v = validarAccion(mapa[f.n - 1], accion, (accion === 'NO' || accion === 'FECHA') ? fecha : '');
-      // Al elegir NO/FECHA sin fecha todavía, se deja la acción elegida para que el usuario escriba la fecha.
-      Object.assign(f, { accion: (accion === 'NO' || accion === 'FECHA') && !fecha ? accion : v.accion, fecha: v.fecha, error: v.error, nota: v.nota || 'editado a mano' });
-      renderTodo();
     });
   });
 }
+
 /* =========================================================================
    Tablero
    ========================================================================= */
@@ -1961,7 +2094,7 @@ async function init(){
 }
 window.App = { S, R, parseFecha, parseFechaHora, procesarOC, procesarExplosion, calcularFechasRequeridas, leerMatriz, textoAMatriz, normItem, numOC, reqEf, semaforo, estadoVisible, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
   conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
-  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor,
+  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor, separarWhatsApp, identificarRemitente, analizarPegado, confirmarPanel, deshacerUltima, ultimoLote, mensajesVigentes,
   interpretarNatural, loteMensaje, numerarPorOC, detalleMensaje, fechaPalabras, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
 init();
 </script>
