@@ -53,7 +53,11 @@ td.c,th.c{text-align:center}
 .chip.CONFIRMADA{background:var(--okbg);color:var(--ok)}
 .chip.CAMBIADA{background:#fde9d9;color:#a4460b}
 .chip.ENTREGADO_POR_CONFIRMAR{background:#e3f1f7;color:#0b6283}
-.chip.CERRADA,.chip.CERRADA_POR_EXPLOSION{background:#eceef1;color:var(--mut)}
+.chip.CERRADA,.chip.CERRADA_SIESA{background:#eceef1;color:var(--mut)}
+.chip.SIN_NECESIDAD{background:#f1ecf9;color:#5b3d8a}
+.chip.POR_CANCELAR{background:#fdecea;color:#8a1c12}
+.sem{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:middle}
+.sem.verde{background:#1e9e5a}.sem.rojo{background:#d92d20}.sem.gris{background:#c3c8d2}
 .chip.rojo{background:var(--errbg);color:var(--err)}
 .chip.amar{background:var(--warnbg);color:var(--warn)}
 .rojo{color:var(--err);font-weight:600}
@@ -103,7 +107,7 @@ pre.msg{white-space:pre-wrap;background:#f7f8fa;border:1px solid var(--bd2);bord
 
 <script>
 'use strict';
-const VERSION = 'v0.5';
+const VERSION = 'v0.6';
 
 /* =========================================================================
    Utilidades
@@ -203,74 +207,88 @@ function nuevoId(){ return ahora().replace(/\D/g,'') + '-' + Math.random().toStr
 /* =========================================================================
    Modelo
    ========================================================================= */
-const ESTADOS = ['NUEVA','ESPERANDO_FECHA','CONFIRMADA','CAMBIADA','ENTREGADO_POR_CONFIRMAR','CERRADA','CERRADA_POR_EXPLOSION'];
+// Estados persistidos. "Sin necesidad en planeación" NO es un estado guardado: se calcula en cada carga
+// a partir de la explosión (una línea puede ganar o perder necesidad entre cortes).
+const ESTADOS = ['NUEVA','ESPERANDO_FECHA','CONFIRMADA','CAMBIADA','ENTREGADO_POR_CONFIRMAR','POR_CANCELAR','CERRADA','CERRADA_SIESA'];
 const ACTIVOS = new Set(['NUEVA','ESPERANDO_FECHA','CONFIRMADA','CAMBIADA']);
-const CERRADOS = new Set(['CERRADA','CERRADA_POR_EXPLOSION']);
+const CERRADOS = new Set(['CERRADA','CERRADA_SIESA']);
+const ALIAS_ESTADO = { CERRADA_POR_EXPLOSION:'CERRADA_SIESA' };
 const ETQ_ESTADO = { NUEVA:'Nueva', ESPERANDO_FECHA:'Esperando fecha', CONFIRMADA:'Confirmada', CAMBIADA:'Cambiada',
-  ENTREGADO_POR_CONFIRMAR:'Entregado por confirmar', CERRADA:'Cerrada', CERRADA_POR_EXPLOSION:'Cerrada por explosión' };
+  ENTREGADO_POR_CONFIRMAR:'Entregado por confirmar', POR_CANCELAR:'Por cancelar en Siesa', CERRADA:'Cerrada',
+  CERRADA_SIESA:'Cerrada en Siesa', SIN_NECESIDAD:'Sin necesidad en planeación' };
+/** Estado que se muestra: el guardado, o "Sin necesidad en planeación" si la línea abierta no tiene necesidad. */
+const estadoVisible = r => (r.sinNecesidad && ACTIVOS.has(r.estado)) ? 'SIN_NECESIDAD' : r.estado;
 const chipEstado = e => `<span class="chip ${esc(e)}">${esc(ETQ_ESTADO[e] || e)}</span>`;
 
-/** Columnas del archivo de seguimiento (hoja "lineas"). */
-const COLS_SEG = ['clave','oc','linea','item','descripcion','unidad','proveedor','comprador','cantidad_pendiente',
-  'fecha_requerida','estado','fecha_prometida','fecha_prometida_anterior','contador_cambios','primera_pregunta',
-  'ultima_pregunta','preguntado_por','ultima_respuesta','fecha_entregado','ultima_vista_explosion','nota',
+/** Columnas del archivo de seguimiento (hoja "lineas"). Clave = OC | ítem | Nro solicitud. */
+const COLS_SEG = ['clave','oc','item','solicitud','descripcion','unidad','proveedor','comprador','cantidad_pendiente',
+  'fecha_oc','fecha_entrega_siesa','fecha_requerida','estado','fecha_prometida','fecha_prometida_anterior','contador_cambios',
+  'primera_pregunta','ultima_pregunta','preguntado_por','ultima_respuesta','fecha_entregado','ultima_vista_siesa','nota',
   'actualizado','actualizado_por'];
-/** Columnas del archivo de seguimiento (hoja "eventos"). */
+/** Columnas del archivo de seguimiento (hoja "eventos"). "lote" agrupa una respuesta; "antes" guarda el estado previo para deshacer. */
 const COLS_EV = ['id','fecha_hora','tipo','proveedor','comprador','clave','lineas','plantilla','estado_anterior',
-  'estado_nuevo','fecha_anterior','fecha_nueva','texto'];
-const COL_FECHA = new Set(['fecha_requerida','fecha_prometida','fecha_prometida_anterior','ultima_vista_explosion','fecha_anterior','fecha_nueva']);
+  'estado_nuevo','fecha_anterior','fecha_nueva','texto','lote','antes'];
+const COL_FECHA = new Set(['fecha_requerida_efectiva','fecha_oc','fecha_entrega_siesa','fecha_requerida','fecha_prometida','fecha_prometida_anterior','ultima_vista_siesa','fecha_anterior','fecha_nueva']);
 const COL_FH = new Set(['primera_pregunta','ultima_pregunta','ultima_respuesta','fecha_entregado','actualizado','fecha_hora']);
 const COL_NUM = new Set(['cantidad_pendiente','contador_cambios']);
 
 /* ---- Configuración por defecto (piloto) ---- */
 const REGLAS_DEF = {
-  horizonte_semanas: 4, dias_antes_repregunta: '7,2,0', frecuencia_vencidas_dias: 2,
-  horas_sin_respuesta_para_recordatorio: 24, dias_revisar_almacen: 7, duplicados_pendiente: 'MAX', pin_admin: '1234'
+  prefijos_oc: 'OC-', horizonte_semanas: 4, dias_antes_repregunta: '7,2,0', frecuencia_vencidas_dias: 2,
+  horas_sin_respuesta_para_recordatorio: 24, dias_revisar_almacen: 7, max_lineas_mensaje: 15, max_oc_mensaje: 6,
+  dias_alerta_archivos: 4, nombre_cuenta_busscar: 'Compras Busscar', formato_fecha_whatsapp: 'd/m', pin_admin: '1234'
 };
 const REGLAS_DESC = {
+  prefijos_oc: 'Prefijos de documento que entran al seguimiento (separados por coma). Ej.: OC-  o  OC-,OCA-. Siempre se excluyen OCI-.',
   horizonte_semanas: 'Semanas hacia adelante (3–6) para preguntar por fechas requeridas próximas.',
   dias_antes_repregunta: 'Días antes de la fecha prometida en que se repregunta (lista separada por comas; 0 = el mismo día).',
   frecuencia_vencidas_dias: 'Cada cuántos días se vuelve a preguntar una línea vencida.',
   horas_sin_respuesta_para_recordatorio: 'Horas sin fecha tras la pregunta para enviar recordatorio.',
-  dias_revisar_almacen: 'Días que una línea "entregada" puede seguir pendiente en la explosión antes de marcar "Revisar con almacén".',
-  duplicados_pendiente: 'Si la explosión repite OC+línea: MAX (toma el mayor pendiente) o SUMA.',
+  dias_revisar_almacen: 'Días que una línea "entregada" puede seguir abierta en Siesa antes de marcar "Revisar con almacén".',
+  max_lineas_mensaje: 'Máximo de líneas por mensaje de WhatsApp (las más urgentes primero; el resto va en el siguiente envío).',
+  max_oc_mensaje: 'Máximo de OC distintas por mensaje.',
+  dias_alerta_archivos: 'Alerta si el listado de OC o la explosión tienen más de estos días.',
+  nombre_cuenta_busscar: 'Nombre(s) con que aparecen los mensajes propios al copiar de WhatsApp Web (separados por ;). Se ignoran.',
+  formato_fecha_whatsapp: 'Orden de la fecha en el encabezado copiado de WhatsApp Web: d/m (Colombia) o m/d.',
   pin_admin: 'PIN del modo administrador (freno visual, no es seguridad).'
 };
 const AVISO_PLATAFORMA = 'Este seguimiento no reemplaza la facturación en la plataforma de proveedores.';
 const PLANTILLAS_NOMBRES = ['primera_solicitud','repregunta','recordatorio','vencida'];
 const PLANTILLAS_DEF = {
   primera_solicitud: {
-    usted: 'Buen día {contacto}, le escribe {comprador} de Busscar de Colombia.\nPara programar la producción necesitamos la fecha de entrega de {n_lineas} línea(s) de órdenes de compra:\n\n{detalle}\n\n{formato}\n\n' + AVISO_PLATAFORMA + ' Gracias.',
-    tu: 'Hola {contacto}, te escribe {comprador} de Busscar de Colombia.\nPara programar la producción necesitamos la fecha de entrega de {n_lineas} línea(s) de órdenes de compra:\n\n{detalle}\n\n{formato}\n\n' + AVISO_PLATAFORMA + ' ¡Gracias!'
+    usted: 'Buenos días {contacto}, le escribe Compras Busscar. Estas son las entregas pendientes de {proveedor}:\n\n{detalle}\n\n¿Nos confirma las fechas de entrega? Puede responder con sus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA,
+    tu: 'Hola {contacto}, te escribe Compras Busscar. Estas son las entregas pendientes de {proveedor}:\n\n{detalle}\n\n¿Nos confirmas las fechas de entrega? Puedes responder con tus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA
   },
   repregunta: {
-    usted: 'Buen día {contacto}, le escribe {comprador} de Busscar de Colombia.\nPor favor confírmenos si se mantienen las fechas de entrega de estas {n_lineas} línea(s):\n\n{detalle}\n\n{formato}\n\n' + AVISO_PLATAFORMA + ' Gracias.',
-    tu: 'Hola {contacto}, te escribe {comprador} de Busscar de Colombia.\n¿Se mantienen las fechas de entrega de estas {n_lineas} línea(s)?\n\n{detalle}\n\n{formato}\n\n' + AVISO_PLATAFORMA + ' ¡Gracias!'
+    usted: 'Buenos días {contacto}, le escribe Compras Busscar. Estas son las entregas pendientes de {proveedor}:\n\n{detalle}\n\n¿Se mantienen estas fechas? Puede responder con sus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA,
+    tu: 'Hola {contacto}, te escribe Compras Busscar. Estas son las entregas pendientes de {proveedor}:\n\n{detalle}\n\n¿Se mantienen estas fechas? Puedes responder con tus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA
   },
   recordatorio: {
-    usted: 'Buen día {contacto}, le recuerda {comprador} de Busscar de Colombia: aún no tenemos fecha de entrega de {n_lineas} línea(s):\n\n{detalle}\n\n{formato}\n\n' + AVISO_PLATAFORMA + ' Gracias.',
-    tu: 'Hola {contacto}, te recuerda {comprador} de Busscar de Colombia: aún no tenemos fecha de entrega de {n_lineas} línea(s):\n\n{detalle}\n\n{formato}\n\n' + AVISO_PLATAFORMA + ' ¡Gracias!'
+    usted: 'Buenos días {contacto}, le recuerda Compras Busscar: aún no tenemos fecha de entrega de estas líneas de {proveedor}:\n\n{detalle}\n\nPuede responder con sus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA,
+    tu: 'Hola {contacto}, te recuerda Compras Busscar: aún no tenemos fecha de entrega de estas líneas de {proveedor}:\n\n{detalle}\n\nPuedes responder con tus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA
   },
   vencida: {
-    usted: 'Buen día {contacto}, le escribe {comprador} de Busscar de Colombia.\nTenemos {n_lineas} línea(s) pendientes; algunas ya pasaron la fecha comprometida o requerida. ¿Nos confirma el estado?\n\n{detalle}\n\n{formato}\n\n' + AVISO_PLATAFORMA + ' Gracias.',
-    tu: 'Hola {contacto}, te escribe {comprador} de Busscar de Colombia.\nTenemos {n_lineas} línea(s) pendientes; algunas ya pasaron la fecha comprometida o requerida. ¿Nos confirmas el estado?\n\n{detalle}\n\n{formato}\n\n' + AVISO_PLATAFORMA + ' ¡Gracias!'
+    usted: 'Buenos días {contacto}, le escribe Compras Busscar. Algunas entregas de {proveedor} ya están vencidas o se requieren hoy:\n\n{detalle}\n\n¿Nos confirma el estado? Puede responder con sus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA,
+    tu: 'Hola {contacto}, te escribe Compras Busscar. Algunas entregas de {proveedor} ya están vencidas o se requieren hoy:\n\n{detalle}\n\n¿Nos confirmas el estado? Puedes responder con tus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA
   }
 };
+const COLS_PROV = ['proveedor','alias','activo','contacto','celular','nombre_whatsapp','comprador','trato'];
 const PROVEEDORES_DEF = [
-  { proveedor:'PRAMEC SAS', alias:'Pramec', activo:'SI', contacto:'', celular:'', comprador:'', trato:'usted' },
-  { proveedor:'INDUSTRIA TRANSFORMADORA DE ALUMINIO S A S', alias:'Intralum', activo:'SI', contacto:'', celular:'', comprador:'', trato:'usted' },
-  { proveedor:'VIDRIOS DE SEGURIDAD S.A', alias:'Viseg', activo:'SI', contacto:'', celular:'', comprador:'', trato:'usted' }
+  { proveedor:'PRAMEC SAS', alias:'Pramec', activo:'SI', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' },
+  { proveedor:'INDUSTRIA TRANSFORMADORA DE ALUMINIO S A S', alias:'Intralum', activo:'SI', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' },
+  { proveedor:'VIDRIOS DE SEGURIDAD S.A', alias:'Viseg', activo:'SI', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' }
 ];
 function configDefecto(){ return { proveedores: clone(PROVEEDORES_DEF), reglas: { ...REGLAS_DEF }, plantillas: clone(PLANTILLAS_DEF), exclusiones: [] }; }
 
 /* ---- Estado global ---- */
 const S = {
   config: configDefecto(), configFuente: 'por defecto (sin config.xlsx)', configLocalSucia: false,
-  explosion: null,            // { nombre, fecha, lineas:{clave:L}, stats, mapeo, headers }
-  explosionPendiente: null,   // libro que requiere mapeo manual
+  ocs: null,                  // listado de OC abiertas: { nombre, fecha, lineas:{clave:L}, stats }
+  explosion: null,            // índice de la explosión: { nombre, fecha, modo:'amarre'|'fifo', filas:[[oc,item,fecha,cant]] }
+  pendienteMapeo: null,       // { tipo:'oc'|'explosion', headers, mapeo, faltan, reintentar }
   seg: {},                    // clave -> registro de seguimiento
   eventos: [], eventIds: new Set(),
-  archivosSeg: [],            // nombres de archivos de seguimiento consolidados
+  archivosSeg: [],
   avisos: [],
   comprador: lsGet(LS.comprador, ''),
   dirHandle: null, modoCarpeta: '',
@@ -283,13 +301,19 @@ function R(){
   const r = { ...REGLAS_DEF, ...(S.config.reglas || {}) };
   const ent = (v, d) => { const n = parseInt(v, 10); return isNaN(n) ? d : n; };
   const dias = String(r.dias_antes_repregunta).split(/[,;\s]+/).map(x => parseInt(x, 10)).filter(x => !isNaN(x) && x >= 0);
+  const pref = String(r.prefijos_oc || 'OC-').split(/[,;\s]+/).map(p => norm(p)).filter(Boolean).map(p => p.endsWith('-') ? p : p + '-');
   return {
+    prefijos_oc: pref.length ? pref : ['OC-'],
     horizonte_semanas: Math.min(6, Math.max(3, ent(r.horizonte_semanas, 4))),
     dias_antes_repregunta: [...new Set(dias.length ? dias : [7,2,0])].sort((a,b) => b - a),
     frecuencia_vencidas_dias: Math.max(1, ent(r.frecuencia_vencidas_dias, 2)),
     horas_sin_respuesta_para_recordatorio: Math.max(1, ent(r.horas_sin_respuesta_para_recordatorio, 24)),
     dias_revisar_almacen: Math.max(1, ent(r.dias_revisar_almacen, 7)),
-    duplicados_pendiente: norm(r.duplicados_pendiente) === 'SUMA' ? 'SUMA' : 'MAX',
+    max_lineas_mensaje: Math.max(1, ent(r.max_lineas_mensaje, 15)),
+    max_oc_mensaje: Math.max(1, ent(r.max_oc_mensaje, 6)),
+    dias_alerta_archivos: Math.max(1, ent(r.dias_alerta_archivos, 4)),
+    nombre_cuenta_busscar: String(r.nombre_cuenta_busscar || '').split(';').map(normH).filter(Boolean),
+    formato_fecha_whatsapp: /^m/i.test(String(r.formato_fecha_whatsapp || '')) ? 'm/d' : 'd/m',
     pin_admin: String(r.pin_admin == null || r.pin_admin === '' ? '1234' : r.pin_admin)
   };
 }
@@ -301,7 +325,7 @@ function provCfg(nombre){
 }
 function provActivo(nombre){ const p = provCfg(nombre); return !!p && norm(p.activo) !== 'NO'; }
 function provAlias(nombre){ const p = provCfg(nombre); return (p && p.alias) || nombre; }
-/** Comprador responsable: el de config.xlsx; si no hay, el más frecuente en la explosión. */
+/** Comprador responsable: el de config.xlsx; si no hay, el más frecuente en el listado de OC. */
 function provComprador(nombre){
   const p = provCfg(nombre);
   if (p && String(p.comprador || '').trim()) return String(p.comprador).trim();
@@ -309,6 +333,7 @@ function provComprador(nombre){
   for (const r of Object.values(S.seg)) if (normH(r.proveedor) === normH(nombre) && r.comprador) cont[r.comprador] = (cont[r.comprador] || 0) + 1;
   return Object.keys(cont).sort((a,b) => cont[b] - cont[a])[0] || '';
 }
+/** Celular en formato internacional 57XXXXXXXXXX (acepta espacios, guiones y +57). */
 function celularWa(cel){
   const d = String(cel || '').replace(/\D/g, '');
   if (d.length === 10) return '57' + d;
@@ -319,128 +344,213 @@ function excluida(rec){
   for (const x of (S.config.exclusiones || [])){
     const v = norm(x.valor); if (!v) continue;
     const t = norm(x.tipo);
-    if ((!t || t === 'OC') && v === norm(rec.oc)) return true;
-    if ((!t || t === 'ITEM') && v === norm(rec.item)) return true;
-    if ((!t || t === 'LINEA') && (v === norm(rec.clave) || v === norm(rec.oc + ' ' + rec.linea))) return true;
+    if ((!t || t === 'OC') && (v === norm(rec.oc) || v === numOC(rec.oc))) return true;
+    if ((!t || t === 'ITEM') && normItem(v) === normItem(rec.item)) return true;
+    if ((!t || t === 'LINEA') && v === norm(rec.clave)) return true;
   }
   return false;
 }
+/** Código de ítem sin ceros a la izquierda (el listado trae "0226167"; la explosión, "226167"). */
+const normItem = s => { const t = String(s == null ? '' : s).trim().toUpperCase(); return /^\d+$/.test(t) ? (t.replace(/^0+/, '') || '0') : t; };
+/** Número corto de la OC para mostrar y para reconocer en respuestas: "OC-00051420" → "51420". */
+const numOC = oc => { const m = /(\d+)\s*$/.exec(String(oc || '')); return m ? (m[1].replace(/^0+/, '') || '0') : String(oc || ''); };
 
 /* =========================================================================
-   Lectura de la explosión (Siesa)
+   Fuentes de Siesa: listado de OC abiertas y explosión
    ========================================================================= */
-const CAMPOS = [
-  { k:'oc', label:'OC (orden de compra)', req:true,
-    syn:['OC','ORDEN DE COMPRA','ORDEN COMPRA','NRO OC','NO OC','NUMERO OC','NUM OC','DOCUMENTO OC','DOCTO OC','DOC OC','OC NRO'],
-    test: h => /^(NRO |NO |NUM |NUMERO |DOC |DOCTO |DOCUMENTO )?(OC|ORDEN( DE)? COMPRA)$/.test(h) },
-  { k:'linea', label:'Línea de la OC', req:false,
-    syn:['LINEA','LINEA OC','NRO LINEA','NO LINEA','REG','REGISTRO','ITEM OC','POSICION','RENGLON'],
-    test: h => /^(NRO |NO )?(LINEA|RENGLON)/.test(h) },
-  { k:'item', label:'Ítem / referencia', req:true,
-    syn:['ITEM','REFERENCIA','CODIGO','COD ITEM','CODIGO ITEM','REF','ID ITEM','ITEM REFERENCIA'],
-    test: h => /^(ITEM|REFERENCIA|COD(IGO)? ITEM)/.test(h) },
-  { k:'descripcion', label:'Descripción', req:true,
-    syn:['DESCRIPCION','DESCRIPCION ITEM','DESC ITEM','NOMBRE ITEM','DETALLE','DESCRIPCION REFERENCIA'],
-    test: h => /^DESC/.test(h) },
-  { k:'unidad', label:'Unidad', req:false,
-    syn:['UNIDAD','UM','U M','UND','UNIDAD MEDIDA','UNIDAD DE MEDIDA','UNIDAD INVENTARIO','U M INV'],
-    test: h => /^(UNIDAD|U M)/.test(h) },
-  { k:'pendiente', label:'Cant Penditiente - Inventario', req:true,
-    syn:['CANT PENDITIENTE INVENTARIO','CANT PENDIENTE INVENTARIO','CANTIDAD PENDIENTE INVENTARIO'],
-    test: h => /PEND/.test(h) && /INVENT/.test(h) },
-  { k:'fecha', label:'Fecha requerida / de entrega', req:true,
-    syn:['FECHA REQUERIDA','FECHA ENTREGA','FECHA DE ENTREGA','FECHA ENTREGA OC','F ENTREGA','FECHA REQ','FECHA NECESIDAD','FECHA REQUERIMIENTO'],
-    test: h => /^F(ECHA)? /.test(h) && /(REQ|ENTREG|NECES)/.test(h) },
-  { k:'proveedor', label:'Proveedor', req:true,
-    syn:['PROVEEDOR','RAZON SOCIAL','NOMBRE PROVEEDOR','RAZON SOCIAL PROVEEDOR','PROVEEDOR RAZON SOCIAL'],
-    test: h => /PROVEEDOR/.test(h) && !/(NIT|COD|ID)/.test(h) },
-  { k:'comprador', label:'Comprador', req:false,
-    syn:['COMPRADOR','NOMBRE COMPRADOR','RESPONSABLE COMPRA'],
-    test: h => /COMPRADOR/.test(h) }
+/** Campos del listado de OC abiertas (exportado de Siesa como texto con tabuladores o Excel). */
+const CAMPOS_OC = [
+  { k:'oc', label:'Nro orden', req:true, syn:['NRO ORDEN','NUMERO ORDEN','NO ORDEN','ORDEN','OC','NRO OC','DOCUMENTO'] },
+  { k:'proveedor', label:'Razón social proveedor', req:true, syn:['RAZON SOCIAL PROVEEDOR','PROVEEDOR','RAZON SOCIAL','NOMBRE PROVEEDOR'], test: h => /PROVEEDOR/.test(h) && !/(NIT|COD)/.test(h) },
+  { k:'item', label:'Item', req:true, syn:['ITEM','REFERENCIA','CODIGO ITEM','COD ITEM'] },
+  { k:'descripcion', label:'Desc. item', req:true, syn:['DESC ITEM','DESCRIPCION','DESCRIPCION ITEM'], test: h => /^DESC/.test(h) },
+  { k:'unidad', label:'U.M.', req:false, syn:['U M','UM','UNIDAD','UND INV','UNIDAD MEDIDA'] },
+  { k:'pendiente', label:'Cant. pendiente', req:true, syn:['CANT PENDIENTE','CANTIDAD PENDIENTE'] },
+  { k:'fecha_oc', label:'Fecha orden', req:true, syn:['FECHA ORDEN','FECHA OC','FECHA DOCUMENTO'] },
+  { k:'fecha_entrega', label:'Fecha entrega', req:false, syn:['FECHA ENTREGA','FECHA DE ENTREGA'] },
+  { k:'comprador', label:'Comprador', req:false, syn:['COMPRADOR','NOMBRE COMPRADOR'] },
+  { k:'solicitud', label:'Nro solicitud', req:false, syn:['NRO SOLICITUD','NUMERO SOLICITUD','SOLICITUD','NO SOLICITUD'] }
 ];
-function reconoceEncabezado(h){ const n = normH(h); return !!n && CAMPOS.some(c => c.syn.includes(n) || (c.test && c.test(n))); }
-
+/** Campos de la explosión de abastecimiento. Si existe "TD_FECHAS.Nro orden", cada necesidad viene amarrada a su OC. */
+const CAMPOS_EXP = [
+  { k:'item', label:'Item', req:true, syn:['ITEM','REFERENCIA','CODIGO ITEM'] },
+  { k:'pendiente', label:'Cant Penditiente - Inventario', req:true, syn:['CANT PENDITIENTE INVENTARIO','CANT PENDIENTE INVENTARIO','CANTIDAD PENDIENTE INVENTARIO'], test: h => /PEND/.test(h) && /INVENT/.test(h) },
+  { k:'fecha', label:'Fecha Planeación', req:true, syn:['FECHA PLANEACION','FECHA DE PLANEACION','FECHA PLAN'] },
+  { k:'oc', label:'Nro orden amarrada (TD_FECHAS.Nro orden)', req:false, syn:['TD FECHAS NRO ORDEN','NRO ORDEN','NRO OC','OC'], test: h => /NRO ORDEN$/.test(h) }
+];
+function reconoce(campos, h){ const n = normH(h); return !!n && campos.some(c => c.syn.includes(n) || (c.test && c.test(n))); }
 /** Asigna columnas a campos: 1) mapeo guardado, 2) nombre exacto, 3) patrón. Devuelve {campo: índice | -1}. */
-function detectarColumnas(headers, guardado){
+function detectarColumnas(campos, headers, guardado){
   const H = headers.map(normH), usado = new Set(), m = {};
-  for (const c of CAMPOS){
+  for (const c of campos){
     const g = guardado && guardado[c.k];
     if (g === '__NINGUNA__' && !c.req){ m[c.k] = -1; continue; }
     if (g){ const i = headers.findIndex((h, ix) => h === g && !usado.has(ix)); if (i >= 0){ m[c.k] = i; usado.add(i); } }
   }
-  for (const c of CAMPOS){
-    if (m[c.k] != null) continue;
-    const i = H.findIndex((h, ix) => !usado.has(ix) && c.syn.includes(h));
-    if (i >= 0){ m[c.k] = i; usado.add(i); }
-  }
-  for (const c of CAMPOS){
-    if (m[c.k] != null) continue;
-    const i = H.findIndex((h, ix) => !usado.has(ix) && h && c.test && c.test(h));
-    if (i >= 0){ m[c.k] = i; usado.add(i); }
-  }
+  for (const c of campos){ if (m[c.k] != null) continue; const i = H.findIndex((h, ix) => !usado.has(ix) && c.syn.includes(h)); if (i >= 0){ m[c.k] = i; usado.add(i); } }
+  for (const c of campos){ if (m[c.k] != null) continue; const i = H.findIndex((h, ix) => !usado.has(ix) && h && c.test && c.test(h)); if (i >= 0){ m[c.k] = i; usado.add(i); } }
   return m;
 }
-function fechaDeNombreExplosion(nombre){
-  const m = /ABASTECIMIENTO_(\d{2})(\d{2})(\d{4})/i.exec(nombre || '');
+/** Busca la fila de encabezados (la que más columnas reconoce entre las primeras 30). */
+function filaEncabezados(aoa, campos){
+  let best = null;
+  for (let r = 0; r < Math.min(30, aoa.length); r++){
+    const sc = (aoa[r] || []).filter(h => reconoce(campos, h)).length;
+    if (!best || sc > best.sc) best = { r, sc };
+  }
+  return best && best.sc >= 2 ? best.r : -1;
+}
+function fechaDeNombre(nombre){
+  const m = /_(\d{2})(\d{2})(\d{4})/.exec(nombre || '');
   return (m && fechaValida(+m[3], +m[2], +m[1])) ? `${m[3]}-${m[2]}-${m[1]}` : '';
 }
-/** De una lista de archivos elige la explosión más reciente (fecha del nombre; desempate por fecha de modificación). */
-function elegirExplosion(archivos){
-  const c = archivos.filter(f => /^ABASTECIMIENTO_.*\.xls[xm]?$/i.test(f.name));
-  c.sort((a, b) => {
-    const fa = fechaDeNombreExplosion(a.name), fb = fechaDeNombreExplosion(b.name);
+const fechaDeNombreExplosion = fechaDeNombre;
+/** De una lista de archivos elige el más reciente según la fecha del nombre (desempate: fecha de modificación). */
+function masReciente(archivos){
+  const c = [...archivos].sort((a, b) => {
+    const fa = fechaDeNombre(a.name), fb = fechaDeNombre(b.name);
     if (fa !== fb) return fa < fb ? 1 : -1;
     return (b.lastModified || 0) - (a.lastModified || 0);
   });
   return c[0] || null;
 }
+const elegirExplosion = archivos => masReciente(archivos.filter(f => /^ABASTECIMIENTO_/i.test(f.name)));
+const esPrefijoValido = oc => !/^OCI-/.test(oc) && R().prefijos_oc.some(p => oc.startsWith(p));
 
-/**
- * Lee la explosión. Devuelve { ok, lineas, stats, mapeo, headers } o { necesitaMapeo, headers, mapeo } o { error }.
- * Filtra: OC nacional (prefijo "OC-", excluye "OCI-") y "Cant Penditiente - Inventario" > 0.
- */
-function leerExplosion(wb, guardado){
+/** Texto delimitado (Siesa exporta con tabuladores, en Latin-1) → matriz. */
+function decodificarTexto(buf){
+  try{ return new TextDecoder('utf-8', { fatal:true }).decode(buf); }
+  catch(e){ return new TextDecoder('windows-1252').decode(buf); }
+}
+function textoAMatriz(t){
+  const lineas = t.replace(/^﻿/, '').split(/\r?\n/);
+  const muestra = lineas.slice(0, 5).join('\n');
+  const sep = (muestra.match(/\t/g) || []).length ? '\t' : (muestra.match(/;/g) || []).length > (muestra.match(/,/g) || []).length ? ';' : ',';
+  return lineas.filter(l => l.trim()).map(l => {
+    if (sep === '\t') return l.split('\t');
+    const out = []; let cur = '', q = false;
+    for (let i = 0; i < l.length; i++){
+      const ch = l[i];
+      if (q){ if (ch === '"' && l[i+1] === '"'){ cur += '"'; i++; } else if (ch === '"') q = false; else cur += ch; }
+      else if (ch === '"') q = true; else if (ch === sep){ out.push(cur); cur = ''; } else cur += ch;
+    }
+    out.push(cur); return out;
+  });
+}
+/** Lee cualquier archivo tabular (.txt/.csv/.xlsx/.zip con CSV dentro) y devuelve la matriz de la hoja que más se parece a los campos. */
+async function leerMatriz(file, campos){
+  const buf = new Uint8Array(await file.arrayBuffer());
+  const esZip = buf[0] === 0x50 && buf[1] === 0x4B;
+  if (/\.zip$/i.test(file.name) && esZip){
+    const z = XLSX.CFB.read(buf, { type:'array' });
+    const ent = z.FileIndex.find(e => e.type === 2 && /\.(csv|txt|xlsx)$/i.test(e.name));
+    if (!ent) throw new Error('el .zip no contiene un .csv, .txt o .xlsx');
+    return leerMatriz(new File([ent.content], ent.name), campos);
+  }
+  if (!esZip && !/\.xls[xmb]?$/i.test(file.name)) return textoAMatriz(decodificarTexto(buf));
+  const wb = XLSX.read(buf, { type:'array', dense:true });
   let best = null;
   for (const sn of wb.SheetNames){
     const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:'', raw:true, blankrows:false });
-    for (let r = 0; r < Math.min(30, aoa.length); r++){
-      const sc = (aoa[r] || []).filter(reconoceEncabezado).length;
-      if (!best || sc > best.sc) best = { sn, r, sc, aoa };
-    }
+    const r = filaEncabezados(aoa, campos);
+    const sc = r >= 0 ? aoa[r].filter(h => reconoce(campos, h)).length : 0;
+    if (!best || sc > best.sc) best = { aoa, sc };
   }
-  if (!best || best.sc < 2) return { error: 'No se encontró la fila de encabezados en la explosión.' };
-  const headers = best.aoa[best.r].map(h => String(h).trim());
-  const mapeo = detectarColumnas(headers, guardado);
-  const faltan = CAMPOS.filter(c => mapeo[c.k] == null);
-  if (faltan.length) return { necesitaMapeo: true, headers, mapeo, faltan: faltan.map(c => c.k), hoja: best.sn };
-  const dup = R().duplicados_pendiente;
-  const lineas = {}, stats = { filas:0, oci:0, otros:0, cero:0, nacionales:0, duplicadas:0 };
-  for (let r = best.r + 1; r < best.aoa.length; r++){
-    const row = best.aoa[r];
-    const get = k => mapeo[k] >= 0 ? row[mapeo[k]] : '';
+  return best ? best.aoa : [];
+}
+
+/**
+ * Listado de OC abiertas → líneas de seguimiento. Clave interna: OC | ítem | Nro solicitud.
+ * Solo prefijos configurados (por defecto OC-), nunca OCI-, y cantidad pendiente > 0.
+ */
+function procesarOC(aoa, guardado){
+  const r0 = filaEncabezados(aoa, CAMPOS_OC);
+  if (r0 < 0) return { error:'No se encontró la fila de encabezados del listado de OC.' };
+  const headers = aoa[r0].map(h => String(h).trim());
+  const mapeo = detectarColumnas(CAMPOS_OC, headers, guardado);
+  const faltan = CAMPOS_OC.filter(c => mapeo[c.k] == null).map(c => c.k);
+  if (faltan.length) return { necesitaMapeo:true, headers, mapeo, faltan };
+  const lineas = {}, stats = { filas:0, excluidasPrefijo:0, oci:0, cero:0, abiertas:0, duplicadas:0 };
+  for (let i = r0 + 1; i < aoa.length; i++){
+    const row = aoa[i], get = k => mapeo[k] >= 0 ? row[mapeo[k]] : '';
     const oc = norm(get('oc')).replace(/\s*-\s*/, '-');
-    if (!oc) continue;
+    if (!oc || /TOTAL/.test(oc)) continue;
     stats.filas++;
     if (/^OCI-/.test(oc)){ stats.oci++; continue; }
-    if (!/^OC-/.test(oc)){ stats.otros++; continue; }
+    if (!esPrefijoValido(oc)){ stats.excluidasPrefijo++; continue; }
     const pend = num(get('pendiente'));
     if (!(pend > 0)){ stats.cero++; continue; }
-    const linea = String(get('linea')).trim(), item = String(get('item')).trim();
-    const clave = oc + '|' + (linea || item);
-    const fecha = parseFecha(get('fecha'));
-    if (lineas[clave]){
-      const p = lineas[clave];
-      p.cantidad_pendiente = dup === 'SUMA' ? p.cantidad_pendiente + pend : Math.max(p.cantidad_pendiente, pend);
-      if (fecha && (!p.fecha_requerida || fecha < p.fecha_requerida)) p.fecha_requerida = fecha;
-      stats.duplicadas++;
-      continue;
-    }
-    stats.nacionales++;
-    lineas[clave] = { clave, oc, linea, item, descripcion: String(get('descripcion')).trim(), unidad: String(get('unidad')).trim(),
-      cantidad_pendiente: pend, fecha_requerida: fecha, proveedor: String(get('proveedor')).trim().replace(/\s+/g, ' '),
-      comprador: String(get('comprador')).trim() };
+    const item = String(get('item')).trim(), sol = String(get('solicitud')).trim();
+    const clave = oc + '|' + normItem(item) + '|' + sol;
+    if (lineas[clave]){ lineas[clave].cantidad_pendiente += pend; stats.duplicadas++; continue; }
+    stats.abiertas++;
+    lineas[clave] = { clave, oc, item, solicitud:sol, descripcion:String(get('descripcion')).trim(), unidad:String(get('unidad')).trim(),
+      cantidad_pendiente:pend, fecha_oc:parseFecha(get('fecha_oc')), fecha_entrega_siesa:parseFecha(get('fecha_entrega')),
+      proveedor:String(get('proveedor')).trim().replace(/\s+/g, ' '), comprador:String(get('comprador')).trim().replace(/\s+/g, ' ') };
   }
-  return { ok: true, lineas, stats, mapeo, headers, hoja: best.sn };
+  return { ok:true, lineas, stats, mapeo, headers };
+}
+/**
+ * Explosión → índice compacto de necesidades pendientes: [oc, ítem, fecha planeación, cantidad].
+ * Solo filas con "Cant Penditiente - Inventario" > 0. Si no existe la columna de OC amarrada, modo FIFO.
+ */
+function procesarExplosion(aoa, guardado){
+  const r0 = filaEncabezados(aoa, CAMPOS_EXP);
+  if (r0 < 0) return { error:'No se encontró la fila de encabezados de la explosión.' };
+  const headers = aoa[r0].map(h => String(h).trim());
+  const mapeo = detectarColumnas(CAMPOS_EXP, headers, guardado);
+  const faltan = CAMPOS_EXP.filter(c => mapeo[c.k] == null).map(c => c.k);
+  if (faltan.length) return { necesitaMapeo:true, headers, mapeo, faltan };
+  const modo = mapeo.oc >= 0 ? 'amarre' : 'fifo';
+  const filas = []; let total = 0;
+  for (let i = r0 + 1; i < aoa.length; i++){
+    const row = aoa[i]; total++;
+    const cant = num(row[mapeo.pendiente]); if (!(cant > 0)) continue;
+    const f = parseFecha(row[mapeo.fecha]); if (!f) continue;
+    const oc = modo === 'amarre' ? norm(row[mapeo.oc]).replace(/\s*-\s*/, '-') : '';
+    filas.push([/^(OC|OM|OCA|OCM)[A-Z]*-/.test(oc) ? oc : '', normItem(row[mapeo.item]), f, cant]);
+  }
+  return { ok:true, modo, filas, total, mapeo, headers };
+}
+/** Reparte necesidades (ordenadas por fecha) entre líneas de OC (en el orden dado), cubriendo cantidades. */
+function cubrirFIFO(lineas, necesidades, res){
+  const nec = necesidades.slice().sort((a, b) => a.f < b.f ? -1 : a.f > b.f ? 1 : 0);
+  let qi = 0, resto = nec.length ? nec[0].c : 0;
+  for (const L of lineas){
+    if (qi >= nec.length){ res[L.clave] = null; continue; }
+    res[L.clave] = nec[qi].f;
+    let q = L.cantidad_pendiente;
+    while (q > 1e-9 && qi < nec.length){
+      const t = Math.min(q, resto); q -= t; resto -= t;
+      if (resto <= 1e-9){ qi++; resto = qi < nec.length ? nec[qi].c : 0; }
+    }
+  }
+}
+/**
+ * Fecha requerida de cada línea de OC = fecha de planeación de la primera necesidad que cubre.
+ *  - Modo amarre: necesidades de la misma OC + ítem; si hay varias líneas OC+ítem (distinta solicitud), FIFO entre ellas
+ *    por fecha de entrega Siesa.
+ *  - Modo FIFO: necesidades del ítem (de cualquier OP) vs. líneas del ítem ordenadas por fecha de OC.
+ * Devuelve {clave: 'AAAA-MM-DD' | null}; null = sin necesidad en planeación.
+ */
+function calcularFechasRequeridas(lineasOC, exp){
+  const res = {};
+  if (!exp) return res;
+  const nec = {};
+  const llave = exp.modo === 'amarre' ? (oc, it) => oc + '|' + it : (oc, it) => it;
+  for (const [oc, it, f, c] of exp.filas){
+    if (exp.modo === 'amarre' && !oc) continue;
+    (nec[llave(oc, it)] || (nec[llave(oc, it)] = [])).push({ f, c });
+  }
+  const grupos = {};
+  for (const L of Object.values(lineasOC)){ const k = llave(L.oc, normItem(L.item)); (grupos[k] || (grupos[k] = [])).push(L); }
+  for (const [k, ls] of Object.entries(grupos)){
+    ls.sort((a, b) => exp.modo === 'amarre'
+      ? ((a.fecha_entrega_siesa || '') < (b.fecha_entrega_siesa || '') ? -1 : (a.fecha_entrega_siesa || '') > (b.fecha_entrega_siesa || '') ? 1 : (a.solicitud < b.solicitud ? -1 : 1))
+      : ((a.fecha_oc || '') < (b.fecha_oc || '') ? -1 : (a.fecha_oc || '') > (b.fecha_oc || '') ? 1 : (a.clave < b.clave ? -1 : 1)));
+    cubrirFIFO(ls, nec[k] || [], res);
+  }
+  return res;
 }
 
 /* =========================================================================
@@ -459,7 +569,7 @@ function leerConfig(wb){
   const prov = hojaObjs(wb, 'proveedores');
   if (prov) cfg.proveedores = prov.filter(p => txt(p.proveedor)).map(p => ({
     proveedor: txt(p.proveedor).replace(/\s+/g, ' '), alias: txt(p.alias), activo: norm(p.activo) === 'NO' ? 'NO' : 'SI',
-    contacto: txt(p.contacto), celular: txt(p.celular), comprador: txt(p.comprador),
+    contacto: txt(p.contacto), celular: txt(p.celular), nombre_whatsapp: txt(p.nombre_whatsapp), comprador: txt(p.comprador),
     trato: /^T/.test(norm(p.trato)) ? 'tu' : 'usted' }));
   const reg = hojaObjs(wb, 'reglas');
   if (reg) for (const r of reg){ const k = normCol(r.parametro); if (k) cfg.reglas[k] = typeof r.valor === 'number' ? r.valor : txt(r.valor); }
@@ -475,9 +585,9 @@ function leerConfig(wb){
 }
 function libroConfig(cfg){
   const wb = XLSX.utils.book_new();
-  const cols = ['proveedor','alias','activo','contacto','celular','comprador','trato'];
+  const cols = COLS_PROV;
   const ws1 = XLSX.utils.aoa_to_sheet([cols, ...cfg.proveedores.map(p => cols.map(c => p[c] || ''))]);
-  ws1['!cols'] = [{wch:46},{wch:14},{wch:7},{wch:22},{wch:14},{wch:20},{wch:8}];
+  ws1['!cols'] = [{wch:46},{wch:14},{wch:7},{wch:22},{wch:16},{wch:26},{wch:24},{wch:8}];
   XLSX.utils.book_append_sheet(wb, ws1, 'proveedores');
   const reg = { ...REGLAS_DEF, ...cfg.reglas };
   const ws2 = XLSX.utils.aoa_to_sheet([['parametro','valor','descripcion'], ...Object.keys(reg).map(k => [k, reg[k], REGLAS_DESC[k] || ''])]);
@@ -504,7 +614,8 @@ function normRegistro(o){
     else if (COL_NUM.has(c)) r[c] = num(v);
     else r[c] = txt(v);
   }
-  r.estado = ESTADOS.includes(norm(r.estado)) ? norm(r.estado) : 'NUEVA';
+  const e = ALIAS_ESTADO[norm(r.estado)] || norm(r.estado);
+  r.estado = ESTADOS.includes(e) ? e : 'NUEVA';
   return r;
 }
 function normEvento(o){
@@ -570,65 +681,86 @@ function registrarEvento(e){
 }
 
 /* =========================================================================
-   Conciliación explosión ↔ seguimiento
+   Conciliación listado de OC ↔ seguimiento, y fecha requerida desde planeación
    ========================================================================= */
+const CAMPOS_DESC_OC = ['oc','item','solicitud','descripcion','unidad','proveedor','comprador','cantidad_pendiente','fecha_oc','fecha_entrega_siesa'];
 function nuevoRegistro(L){
   const r = {}; COLS_SEG.forEach(c => r[c] = COL_NUM.has(c) ? 0 : '');
-  Object.assign(r, { clave:L.clave, oc:L.oc, linea:L.linea, item:L.item, descripcion:L.descripcion, unidad:L.unidad,
-    proveedor:L.proveedor, comprador:L.comprador, cantidad_pendiente:L.cantidad_pendiente, fecha_requerida:L.fecha_requerida,
-    estado:'NUEVA' });
+  CAMPOS_DESC_OC.forEach(c => r[c] = L[c]);
+  r.clave = L.clave; r.estado = 'NUEVA';
   return r;
 }
 /**
- * Aplica la explosión al seguimiento:
+ * Aplica el listado de OC abiertas al seguimiento:
  *  - agrega líneas nuevas (NUEVA) y actualiza datos descriptivos;
- *  - línea ausente (pendiente = 0 o desaparecida): ENTREGADO_POR_CONFIRMAR → CERRADA; activa → CERRADA_POR_EXPLOSION;
- *  - línea cerrada que reaparece con pendiente: se reabre.
- * Los cambios automáticos usan como marca de tiempo la fecha de la explosión, para no pisar respuestas posteriores.
+ *  - línea que ya no está abierta: ENTREGADO_POR_CONFIRMAR → CERRADA; cualquier otra → CERRADA_SIESA;
+ *  - línea cerrada que reaparece abierta: se reabre.
+ * Los cambios automáticos usan como marca de tiempo la fecha del listado, para no pisar respuestas posteriores.
  */
 function conciliar(){
-  const ex = S.explosion; if (!ex) return { cerradas:0, cerradasExp:0, reabiertas:0, nuevas:0, viejas:0 };
-  const tsEx = ex.fecha + 'T00:00:00';
-  const res = { cerradas:0, cerradasExp:0, reabiertas:0, nuevas:0, viejas:0 };
-  for (const L of Object.values(ex.lineas)){
+  const L0 = S.ocs; if (!L0) return { cerradas:0, cerradasSiesa:0, reabiertas:0, nuevas:0, viejas:0 };
+  const ts = L0.fecha + 'T00:00:00';
+  const res = { cerradas:0, cerradasSiesa:0, reabiertas:0, nuevas:0, viejas:0 };
+  for (const L of Object.values(L0.lineas)){
     let r = S.seg[L.clave];
     if (!r){ r = S.seg[L.clave] = nuevoRegistro(L); res.nuevas++; }
     else {
-      Object.assign(r, { oc:L.oc, linea:L.linea, item:L.item, descripcion:L.descripcion, unidad:L.unidad,
-        proveedor:L.proveedor, comprador:L.comprador || r.comprador, cantidad_pendiente:L.cantidad_pendiente,
-        fecha_requerida:L.fecha_requerida || r.fecha_requerida });
-      if (CERRADOS.has(r.estado) && ex.fecha > (r.ultima_vista_explosion || '') && ex.fecha > (r.actualizado || '').slice(0,10)){
+      CAMPOS_DESC_OC.forEach(c => { if (L[c] !== '' && L[c] != null) r[c] = L[c]; });
+      if (CERRADOS.has(r.estado) && L0.fecha > (r.ultima_vista_siesa || '') && L0.fecha > (r.actualizado || '').slice(0,10)){
         const ant = r.estado;
         r.estado = r.fecha_prometida ? 'CONFIRMADA' : (r.ultima_pregunta ? 'ESPERANDO_FECHA' : 'NUEVA');
-        r.actualizado = maxStr(r.actualizado, tsEx); r.nota = 'Reabierta: volvió a aparecer pendiente en la explosión del ' + fmtF(ex.fecha);
-        mergeEvento({ id:`REAPERTURA|${r.clave}|${ex.fecha}`, fecha_hora:tsEx, tipo:'REAPERTURA', proveedor:r.proveedor, comprador:'',
-          clave:r.clave, lineas:'', plantilla:'', estado_anterior:ant, estado_nuevo:r.estado, fecha_anterior:'', fecha_nueva:'', texto:'' });
+        r.actualizado = maxStr(r.actualizado, ts); r.nota = 'Reabierta: volvió a aparecer abierta en el listado del ' + fmtF(L0.fecha);
+        mergeEvento({ id:`REAPERTURA|${r.clave}|${L0.fecha}`, fecha_hora:ts, tipo:'REAPERTURA', proveedor:r.proveedor, comprador:'',
+          clave:r.clave, lineas:'', plantilla:'', estado_anterior:ant, estado_nuevo:r.estado, fecha_anterior:'', fecha_nueva:'', texto:'', lote:'', antes:'' });
         res.reabiertas++;
       }
     }
-    r.ultima_vista_explosion = maxStr(r.ultima_vista_explosion, ex.fecha);
+    r.ultima_vista_siesa = maxStr(r.ultima_vista_siesa, L0.fecha);
   }
   for (const r of Object.values(S.seg)){
-    if (ex.lineas[r.clave] || CERRADOS.has(r.estado)) continue;
-    if (r.ultima_vista_explosion && ex.fecha < r.ultima_vista_explosion){ res.viejas++; continue; }
+    if (L0.lineas[r.clave] || CERRADOS.has(r.estado)) continue;
+    if (r.ultima_vista_siesa && L0.fecha < r.ultima_vista_siesa){ res.viejas++; continue; }
     const ant = r.estado;
-    r.estado = ant === 'ENTREGADO_POR_CONFIRMAR' ? 'CERRADA' : 'CERRADA_POR_EXPLOSION';
+    r.estado = ant === 'ENTREGADO_POR_CONFIRMAR' ? 'CERRADA' : 'CERRADA_SIESA';
     r.cantidad_pendiente = 0;
-    if ((r.actualizado || '') < tsEx) r.actualizado = tsEx;
-    mergeEvento({ id:`CIERRE|${r.clave}|${ex.fecha}`, fecha_hora:tsEx, tipo:'CIERRE', proveedor:r.proveedor, comprador:'',
+    if ((r.actualizado || '') < ts) r.actualizado = ts;
+    mergeEvento({ id:`CIERRE|${r.clave}|${L0.fecha}`, fecha_hora:ts, tipo:'CIERRE', proveedor:r.proveedor, comprador:'',
       clave:r.clave, lineas:'', plantilla:'', estado_anterior:ant, estado_nuevo:r.estado, fecha_anterior:'', fecha_nueva:'',
-      texto:'Sin pendiente en ' + ex.nombre });
-    if (r.estado === 'CERRADA') res.cerradas++; else res.cerradasExp++;
+      texto:'Ya no está abierta en ' + L0.nombre, lote:'', antes:'' });
+    if (r.estado === 'CERRADA') res.cerradas++; else res.cerradasSiesa++;
   }
   return res;
 }
+/** Asigna a cada línea abierta su fecha requerida (planeación) y la marca de "sin necesidad". */
+function aplicarFechasRequeridas(){
+  if (!S.ocs) return;
+  const f = calcularFechasRequeridas(S.ocs.lineas, S.explosion);
+  for (const k of Object.keys(S.ocs.lineas)){
+    const r = S.seg[k]; if (!r) continue;
+    if (!S.explosion){ r.sinNecesidad = false; continue; }
+    const v = f[k];
+    r.sinNecesidad = v == null;
+    if (v) r.fecha_requerida = v;
+  }
+}
 
 /* ---- Indicadores por línea (calculados) ---- */
-function enRiesgo(r){ return (ACTIVOS.has(r.estado)) && r.fecha_prometida && r.fecha_requerida && r.fecha_prometida > r.fecha_requerida; }
-function desfase(r, f){ const p = f || r.fecha_prometida; return (p && r.fecha_requerida) ? diasEntre(r.fecha_requerida, p) : null; }
+/** Fecha requerida efectiva: la de planeación; si ya pasó, hoy (eliminado cualquier colchón). */
+const reqEf = r => !r.fecha_requerida ? '' : (r.fecha_requerida < hoy() ? hoy() : r.fecha_requerida);
+const reqVencida = r => !!r.fecha_requerida && r.fecha_requerida < hoy();
+function enRiesgo(r){ return ACTIVOS.has(r.estado) && !r.sinNecesidad && !!r.fecha_prometida && !!r.fecha_requerida && r.fecha_prometida > reqEf(r); }
+function desfase(r, f){ const p = f || r.fecha_prometida, q = reqEf(r); return (p && q) ? diasEntre(q, p) : null; }
+/** Semáforo interno: verde (prometida ≤ requerida), rojo (prometida > requerida, o requerida vencida sin fecha), gris (sin fecha aún). */
+function semaforo(r){
+  if (!ACTIVOS.has(r.estado) || r.sinNecesidad) return '';
+  if (r.fecha_prometida) return enRiesgo(r) ? 'rojo' : 'verde';
+  return reqVencida(r) || r.fecha_requerida === hoy() ? 'rojo' : 'gris';
+}
+const SEM_ETQ = { verde:'A tiempo', rojo:'Riesgo', gris:'Sin fecha' };
+const chipSem = r => { const s = semaforo(r); return s ? `<span class="sem ${s}" title="${SEM_ETQ[s]}"></span>` : ''; };
 function revisarAlmacen(r){
-  if (r.estado !== 'ENTREGADO_POR_CONFIRMAR' || !S.explosion || !S.explosion.lineas[r.clave] || !r.fecha_entregado) return false;
-  return diasEntre(r.fecha_entregado.slice(0,10), S.explosion.fecha) > R().dias_revisar_almacen;
+  if (r.estado !== 'ENTREGADO_POR_CONFIRMAR' || !S.ocs || !S.ocs.lineas[r.clave] || !r.fecha_entregado) return false;
+  return diasEntre(r.fecha_entregado.slice(0,10), S.ocs.fecha) > R().dias_revisar_almacen;
 }
 
 /* =========================================================================
@@ -639,25 +771,28 @@ async function idbGet(k){ try{ const db = await idb(); return await new Promise(
 async function idbSet(k, v){ try{ const db = await idb(); await new Promise(ok => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = ok; t.onerror = ok; }); }catch(e){} }
 
 async function leerLibro(file){ const buf = await file.arrayBuffer(); return XLSX.read(buf, { type:'array' }); }
+const EXT_DATOS = /\.(xlsx|xlsm|xls|txt|csv|zip)$/i;
 
+/** Estructura esperada: raíz (config.xlsx), explosiones/, oc_abiertas/, respuestas/, depuracion/. */
 async function listarCarpeta(dir){
-  const out = { raiz: [], explosiones: [], respuestas: [] };
+  const out = { raiz: [], explosiones: [], oc_abiertas: [], respuestas: [], depuracion: [] };
   for await (const [nombre, h] of dir.entries()){
-    if (h.kind === 'file' && /\.xls[xm]?$/i.test(nombre)) out.raiz.push(await h.getFile());
-    else if (h.kind === 'directory' && /^explosiones$/i.test(nombre)){
-      for await (const [n2, h2] of h.entries()) if (h2.kind === 'file' && /\.xls[xm]?$/i.test(n2)) out.explosiones.push(await h2.getFile());
-    } else if (h.kind === 'directory' && /^respuestas$/i.test(nombre)){
-      for await (const [n2, h2] of h.entries()) if (h2.kind === 'file' && /\.xlsx$/i.test(n2)) out.respuestas.push(await h2.getFile());
+    if (h.kind === 'file' && EXT_DATOS.test(nombre)) out.raiz.push(await h.getFile());
+    else if (h.kind === 'directory'){
+      const k = Object.keys(out).find(x => x !== 'raiz' && x === nombre.toLowerCase());
+      if (!k) continue;
+      for await (const [n2, h2] of h.entries()) if (h2.kind === 'file' && EXT_DATOS.test(n2)) out[k].push(await h2.getFile());
     }
   }
   return out;
 }
-/** Clasifica archivos sueltos por nombre. */
+/** Clasifica archivos por nombre: ABASTECIMIENTO_* (explosión), OC_* (OC abiertas), config.xlsx, seguimiento_*. */
 function clasificar(files){
-  const r = { explosiones: [], config: null, seguimientos: [] };
+  const r = { explosiones: [], ocs: [], config: null, seguimientos: [] };
   for (const f of files){
     const n = f.name.split('/').pop();
     if (/^ABASTECIMIENTO_/i.test(n)) r.explosiones.push(f);
+    else if (/^OC(_ABIERTAS)?_\d{8}/i.test(n)) r.ocs.push(f);
     else if (/^config.*\.xlsx$/i.test(n)) r.config = f;
     else if (/^seguimiento_.*\.xlsx$/i.test(n)) r.seguimientos.push(f);
   }
@@ -672,26 +807,26 @@ async function conectarCarpeta(){
 }
 async function reconectarCarpeta(){
   const h = await idbGet('carpeta'); if (!h) return;
-  try{ if ((await h.requestPermission({ mode:'readwrite' })) === 'granted'){ S.dirHandle = h; await cargarDesdeCarpeta(); } }
+  try{ if ((await h.requestPermission({ mode:'readwrite' })) === 'granted'){ S.dirHandle = h; $('#btnReconectar').classList.add('oculto'); await cargarDesdeCarpeta(); } }
   catch(e){ alert('No se pudo reconectar: ' + e.message); }
 }
 async function cargarDesdeCarpeta(){
   const l = await listarCarpeta(S.dirHandle);
-  const c = clasificar(l.raiz);
+  const c = clasificar([...l.raiz, ...l.explosiones, ...l.oc_abiertas]);
+  c.seguimientos = [...c.seguimientos, ...clasificar(l.respuestas).seguimientos];
   S.modoCarpeta = S.dirHandle.name;
-  await procesar({ explosiones: [...c.explosiones, ...clasificar(l.explosiones).explosiones],
-    config: c.config, seguimientos: [...c.seguimientos, ...clasificar(l.respuestas).seguimientos] });
+  await procesar(c);
 }
 async function cargarArchivosSueltos(files){
   S.dirHandle = null; S.modoCarpeta = '';
-  const c = clasificar([...files]);
-  await procesar(c);
+  await procesar(clasificar([...files]));
 }
+async function progreso(msg){ $('#main').innerHTML = `<div class="panel vacio">${esc(msg)}</div>`; await new Promise(r => setTimeout(r, 30)); }
 let ULTIMA_CARGA = null;
-/** Proceso completo: config → consolidar seguimiento (+ trabajo local) → explosión → conciliar. */
+/** Proceso completo: config → seguimiento (+ trabajo local) → OC abiertas → explosión → conciliar → fechas requeridas. */
 async function procesar(c){
   ULTIMA_CARGA = c;
-  S.avisos = [];
+  S.avisos = []; S.pendienteMapeo = null;
   // 1. Configuración
   const local = lsGet(LS.config, null);
   if (c.config){
@@ -706,33 +841,51 @@ async function procesar(c){
   else { S.config = configDefecto(); S.configFuente = 'por defecto (falta config.xlsx)'; S.avisos.push('No se encontró config.xlsx: se usa la configuración por defecto del piloto (sin celulares).'); }
   // 2. Seguimiento: archivos (orden por nombre = orden cronológico) + trabajo local
   S.seg = {}; S.eventos = []; S.eventIds = new Set(); S.archivosSeg = [];
-  const segs = [...c.seguimientos].sort((a, b) => a.name < b.name ? -1 : 1);
-  for (const f of segs){
+  for (const f of [...(c.seguimientos || [])].sort((a, b) => a.name < b.name ? -1 : 1)){
     try{ const d = leerSeguimiento(await leerLibro(f)); d.lineas.forEach(mergeRegistro); d.eventos.forEach(mergeEvento); S.archivosSeg.push(f.name); }
     catch(e){ S.avisos.push('No se pudo leer ' + f.name + ': ' + e.message); }
   }
   const t = lsGet(LS.trabajo, null);
   if (t){ Object.values(t.seg || {}).forEach(o => mergeRegistro(normRegistro(o))); (t.eventos || []).forEach(e => mergeEvento(normEvento(e))); }
-  // 3. Explosión
-  S.explosion = null; S.explosionPendiente = null;
+  // 3. Listado de OC abiertas (base del seguimiento)
+  S.ocs = null; S.explosion = null;
+  const mapeos = lsGet(LS.mapeo, {});
+  const fo = masReciente(c.ocs || []);
+  if (fo){
+    await progreso('Leyendo listado de OC abiertas…');
+    const res = procesarOC(await leerMatriz(fo, CAMPOS_OC), mapeos.oc || {});
+    if (res.error) S.avisos.push(fo.name + ': ' + res.error);
+    else if (res.necesitaMapeo){ S.pendienteMapeo = { tipo:'oc', archivo:fo.name, ...res }; renderTodo(); return; }
+    else S.ocs = { nombre:fo.name, fecha:fechaDeNombre(fo.name) || dateToIso(new Date(fo.lastModified || Date.now())), lineas:res.lineas, stats:res.stats };
+  } else S.avisos.push('No se encontró el listado de OC abiertas (OC_ddmmaaaa.txt en la carpeta oc_abiertas/). Es la base del seguimiento.');
+  // 4. Explosión (índice compacto en caché: solo la primera carga de cada archivo es lenta)
   const fx = elegirExplosion(c.explosiones || []);
   if (fx){
-    const wb = await leerLibro(fx);
-    await aplicarExplosion(wb, fx);
-  } else S.avisos.push('No se encontró ninguna explosión ABASTECIMIENTO_ddmmaaaa.xlsx.');
+    const firma = [fx.name, fx.size, fx.lastModified, JSON.stringify(mapeos.explosion || {})].join('|');
+    const cache = await idbGet('explosion');
+    let idx = cache && cache.firma === firma ? cache.idx : null;
+    if (!idx){
+      const t0 = performance.now();
+      await progreso(`Leyendo explosión ${fx.name} (${Math.round(fx.size / 1e6)} MB). La primera vez puede tardar hasta un minuto…`);
+      const res = procesarExplosion(await leerMatriz(fx, CAMPOS_EXP), mapeos.explosion || {});
+      if (res.error) S.avisos.push(fx.name + ': ' + res.error);
+      else if (res.necesitaMapeo){ S.pendienteMapeo = { tipo:'explosion', archivo:fx.name, ...res }; renderTodo(); return; }
+      else { idx = { modo:res.modo, filas:res.filas, total:res.total, segundos:Math.round((performance.now() - t0) / 100) / 10 }; await idbSet('explosion', { firma, idx }); }
+    }
+    if (idx) S.explosion = { nombre:fx.name, fecha:fechaDeNombre(fx.name) || dateToIso(new Date(fx.lastModified || Date.now())), ...idx };
+  } else S.avisos.push('No se encontró la explosión ABASTECIMIENTO_ddmmaaaa (carpeta explosiones/). Sin ella no hay fecha requerida y no se pregunta a proveedores.');
+  // 5. Conciliar y calcular fechas requeridas
+  if (S.ocs){
+    const r = conciliar();
+    if (r.viejas) S.avisos.push(`El listado ${S.ocs.nombre} es más antiguo que el seguimiento para ${r.viejas} línea(s); no se cerraron.`);
+    S.ultimaConciliacion = r;
+    aplicarFechasRequeridas();
+  }
   guardarLocal();
   renderTodo();
 }
-async function aplicarExplosion(wb, fx){
-  const res = leerExplosion(wb, lsGet(LS.mapeo, {}));
-  if (res.error){ S.avisos.push(fx.name + ': ' + res.error); return; }
-  if (res.necesitaMapeo){ S.explosionPendiente = { wb, fx, ...res }; S.tab = 'hoy'; return; }
-  const fecha = fechaDeNombreExplosion(fx.name) || dateToIso(new Date(fx.lastModified || Date.now()));
-  S.explosion = { nombre: fx.name, fecha, lineas: res.lineas, stats: res.stats, mapeo: res.mapeo, headers: res.headers };
-  const c = conciliar();
-  if (c.viejas) S.avisos.push(`La explosión ${fx.name} es más antigua que el seguimiento para ${c.viejas} línea(s); no se cerraron.`);
-  S.ultimaConciliacion = c;
-}
+/** Antigüedad (días) de los archivos fuente para la alerta de la pantalla principal. */
+function antiguedad(f){ return f ? diasEntre(f, hoy()) : null; }
 
 /* =========================================================================
    Interfaz
@@ -740,23 +893,36 @@ async function aplicarExplosion(wb, fx){
 function compradoresConocidos(){
   const s = new Set();
   (S.config.proveedores || []).forEach(p => p.comprador && s.add(String(p.comprador).trim()));
-  Object.values(S.seg).forEach(r => r.comprador && s.add(r.comprador));
+  Object.values(S.seg).forEach(r => r.comprador && provActivo(r.proveedor) && s.add(r.comprador));
   if (S.comprador) s.add(S.comprador);
   return [...s].sort();
+}
+/** Texto y alerta de antigüedad de los archivos fuente. */
+function estadoFuentes(){
+  const lim = R().dias_alerta_archivos, out = [];
+  for (const [etq, f] of [['OC abiertas', S.ocs], ['Explosión', S.explosion]]){
+    if (!f){ out.push(`${etq}: <b class="rojo">sin cargar</b>`); continue; }
+    const d = antiguedad(f.fecha);
+    out.push(`${etq}: <b class="${d > lim ? 'rojo' : ''}">${fmtF(f.fecha)}</b>${d > lim ? ` <span class="chip rojo">${d} días</span>` : ''}`);
+  }
+  return out.join(' · ');
+}
+function archivosViejos(){
+  const lim = R().dias_alerta_archivos;
+  return [['listado de OC abiertas', S.ocs], ['explosión', S.explosion]].filter(([, f]) => f && antiguedad(f.fecha) > lim).map(([n, f]) => `${n} (${fmtF(f.fecha)})`);
 }
 function renderCabecera(){
   $('#ver').textContent = VERSION;
   const sel = $('#selComprador');
   sel.innerHTML = '<option value="">— elegir —</option>' + compradoresConocidos().map(c => `<option ${c === S.comprador ? 'selected' : ''}>${esc(c)}</option>`).join('') + '<option value="__otro__">Otro…</option>';
-  const ex = S.explosion;
   const pend = S.modificadas.size;
   $('#estadoCarga').innerHTML = [
+    estadoFuentes(),
     `Carpeta: <b>${esc(S.modoCarpeta || 'no conectada')}</b>`,
-    `Explosión: <b>${ex ? esc(ex.nombre) + ' (' + fmtF(ex.fecha) + ') · ' + Object.keys(ex.lineas).length + ' líneas OC nacionales pendientes' : 'sin cargar'}</b>`,
     `Config: <b>${esc(S.configFuente)}</b>`,
     `Seguimiento: <b>${S.archivosSeg.length} archivo(s)</b>`,
     `Hoy: <b>${fmtF(hoy())}</b>`,
-    pend ? `<span class="rojo">${pend} línea(s) con cambios sin exportar</span>` : '<span class="verde">Sin cambios pendientes de exportar</span>'
+    pend ? `<span class="rojo">${pend} línea(s) con cambios sin guardar en respuestas/</span>` : '<span class="verde">Todo guardado</span>'
   ].join(' · ');
 }
 function renderTodo(){
@@ -765,45 +931,43 @@ function renderTodo(){
   const m = $('#main');
   m.onchange = m.oninput = m.onclick = null;
   let html = S.avisos.map(a => `<div class="aviso">${esc(a)}</div>`).join('');
-  if (S.explosionPendiente) html += vistaMapeo();
+  if (S.pendienteMapeo) html += vistaMapeo();
   else if (S.tab === 'hoy') html += vistaHoy();
   else if (S.tab === 'lineas') html += vistaLineas();
   else if (S.tab === 'tablero') html += vistaTablero();
   else if (S.tab === 'admin') html += vistaAdmin();
   m.innerHTML = html;
-  if (!S.explosionPendiente){
-    if (S.tab === 'hoy') enlazarHoy();
-    if (S.tab === 'lineas') enlazarLineas();
-    if (S.tab === 'tablero') enlazarTablero();
-    if (S.tab === 'admin') enlazarAdmin();
-  } else enlazarMapeo();
+  if (S.pendienteMapeo) enlazarMapeo();
+  else if (S.tab === 'hoy') enlazarHoy();
+  else if (S.tab === 'lineas') enlazarLineas();
+  else if (S.tab === 'tablero') enlazarTablero();
+  else if (S.tab === 'admin') enlazarAdmin();
 }
 
-/* ---- Mapeo manual de columnas ---- */
+/* ---- Mapeo manual de columnas (listado de OC o explosión) ---- */
 function vistaMapeo(){
-  const p = S.explosionPendiente;
+  const p = S.pendienteMapeo, campos = p.tipo === 'oc' ? CAMPOS_OC : CAMPOS_EXP;
   const opts = sel => '<option value="">— elegir —</option>' + p.headers.map((h, i) => h ? `<option value="${i}" ${sel === i ? 'selected' : ''}>${esc(h)}</option>` : '').join('');
-  return `<div class="panel"><h2>Mapeo de columnas de la explosión</h2>
-  <p>No se reconocieron todas las columnas de <b>${esc(p.fx.name)}</b> (hoja «${esc(p.hoja)}»). Indique qué columna corresponde a cada campo. El mapeo se recuerda en este navegador.</p>
-  <table style="max-width:700px"><tr><th>Campo</th><th>Columna en la explosión</th></tr>
-  ${CAMPOS.map(c => `<tr><td>${esc(c.label)}${c.req ? ' *' : ''}</td><td><select data-campo="${c.k}">${!c.req ? `<option value="-1" ${p.mapeo[c.k] === -1 ? 'selected' : ''}>(no existe)</option>` : ''}${opts(p.mapeo[c.k])}</select>
+  return `<div class="panel"><h2>Mapeo de columnas ${p.tipo === 'oc' ? 'del listado de OC abiertas' : 'de la explosión'}</h2>
+  <p>No se reconocieron todas las columnas de <b>${esc(p.archivo)}</b>. Indique qué columna corresponde a cada campo. El mapeo se recuerda en este navegador.</p>
+  <table style="max-width:760px"><tr><th>Campo</th><th>Columna en el archivo</th></tr>
+  ${campos.map(c => `<tr><td>${esc(c.label)}${c.req ? ' *' : ''}</td><td><select data-campo="${c.k}">${!c.req ? `<option value="-1" ${p.mapeo[c.k] === -1 ? 'selected' : ''}>(no existe)</option>` : ''}${opts(p.mapeo[c.k])}</select>
     ${p.faltan.includes(c.k) ? '<span class="rojo peq"> no detectada</span>' : ''}</td></tr>`).join('')}
-  </table><p><button class="b pri" id="btnMapeo">Aplicar y recordar</button> <span class="peq mut">* obligatorio. Sin «Línea», la clave será OC + ítem.</span></p></div>`;
+  </table><p><button class="b pri" id="btnMapeo">Aplicar y recordar</button> <span class="peq mut">* obligatorio.</span></p></div>`;
 }
 function enlazarMapeo(){
   $('#btnMapeo').onclick = async () => {
-    const p = S.explosionPendiente, g = {};
+    const p = S.pendienteMapeo, campos = p.tipo === 'oc' ? CAMPOS_OC : CAMPOS_EXP, g = {};
     let ok = true;
     document.querySelectorAll('select[data-campo]').forEach(s => {
-      const c = CAMPOS.find(x => x.k === s.dataset.campo);
+      const c = campos.find(x => x.k === s.dataset.campo);
       if (s.value === '') { if (c.req) ok = false; return; }
       g[c.k] = s.value === '-1' ? '__NINGUNA__' : p.headers[+s.value];
     });
     if (!ok){ alert('Faltan campos obligatorios.'); return; }
-    lsSet(LS.mapeo, { ...lsGet(LS.mapeo, {}), ...g });
-    S.explosionPendiente = null;
-    await aplicarExplosion(p.wb, p.fx);
-    guardarLocal(); renderTodo();
+    const m = lsGet(LS.mapeo, {}); m[p.tipo] = { ...(m[p.tipo] || {}), ...g }; lsSet(LS.mapeo, m);
+    S.pendienteMapeo = null;
+    if (ULTIMA_CARGA) await procesar(ULTIMA_CARGA);
   };
 }
 
@@ -813,28 +977,30 @@ function filasLineas(){
   return Object.values(S.seg).filter(r => {
     if (FILTRO.piloto && !provActivo(r.proveedor)) return false;
     if (FILTRO.prov && r.proveedor !== FILTRO.prov) return false;
+    const ev = estadoVisible(r);
     if (FILTRO.estado === 'ABIERTAS' && CERRADOS.has(r.estado)) return false;
-    if (FILTRO.estado && FILTRO.estado !== 'ABIERTAS' && r.estado !== FILTRO.estado) return false;
-    if (FILTRO.q){ const q = norm(FILTRO.q); if (!norm([r.oc, r.item, r.descripcion, r.proveedor].join(' ')).includes(q)) return false; }
+    if (FILTRO.estado && FILTRO.estado !== 'ABIERTAS' && ev !== FILTRO.estado) return false;
+    if (FILTRO.q){ const q = norm(FILTRO.q); if (!norm([r.oc, r.item, r.descripcion, r.proveedor, r.solicitud].join(' ')).includes(q)) return false; }
     return true;
-  }).sort((a, b) => (a.proveedor + a.oc + a.linea).localeCompare(b.proveedor + b.oc + b.linea));
+  }).sort((a, b) => (a.proveedor + a.oc + a.clave).localeCompare(b.proveedor + b.oc + b.clave));
 }
 function vistaLineas(){
   const provs = [...new Set(Object.values(S.seg).map(r => r.proveedor))].sort();
   const filas = filasLineas();
   return `<div class="panel"><div class="fila">
     <select id="fProv"><option value="">Todos los proveedores</option>${provs.map(p => `<option ${p === FILTRO.prov ? 'selected' : ''} value="${esc(p)}">${esc(provAlias(p))}</option>`).join('')}</select>
-    <select id="fEstado"><option value="">Todos los estados</option><option value="ABIERTAS" ${FILTRO.estado === 'ABIERTAS' ? 'selected' : ''}>Abiertas</option>${ESTADOS.map(e => `<option value="${e}" ${e === FILTRO.estado ? 'selected' : ''}>${ETQ_ESTADO[e]}</option>`).join('')}</select>
-    <input type="text" id="fQ" placeholder="Buscar OC, ítem, descripción…" value="${esc(FILTRO.q)}">
+    <select id="fEstado"><option value="">Todos los estados</option><option value="ABIERTAS" ${FILTRO.estado === 'ABIERTAS' ? 'selected' : ''}>Abiertas</option>${[...ESTADOS, 'SIN_NECESIDAD'].map(e => `<option value="${e}" ${e === FILTRO.estado ? 'selected' : ''}>${ETQ_ESTADO[e]}</option>`).join('')}</select>
+    <input type="text" id="fQ" placeholder="Buscar OC, ítem, descripción, solicitud…" value="${esc(FILTRO.q)}">
     <label class="chk"><input type="checkbox" id="fPiloto" ${FILTRO.piloto ? 'checked' : ''}> Solo proveedores activos</label>
     <span class="sp"></span><span class="mut">${filas.length} línea(s)</span></div></div>
-  <div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Pend.</th><th>Requerida</th><th>Prometida</th><th class="n">Desfase</th><th>Estado</th><th class="n">Cambios</th><th>Últ. pregunta</th><th>Últ. respuesta</th><th>Alertas</th></tr></thead><tbody>
-  ${filas.map(r => { const d = desfase(r); return `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.linea)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td>
-    <td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtF(r.fecha_requerida)}</td><td>${fmtF(r.fecha_prometida)}${r.fecha_prometida_anterior ? `<br><span class="peq mut">antes ${fmtF(r.fecha_prometida_anterior)}</span>` : ''}</td>
-    <td class="n ${d > 0 && enRiesgo(r) ? 'rojo' : ''}">${d == null ? '' : (d > 0 ? '+' : '') + d}</td><td>${chipEstado(r.estado)}</td><td class="n">${r.contador_cambios || ''}</td>
+  <div class="tabla-scroll"><table><thead><tr><th></th><th>Proveedor</th><th>OC</th><th>Ítem</th><th>Descripción</th><th>Solicitud</th><th class="n">Pend.</th><th>Fecha OC</th><th>Requerida</th><th>Prometida</th><th class="n">Desfase</th><th>Estado</th><th class="n">Cambios</th><th>Últ. pregunta</th><th>Últ. respuesta</th><th>Alertas</th></tr></thead><tbody>
+  ${filas.slice(0, 2000).map(r => { const d = desfase(r); return `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td>${chipSem(r)}</td><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td><td class="peq">${esc(r.solicitud)}</td>
+    <td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtF(r.fecha_oc)}</td><td>${r.sinNecesidad ? '<span class="mut">—</span>' : fmtF(reqEf(r))}${reqVencida(r) && !r.sinNecesidad ? `<br><span class="peq rojo">plan. ${fmtF(r.fecha_requerida)}</span>` : ''}</td>
+    <td>${fmtF(r.fecha_prometida)}${r.fecha_prometida_anterior ? `<br><span class="peq mut">antes ${fmtF(r.fecha_prometida_anterior)}</span>` : ''}</td>
+    <td class="n ${d > 0 && enRiesgo(r) ? 'rojo' : ''}">${d == null || r.sinNecesidad ? '' : (d > 0 ? '+' : '') + d}</td><td>${chipEstado(estadoVisible(r))}</td><td class="n">${r.contador_cambios || ''}</td>
     <td>${fmtFH(r.ultima_pregunta)}</td><td>${fmtFH(r.ultima_respuesta)}</td>
-    <td>${enRiesgo(r) ? '<span class="chip rojo">Riesgo de faltante</span> ' : ''}${revisarAlmacen(r) ? '<span class="chip amar">Revisar con almacén</span> ' : ''}${excluida(r) ? '<span class="chip">Excluida</span>' : ''}</td></tr>`; }).join('') || '<tr><td colspan="14" class="vacio">Sin líneas</td></tr>'}
-  </tbody></table></div>`;
+    <td>${enRiesgo(r) ? '<span class="chip rojo">Riesgo de faltante</span> ' : ''}${revisarAlmacen(r) ? '<span class="chip amar">Revisar con almacén</span> ' : ''}${excluida(r) ? '<span class="chip">Excluida</span>' : ''}</td></tr>`; }).join('') || '<tr><td colspan="16" class="vacio">Sin líneas</td></tr>'}
+  </tbody></table></div>${filas.length > 2000 ? '<p class="peq mut">Se muestran las primeras 2.000 líneas; use los filtros.</p>' : ''}`;
 }
 function enlazarLineas(){
   $('#fProv').onchange = e => { FILTRO.prov = e.target.value; renderTodo(); };
@@ -863,9 +1029,11 @@ function evaluarLinea(r){
   if (!ACTIVOS.has(r.estado)) return no('estado ' + (ETQ_ESTADO[r.estado] || r.estado));
   if (!provActivo(r.proveedor)) return no('proveedor inactivo');
   if (excluida(r)) return no('excluida');
-  if (S.explosion && !S.explosion.lineas[r.clave]) return no('no figura en la explosión');
+  if (S.ocs && !S.ocs.lineas[r.clave]) return no('ya no está abierta en Siesa');
+  if (r.sinNecesidad) return no('sin necesidad en planeación');
+  if (!r.fecha_requerida) return no('sin fecha requerida (cargue la explosión)');
   const h = hoy(), rg = R(), fin = addDias(h, rg.horizonte_semanas * 7), venc = vencida(r);
-  if (r.fecha_requerida && r.fecha_requerida > fin && !venc) return no('fuera del horizonte');
+  if (reqEf(r) > fin && !venc) return no('fuera del horizonte');
   if (r.ultima_pregunta && r.ultima_pregunta.slice(0,10) === h) return no('ya se preguntó hoy');
   const contacto = maxStr(r.ultima_pregunta, r.ultima_respuesta);
   if (!r.fecha_prometida){
@@ -1178,12 +1346,12 @@ function vistaHoy(){
   for (const g of lista) h += tarjetaProveedor(g);
   if (alm.length) h += `<div class="panel"><h2>Revisar con almacén</h2><p class="peq mut">El proveedor reportó ENTREGADO hace más de ${R().dias_revisar_almacen} días y la línea sigue pendiente en la explosión.</p>
     <table><tr><th>Proveedor</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Pend.</th><th>Entregado (según proveedor)</th></tr>
-    ${alm.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.linea)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td><td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtFH(r.fecha_entregado)}</td></tr>`).join('')}</table></div>`;
+    ${alm.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td><td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtFH(r.fecha_entregado)}</td></tr>`).join('')}</table></div>`;
   return h;
 }
 function filaLinea(r, n, extra){
   const venc = vencida(r);
-  return `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td class="c"><b>${n}</b></td><td>${esc(r.oc)}</td><td>${esc(r.linea)}</td><td>${esc(r.item)}</td><td>${esc(recortar(r.descripcion, 60))}</td>
+  return `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td class="c"><b>${n}</b></td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(recortar(r.descripcion, 60))}</td>
     <td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td class="${venc && !r.fecha_prometida ? 'rojo' : ''}">${fmtF(r.fecha_requerida)}</td>
     <td class="${r.fecha_prometida && r.fecha_prometida < hoy() ? 'rojo' : enRiesgo(r) ? 'rojo' : ''}">${fmtF(r.fecha_prometida) || '<span class="mut">—</span>'}</td>
     <td>${chipEstado(r.estado)}${enRiesgo(r) ? ' <span class="chip rojo">+' + desfase(r) + ' d</span>' : ''}</td><td class="peq mut">${esc(extra || '')}</td></tr>`;
@@ -1222,7 +1390,7 @@ function vistaPrevia(pv, mapa){
   for (const f of pv.filas){
     const r = mapa[f.n - 1]; if (!r) continue;
     const res = f.error ? { estado:r.estado, fecha:r.fecha_prometida } : resultadoAccion(r, f), d = f.error ? null : desfase(r, res.fecha);
-    h += `<tr class="${f.error ? 'err' : ''}" data-n="${f.n}"><td class="c"><b>${f.n}</b></td><td>${esc(r.oc)} ${esc(r.linea)}</td><td>${esc(r.item)} <span class="peq mut">${esc(recortar(r.descripcion, 35))}</span></td>
+    h += `<tr class="${f.error ? 'err' : ''}" data-n="${f.n}"><td class="c"><b>${f.n}</b></td><td>${esc(r.oc)} ${esc(r.solicitud)}</td><td>${esc(r.item)} <span class="peq mut">${esc(recortar(r.descripcion, 35))}</span></td>
       <td><select data-acc="pv-acc">${Object.keys(ACC_ETQ).map(a => `<option value="${a}" ${a === f.accion ? 'selected' : ''}>${ACC_ETQ[a]}</option>`).join('')}</select></td>
       <td><input type="date" data-acc="pv-fecha" value="${esc(f.accion === 'NO' || f.accion === 'FECHA' ? f.fecha : '')}" ${f.accion === 'NO' || f.accion === 'FECHA' ? '' : 'disabled'}></td>
       <td>${chipEstado(r.estado)}${res.estado !== r.estado ? ' → ' + chipEstado(res.estado) : ''}</td>
@@ -1359,14 +1527,14 @@ function vistaTablero(){
       </tbody></table></div></div>`;
   } else if (TAB.vista === 'riesgo'){
     h += `<div class="panel"><h2>Riesgo de faltante</h2><p class="peq mut">Líneas abiertas cuya fecha prometida supera la fecha requerida, de mayor a menor desfase.</p>
-      <div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Pendiente</th><th>Requerida</th><th>Prometida</th><th class="n">Desfase (días)</th><th class="n">Cambios</th><th>Estado</th></tr></thead><tbody>
-      ${riesgo.map(r => `<tr class="riesgo"><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.linea)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td>
+      <div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>OC</th><th>Solicitud</th><th>Ítem</th><th>Descripción</th><th class="n">Pendiente</th><th>Requerida</th><th>Prometida</th><th class="n">Desfase (días)</th><th class="n">Cambios</th><th>Estado</th></tr></thead><tbody>
+      ${riesgo.map(r => `<tr class="riesgo"><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td>
         <td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtF(r.fecha_requerida)}</td><td class="rojo">${fmtF(r.fecha_prometida)}</td>
         <td class="n rojo">+${desfase(r)}</td><td class="n">${r.contador_cambios || ''}</td><td>${chipEstado(r.estado)}</td></tr>`).join('') || '<tr><td colspan="11" class="vacio">Sin líneas en riesgo</td></tr>'}
       </tbody></table></div></div>`;
   } else {
-    h += `<div class="panel"><h2>Cambios de fecha por línea</h2><div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>OC</th><th>Línea</th><th>Ítem</th><th>Descripción</th><th class="n">Cambios</th><th>Fecha anterior</th><th>Fecha prometida</th><th>Requerida</th><th>Estado</th><th>Historial</th></tr></thead><tbody>
-      ${camb.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.linea)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td>
+    h += `<div class="panel"><h2>Cambios de fecha por línea</h2><div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>OC</th><th>Solicitud</th><th>Ítem</th><th>Descripción</th><th class="n">Cambios</th><th>Fecha anterior</th><th>Fecha prometida</th><th>Requerida</th><th>Estado</th><th>Historial</th></tr></thead><tbody>
+      ${camb.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td>
         <td class="n"><b>${r.contador_cambios}</b></td><td>${fmtF(r.fecha_prometida_anterior)}</td><td class="${enRiesgo(r) ? 'rojo' : ''}">${fmtF(r.fecha_prometida)}</td><td>${fmtF(r.fecha_requerida)}</td><td>${chipEstado(r.estado)}</td>
         <td class="peq mut">${historialFechas(r.clave).map(fmtC).join(' → ')}</td></tr>`).join('') || '<tr><td colspan="11" class="vacio">Sin cambios de fecha</td></tr>'}
       </tbody></table></div></div>`;
@@ -1387,11 +1555,11 @@ function libroTablero(){
   ws1['!cols'] = [{wch:44},{wch:14},{wch:18}, ...Array(14).fill({wch:12})];
   XLSX.utils.book_append_sheet(wb, ws1, 'resumen_proveedores');
   const lin = (rs, extra) => rs.map(r => ({ ...r, proveedor_alias:provAlias(r.proveedor), desfase_dias:desfase(r) == null ? '' : desfase(r),
-    riesgo_faltante:enRiesgo(r) ? 'SI' : '', revisar_almacen:revisarAlmacen(r) ? 'SI' : '', ...(extra ? extra(r) : {}) }));
-  const colsL = ['proveedor_alias','proveedor','oc','linea','item','descripcion','unidad','cantidad_pendiente','fecha_requerida','fecha_prometida','desfase_dias','estado','contador_cambios','fecha_prometida_anterior','riesgo_faltante','revisar_almacen','ultima_pregunta','ultima_respuesta','fecha_entregado','comprador'];
+    riesgo_faltante:enRiesgo(r) ? 'SI' : '', fecha_requerida_efectiva:reqEf(r), semaforo:SEM_ETQ[semaforo(r)] || '', estado_visible:ETQ_ESTADO[estadoVisible(r)] || r.estado, revisar_almacen:revisarAlmacen(r) ? 'SI' : '', ...(extra ? extra(r) : {}) }));
+  const colsL = ['proveedor_alias','proveedor','oc','item','solicitud','descripcion','unidad','cantidad_pendiente','fecha_oc','fecha_requerida','fecha_requerida_efectiva','fecha_prometida','desfase_dias','semaforo','estado_visible','contador_cambios','fecha_prometida_anterior','riesgo_faltante','revisar_almacen','ultima_pregunta','ultima_respuesta','fecha_entregado','comprador'];
   XLSX.utils.book_append_sheet(wb, hojaConFechas(colsL, lin(lineasRiesgo())), 'riesgo_faltante');
   XLSX.utils.book_append_sheet(wb, hojaConFechas([...colsL, 'historial'], lin(lineasCambios(), r => ({ historial:historialFechas(r.clave).map(fmtF).join(' > ') }))), 'cambios_por_linea');
-  const todas = Object.values(S.seg).filter(r => TAB.inactivos || provActivo(r.proveedor)).sort((a, b) => (a.proveedor + a.oc + a.linea).localeCompare(b.proveedor + b.oc + b.linea));
+  const todas = Object.values(S.seg).filter(r => TAB.inactivos || provActivo(r.proveedor)).sort((a, b) => (a.proveedor + a.clave).localeCompare(b.proveedor + b.clave));
   XLSX.utils.book_append_sheet(wb, hojaConFechas(colsL, lin(todas)), 'detalle_lineas');
   return wb;
 }
@@ -1413,7 +1581,7 @@ function guardarConfigLocal(){
 }
 function provsExplosion(){
   const c = {};
-  if (S.explosion) for (const L of Object.values(S.explosion.lineas)) c[L.proveedor] = (c[L.proveedor] || 0) + 1;
+  if (S.ocs) for (const L of Object.values(S.ocs.lineas)) c[L.proveedor] = (c[L.proveedor] || 0) + 1;
   return c;
 }
 function lineasEjemplo(prov){
@@ -1465,9 +1633,7 @@ function vistaAdmin(){
   </div>`;
   // Reglas
   h += `<div class="panel"><h2>Reglas</h2><table style="max-width:1000px"><tr><th>Parámetro</th><th>Valor</th><th>Descripción</th></tr>
-    ${Object.keys(REGLAS_DEF).map(k => `<tr><td><code>${k}</code></td><td>${k === 'duplicados_pendiente'
-      ? `<select data-regla="${k}"><option ${norm(rg[k]) !== 'SUMA' ? 'selected' : ''}>MAX</option><option ${norm(rg[k]) === 'SUMA' ? 'selected' : ''}>SUMA</option></select>`
-      : `<input type="text" data-regla="${k}" value="${esc(rg[k])}" size="10">`}</td><td class="peq mut">${esc(REGLAS_DESC[k])}</td></tr>`).join('')}
+    ${Object.keys(REGLAS_DEF).map(k => `<tr><td><code>${k}</code></td><td><input type="text" data-regla="${k}" value="${esc(rg[k])}" size="${/nombre|prefijos/.test(k) ? 22 : 10}"></td><td class="peq mut">${esc(REGLAS_DESC[k])}</td></tr>`).join('')}
     </table><p class="peq mut">Valores efectivos: horizonte ${R().horizonte_semanas} semanas · repregunta ${R().dias_antes_repregunta.join(', ')} días antes · vencidas cada ${R().frecuencia_vencidas_dias} días · recordatorio a las ${R().horas_sin_respuesta_para_recordatorio} h.</p></div>`;
   // Plantillas
   const provSel = ADM.prevProv || ((cfg.proveedores[0] || {}).proveedor || '');
@@ -1584,7 +1750,7 @@ async function init(){
   S.avisos = ['Conecte la carpeta de OneDrive del seguimiento (Edge/Chrome) o use «Cargar archivos…» para seleccionar la explosión, config.xlsx y los archivos de respuestas/.'];
   renderTodo();
 }
-window.App = { S, R, parseFecha, parseFechaHora, leerExplosion, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
+window.App = { S, R, parseFecha, parseFechaHora, procesarOC, procesarExplosion, calcularFechasRequeridas, leerMatriz, textoAMatriz, normItem, numOC, reqEf, semaforo, estadoVisible, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
   conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
   revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, interpretarRespuesta,
   previaRespuesta, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };

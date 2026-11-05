@@ -43,3 +43,16 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - Vista previa: una fila con error ya no muestra el estado resultante (antes sugería "→ Confirmada").
 - README con uso para comprador, administración y estructura de carpetas en OneDrive.
 - **Motivo:** asegurar el comportamiento antes del piloto y dejar una forma reproducible de verificar cada mejora.
+
+## v0.6 — Rediseño: OC abiertas como base, mensajes por OC, lenguaje natural y candados contra cruces
+
+### Bloque 1 · Fuentes y fecha requerida desde planeación
+- La base del seguimiento pasa a ser el **listado de OC abiertas de Siesa** (`oc_abiertas/OC_ddmmaaaa.txt`, texto con tabuladores en Latin-1; también .xlsx/.csv). Clave interna: **OC | ítem | Nro solicitud** (el listado no trae número de línea y OC + ítem se repite).
+- Prefijos que entran: parámetro `prefijos_oc` (por defecto `OC-`); `OCI-` siempre excluido.
+- **Fecha requerida = Fecha Planeación de la explosión.** La explosión real trae `TD_FECHAS.Nro orden`: cada necesidad ya viene amarrada a una OC, así que se usa ese amarre (OC + ítem). Si varias líneas comparten OC + ítem, FIFO entre ellas. Si la explosión no trae esa columna, FIFO por ítem (necesidades por fecha de planeación vs. OC por fecha de OC).
+- Sin colchón: si la planeación ya pasó, la requerida es hoy. Líneas sin necesidad → "Sin necesidad en planeación" (no se preguntan; visibles en tablero y en Todas las líneas).
+- Semáforo interno: verde (prometida ≤ requerida), rojo (prometida > requerida, o requerida vencida sin fecha), gris (sin fecha aún).
+- Cierre de líneas según el listado de OC (ya no según la explosión): ENTREGADO → CERRADA; desaparece sin aviso → CERRADA_SIESA.
+- Explosión de 26 MB / 170.000 filas: se guarda un índice compacto en el navegador; la primera lectura tarda ~9 s y las siguientes ~0,2 s.
+- Cabecera con "OC abiertas: fecha · Explosión: fecha" y alerta si alguno tiene más de `dias_alerta_archivos` (4) días.
+- **Motivo:** el listado de OC es lo que el proveedor debe entregar; la explosión dice cuándo se necesita. Usar el amarre de planeación evita inventar prioridades.
