@@ -1182,7 +1182,7 @@ function gestionHoy(verTodos, mostrarSinGestion){
     g.respuesta = g.pregunta ? ultimaRespuestaDesde(g.nombreExp, g.pregunta.fecha_hora) : null;
     g.esperando = !!g.pregunta && !g.respuesta;
     if (!verTodos && me && norm(g.comprador) !== me) continue;
-    if (!g.hoy.length && !g.esperando && !(mostrarSinGestion && g.activas)) continue;
+    if (!g.hoy.length && !g.esperando && !(mostrarSinGestion && g.activas) && !(depuracionPendiente(g.nombreExp) && g.activas)) continue;
     lista.push(g);
   }
   lista.sort((a, b) => {
@@ -1442,18 +1442,19 @@ function validarAccion(r, accion, fecha){
   if (accion === 'NINGUNA') return { accion, fecha:'', error:'' };
   if (!r) return { accion, fecha, error:'línea no encontrada' };
   if (CERRADOS.has(r.estado)) return { accion:'NINGUNA', fecha:'', error:'', nota:'línea ya cerrada; no se modifica' };
-  if (accion === 'ENT') return { accion, fecha:'', error:'' };
+  if (accion === 'ENT' || accion === 'CANCELAR') return { accion, fecha:'', error:'' };
   if (accion === 'SI') return r.fecha_prometida ? { accion, fecha:r.fecha_prometida, error:'' } : { accion, fecha:'', error:'no tiene fecha confirmada: indique la fecha' };
   if (!fecha) return { accion, fecha:'', error:'falta la fecha' };
   if (!r.fecha_prometida) return { accion:'FECHA', fecha, error:'' };
   return fecha === r.fecha_prometida ? { accion:'SI', fecha, error:'' } : { accion:'NO', fecha, error:'' };
 }
-const ACC_ETQ = { NINGUNA:'Sin cambio', SI:'Se mantiene', NO:'Nueva fecha (cambio)', FECHA:'Fecha (primera)', ENT:'Entregado / despachado' };
+const ACC_ETQ = { NINGUNA:'Sin cambio', SI:'Se mantiene', NO:'Nueva fecha (cambio)', FECHA:'Fecha (primera)', ENT:'Entregado / despachado', CANCELAR:'Cancelar en Siesa' };
 function resultadoAccion(r, a){
   if (a.accion === 'SI') return { estado:'CONFIRMADA', fecha:r.fecha_prometida };
   if (a.accion === 'FECHA') return { estado:'CONFIRMADA', fecha:a.fecha };
   if (a.accion === 'NO') return { estado:'CAMBIADA', fecha:a.fecha };
   if (a.accion === 'ENT') return { estado:'ENTREGADO_POR_CONFIRMAR', fecha:r.fecha_prometida };
+  if (a.accion === 'CANCELAR') return { estado:'POR_CANCELAR', fecha:r.fecha_prometida };
   return { estado:r.estado, fecha:r.fecha_prometida };
 }
 const CAMPOS_DESHACER = ['estado','fecha_prometida','fecha_prometida_anterior','contador_cambios','ultima_respuesta','fecha_entregado','nota'];
@@ -1468,7 +1469,8 @@ function aplicarAccion(r, a, prov, texto, lote){
     r.fecha_prometida_anterior = fAnt; r.fecha_prometida = a.fecha;
     r.contador_cambios = (+r.contador_cambios || 0) + 1; r.estado = 'CAMBIADA';
   } else if (a.accion === 'ENT'){ r.estado = 'ENTREGADO_POR_CONFIRMAR'; r.fecha_entregado = ts; }
-  if (a.nota && /despach|parcial/.test(a.nota)) r.nota = a.nota;
+  else if (a.accion === 'CANCELAR'){ r.estado = 'POR_CANCELAR'; }
+  if (a.nota && (/despach|parcial/.test(a.nota) || a.accion === 'CANCELAR' || /^Depuraci/.test(a.origen || ''))) r.nota = a.nota;
   r.ultima_respuesta = ts; tocar(r);
   registrarEvento({ tipo:'RESPUESTA', proveedor:prov, clave:r.clave, estado_anterior:ant, estado_nuevo:r.estado,
     fecha_anterior:fAnt, fecha_nueva:r.fecha_prometida, plantilla:a.accion, texto:String(a.origen || texto || '').slice(0, 500),
@@ -1636,6 +1638,7 @@ function confirmarPanel(panel){
   const lote = 'L' + nuevoId();
   let n = 0;
   for (const f of panel.filas){ if (S.seg[f.clave] && aplicarAccion(S.seg[f.clave], f, panel.prov, f.origen, lote)) n++; }
+  if (panel.tipo === 'depuracion') registrarEvento({ tipo:'DEPURACION', proveedor:panel.prov, lote, texto:`Depuración inicial: ${n} línea(s) actualizadas` });
   guardarLocal(); guardadoAutomatico();
   return n;
 }
@@ -1660,6 +1663,88 @@ function deshacerUltima(prov){
   guardarLocal(); guardadoAutomatico();
   return l.eventos.length;
 }
+
+/* =========================================================================
+   Depuración inicial (antes del primer envío a cada proveedor)
+   ========================================================================= */
+const COLS_DEP = ['proveedor','oc','item','descripcion','unidad','cantidad_pendiente','fecha_oc','fecha_requerida','solicitud','ACCION','NUEVA_FECHA','OBSERVACION','clave'];
+const ETQ_DEP = { proveedor:'Proveedor', oc:'OC', item:'Ítem', descripcion:'Descripción', unidad:'U.M.', cantidad_pendiente:'Cant. pendiente', fecha_oc:'Fecha OC',
+  fecha_requerida:'Fecha requerida', solicitud:'Nro solicitud', ACCION:'ACCION', NUEVA_FECHA:'NUEVA_FECHA', OBSERVACION:'OBSERVACION', clave:'clave (no modificar)' };
+const depuracionHecha = prov => S.eventos.some(e => e.tipo === 'DEPURACION' && normH(e.proveedor) === normH(prov));
+const depuracionPendiente = prov => !depuracionHecha(prov) && !ultimaPregunta(prov);
+function lineasDepuracion(prov){
+  return Object.values(S.seg).filter(r => normH(r.proveedor) === normH(prov) && !CERRADOS.has(r.estado) && (!S.ocs || S.ocs.lineas[r.clave]))
+    .sort((a, b) => (a.oc + a.item).localeCompare(b.oc + b.item));
+}
+/** Excel de depuración: todas las líneas abiertas del proveedor, con columnas para marcar ENTREGADO / NUEVA FECHA / CANCELAR. */
+function libroDepuracion(prov){
+  const rs = lineasDepuracion(prov);
+  const filas = rs.map(r => ({ ...r, proveedor:r.proveedor, fecha_requerida: r.sinNecesidad ? '' : reqEf(r), ACCION:'', NUEVA_FECHA:'', OBSERVACION: r.sinNecesidad ? 'Sin necesidad en planeación: ¿cancelar o aplazar?' : '' }));
+  const ws = XLSX.utils.aoa_to_sheet([COLS_DEP.map(c => ETQ_DEP[c]), ...filas.map(f => COLS_DEP.map(c => {
+    if (['fecha_oc','fecha_requerida'].includes(c)) return f[c] ? isoToSerial(f[c]) : (c === 'fecha_requerida' ? 'Sin necesidad' : '');
+    return f[c] == null ? '' : f[c];
+  }))]);
+  for (let i = 1; i <= filas.length; i++) for (const j of [6, 7]){ const cell = ws[XLSX.utils.encode_cell({ r:i, c:j })]; if (cell && cell.t === 'n') cell.z = 'dd/mm/yyyy'; }
+  ws['!cols'] = [{wch:30},{wch:13},{wch:10},{wch:40},{wch:6},{wch:10},{wch:11},{wch:13},{wch:16},{wch:14},{wch:13},{wch:36},{wch:28}];
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'depuracion');
+  const ins = XLSX.utils.aoa_to_sheet([['Depuración inicial · ' + prov], [''],
+    ['1. Llame al proveedor y revise cada línea.'],
+    ['2. En la columna ACCION escriba una de estas opciones (o deje vacío si no cambia):'],
+    ['   ENTREGADO    → el proveedor ya la entregó (queda "entregado por confirmar" hasta que Siesa la cierre)'],
+    ['   NUEVA FECHA  → escriba la fecha comprometida en NUEVA_FECHA (dd/mm/aaaa)'],
+    ['   CANCELAR     → la línea se debe cancelar en Siesa (no se le vuelve a preguntar al proveedor)'],
+    ['3. No modifique las columnas Proveedor, OC, Ítem ni clave.'],
+    ['4. Guarde el archivo y cárguelo en la herramienta con «Cargar Excel conciliado» en la tarjeta del proveedor.'],
+    [''], ['Generado: ' + fmtFH(ahora()) + ' · ' + rs.length + ' líneas abiertas']]);
+  ins['!cols'] = [{ wch:110 }];
+  XLSX.utils.book_append_sheet(wb, ins, 'instrucciones');
+  return wb;
+}
+async function descargarDepuracion(prov){
+  const nombre = `depuracion_${slug(provAlias(prov))}_${hoy().replace(/-/g, '')}.xlsx`;
+  const donde = await guardarLibro(libroDepuracion(prov), nombre, 'depuracion');
+  S.avisos = [donde === 'carpeta' ? `Guardado en depuracion/${nombre}. Ábralo, concílielo con el proveedor y cárguelo con «Cargar Excel conciliado».` : `Descargado ${nombre}. Concílielo con el proveedor y cárguelo con «Cargar Excel conciliado».`];
+  renderTodo();
+}
+/**
+ * Lee el Excel conciliado y arma un panel de confirmación (mismo flujo que una respuesta de WhatsApp).
+ * Candado: todas las filas deben ser de este proveedor y de líneas suyas.
+ */
+function analizarDepuracion(wb, prov){
+  const sn = wb.SheetNames.find(n => normH(n) === 'DEPURACION') || wb.SheetNames[0];
+  const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:'', raw:true, blankrows:false });
+  const H = (aoa[0] || []).map(normH), col = k => H.indexOf(normH(ETQ_DEP[k]));
+  const panel = { prov, p:provCfg(prov), tipo:'depuracion', remitentes:['Excel de depuración'], usados:[], viejos:0, bloqueos:[], errores:[], filas:[], sinRespuesta:[] };
+  if (col('clave') < 0 || col('ACCION') < 0){ panel.bloqueado = true; panel.bloqueos.push('El archivo no tiene las columnas «clave» y «ACCION» del Excel de depuración generado por la herramienta.'); return panel; }
+  const ajenos = new Set();
+  for (let i = 1; i < aoa.length; i++){
+    const row = aoa[i], clave = String(row[col('clave')] || '').trim(), pv = String(row[col('proveedor')] || '').trim();
+    if (!clave) continue;
+    const r = S.seg[clave];
+    if ((pv && normH(pv) !== normH(prov)) || (r && normH(r.proveedor) !== normH(prov))){ ajenos.add(pv || (r && r.proveedor) || clave); continue; }
+    if (!r){ panel.errores.push(`La línea ${clave} ya no existe en el seguimiento (¿se cerró en Siesa?).`); continue; }
+    const acc = normH(row[col('ACCION')]), f = parseFecha(row[col('NUEVA_FECHA')]), obs = String(row[col('OBSERVACION')] || '').trim().replace(/^Sin necesidad en planeación: ¿cancelar o aplazar\?$/, '');
+    if (!acc){ continue; }
+    let val;
+    if (/^ENT/.test(acc)) val = validarAccion(r, 'ENT', '');
+    else if (/CANCEL/.test(acc)) val = { accion:'CANCELAR', fecha:'', error:'' };
+    else if (/FECHA/.test(acc)) val = f ? validarAccion(r, 'FECHA', f) : { accion:'FECHA', fecha:'', error:'ACCION «NUEVA FECHA» sin fecha válida en NUEVA_FECHA' };
+    else if (/^(SI|MANTIENE|IGUAL)/.test(acc)) val = validarAccion(r, 'SI', '');
+    else val = { accion:'NINGUNA', fecha:'', error:`ACCION no reconocida: «${row[col('ACCION')]}» (use ENTREGADO, NUEVA FECHA o CANCELAR)` };
+    panel.filas.push({ clave, r, ...val, revisar:false, nota: obs, origen:'Depuración: ' + String(row[col('ACCION')]).trim() + (obs ? ' · ' + obs : '') });
+  }
+  if (ajenos.size){ panel.bloqueado = true; panel.bloqueos.push(`El archivo contiene líneas de otro proveedor (${[...ajenos].slice(0, 3).join(', ')}). Posible cruce de archivos: cargue el Excel de ${prov}.`); }
+  return panel;
+}
+async function cargarDepuracion(prov, file){
+  try{
+    const panel = analizarDepuracion(await leerLibro(file), prov);
+    UI.analisis = { general:[`Excel conciliado de ${provAlias(prov)}: ${file.name}`], paneles:[panel] }; UI.confirmados = {}; UI.pegado = '';
+  }catch(e){ alert('No se pudo leer el archivo: ' + e.message); }
+  renderTodo();
+  const el = document.querySelector('[data-panel]'); if (el) el.scrollIntoView({ block:'start' });
+}
+function marcarDepuracion(prov, texto){ registrarEvento({ tipo:'DEPURACION', proveedor:prov, texto }); guardarLocal(); guardadoAutomatico(); }
 
 /* =========================================================================
    Vista "Gestión de hoy"
@@ -1712,7 +1797,7 @@ function panelRespuesta(p, i){
   if (UI.confirmados[i]) return `<div class="okbox" style="margin-top:10px">✓ Respuesta de <b>${esc(p.prov)}</b> guardada (${UI.confirmados[i]} línea(s)). Puede deshacerla desde la tarjeta del proveedor.</div>`;
   if (!p.prov) return `<div class="bloqueo"><div class="prov-grande">⛔ ${esc(p.titulo)}</div>${p.bloqueos.map(b => `<p>${esc(b)}</p>`).join('')}</div>`;
   let h = `<div class="${p.bloqueado ? 'bloqueo' : 'confirmar'}" data-panel="${i}"><div class="prov-grande">${p.bloqueado ? '⛔ ' : ''}${esc(p.prov)} <span class="peq">(${esc(provAlias(p.prov))})</span></div>
-    <p class="peq">Remitente: <b>${esc(p.remitentes.join(', '))}</b> (identificado por ${p.por === 'celular' ? 'celular' : 'nombre de WhatsApp'}) · ${p.usados.length} mensaje(s) usados${p.viejos ? ` · ${p.viejos} anterior(es) a la última pregunta ignorado(s)` : ''}${p.pregunta ? ` · última pregunta: ${fmtFH(p.pregunta.fecha_hora)}` : ''}</p>`;
+    <p class="peq">${p.tipo === 'depuracion' ? 'Origen: <b>Excel de depuración conciliado</b>' : `Remitente: <b>${esc(p.remitentes.join(', '))}</b> (identificado por ${p.por === 'celular' ? 'celular' : 'nombre de WhatsApp'})`} · ${p.usados.length} mensaje(s) usados${p.viejos ? ` · ${p.viejos} anterior(es) a la última pregunta ignorado(s)` : ''}${p.pregunta ? ` · última pregunta: ${fmtFH(p.pregunta.fecha_hora)}` : ''}</p>`;
   p.bloqueos.forEach(b => h += `<div class="error"><b>BLOQUEADO:</b> ${esc(b)}</div>`);
   if (p.bloqueado) return h + '</div>';
   p.errores.forEach(e => h += `<div class="error">${esc(e)}</div>`);
@@ -1737,8 +1822,8 @@ function panelRespuesta(p, i){
   });
   h += '</table>';
   if (p.sinRespuesta.length) h += `<details><summary class="peq">${p.sinRespuesta.length} línea(s) del mensaje sin respuesta (no cambian)</summary><p class="peq mut">${p.sinRespuesta.map(r => `OC ${numOC(r.oc)} · ${esc(recortar(r.descripcion, 30))}`).join(' · ')}</p></details>`;
-  const bloqueado = rojas || amarillas || !cambios.length;
-  h += `<div class="fila" style="margin-top:8px"><button class="b pri grande" data-acc="confirmar" ${bloqueado ? 'disabled' : ''}>Confirmar respuesta de ${esc(p.prov)}</button>
+  const bloqueado = rojas || amarillas || (!cambios.length && p.tipo !== 'depuracion');
+  h += `<div class="fila" style="margin-top:8px"><button class="b pri grande" data-acc="confirmar" ${bloqueado ? 'disabled' : ''}>${p.tipo === 'depuracion' ? 'Confirmar depuración de' : 'Confirmar respuesta de'} ${esc(p.prov)}</button>
     ${bloqueado ? `<span class="peq rojo">${!cambios.length ? 'No hay cambios para guardar.' : 'Resuelva las filas en rojo y amarillo (corrija, «Aceptar» o «Sin cambio»).'}</span>` : ''}</div>`;
   return h + '</div>';
 }
@@ -1749,12 +1834,16 @@ function tarjetaProveedor(g){
     <span class="sp"></span>${g.hoy.length ? `<span class="chip NUEVA">${g.hoy.length} para preguntar hoy</span>` : ''}${g.esperando ? ' <span class="chip ESPERANDO_FECHA">esperando respuesta</span>' : ''}</div>`;
   if (g.pregunta) h += `<p class="peq mut">Último mensaje: ${fmtFH(g.pregunta.fecha_hora)} (${lineasDeMensaje(g.pregunta).length} líneas) · ${g.respuesta ? 'respondido ' + fmtFH(g.respuesta.fecha_hora) : '<span class="rojo">sin respuesta</span>'}
     ${lote ? ` · <button class="b peq" data-acc="deshacer">Deshacer última respuesta (${fmtFH(lote.fecha)}, ${lote.eventos.length} línea(s))</button>` : ''}</p>`;
+  const dep = depuracionPendiente(g.nombreExp);
+  if (dep) h += `<div class="aviso"><b>Depuración inicial pendiente.</b> Antes del primer WhatsApp, descargue el Excel con todas las líneas abiertas de ${esc(provAlias(g.proveedor))} (${lineasDepuracion(g.nombreExp).length}), concílielo por llamada (ENTREGADO / NUEVA FECHA / CANCELAR) y cárguelo.
+    <div class="fila" style="margin-top:6px"><button class="b pri" data-acc="dep-bajar">Descargar Excel de depuración</button><button class="b" data-acc="dep-cargar">Cargar Excel conciliado</button><button class="b peq" data-acc="dep-omitir">Omitir depuración</button>
+    <input type="file" class="oculto" accept=".xlsx" data-acc="dep-file"></div></div>`;
   if (g.envio.length){
     const pl = plantillaPara(g.envio), msg = construirMensaje(g.proveedor, g.envio, pl);
     h += `<h3>Siguiente mensaje · ${g.envio.length} línea(s) en ${new Set(g.envio.map(r => r.oc)).size} OC · plantilla «${pl}»</h3>${tablaPorOC(g.envio, g.motivos)}
       ${g.resto ? `<p class="peq mut">Quedan ${g.resto} línea(s) para el siguiente envío (tope de ${R().max_lineas_mensaje} líneas y ${R().max_oc_mensaje} OC por mensaje).</p>` : ''}
-      <div class="fila" style="margin-top:8px"><button class="b wa" data-acc="wa" ${cel ? '' : 'disabled'}>Abrir WhatsApp</button>
-      <button class="b" data-acc="copiar">Copiar mensaje</button><button class="b" data-acc="vermsg">${UI.verMsg[k] ? 'Ocultar' : 'Ver'} mensaje</button>
+      <div class="fila" style="margin-top:8px"><button class="b wa" data-acc="wa" ${cel && !dep ? '' : 'disabled'}>Abrir WhatsApp</button>
+      <button class="b" data-acc="copiar" ${dep ? 'disabled' : ''}>Copiar mensaje</button><button class="b" data-acc="vermsg">${UI.verMsg[k] ? 'Ocultar' : 'Ver'} mensaje</button>
       ${msg.length > 3500 ? '<span class="rojo peq">Mensaje largo: WhatsApp puede recortarlo.</span>' : ''}</div>
       ${UI.verMsg[k] ? `<pre class="msg">${esc(msg)}</pre>` : ''}`;
   } else if (g.pregunta && g.esperando) h += tablaPorOC(lineasDeMensaje(g.pregunta), null);
@@ -1809,6 +1898,9 @@ function enlazarHoy(){
       const acc = ev.target.dataset && ev.target.dataset.acc; if (!acc || ev.target.tagName !== 'BUTTON') return;
       const g = grupoPorClave(k); if (!g) return;
       if (acc === 'vermsg'){ UI.verMsg[k] = !UI.verMsg[k]; renderTodo(); }
+      else if (acc === 'dep-bajar') descargarDepuracion(g.nombreExp);
+      else if (acc === 'dep-cargar'){ const inp = card.querySelector('[data-acc=dep-file]'); inp.onchange = e => { if (e.target.files[0]) cargarDepuracion(g.nombreExp, e.target.files[0]); }; inp.click(); }
+      else if (acc === 'dep-omitir'){ if (confirm(`¿Omitir la depuración inicial de ${g.proveedor}? Se podrá enviar el WhatsApp de inmediato.`)){ marcarDepuracion(g.nombreExp, 'Depuración omitida por ' + (S.comprador || 'comprador')); renderTodo(); } }
       else if (acc === 'deshacer'){
         const l = ultimoLote(g.nombreExp);
         if (l && confirm(`¿Deshacer la respuesta de ${g.proveedor} registrada el ${fmtFH(l.fecha)}?\n\n${l.eventos.length} línea(s) vuelven a su estado anterior. Queda registrado en el historial.`)){
@@ -1852,7 +1944,7 @@ function metricasProveedores(){
       const r = resp.find(x => x.fecha_hora >= q.fecha_hora && x.fecha_hora < hasta);
       if (r){ respondidas++; sumDias += horasEntre(q.fecha_hora, r.fecha_hora) / 24; }
     });
-    const abiertas = lin.filter(r => ACTIVOS.has(r.estado) || r.estado === 'ENTREGADO_POR_CONFIRMAR');
+    const abiertas = lin.filter(r => ACTIVOS.has(r.estado) || r.estado === 'ENTREGADO_POR_CONFIRMAR' || r.estado === 'POR_CANCELAR');
     const cambios = lin.reduce((s, r) => s + (+r.contador_cambios || 0), 0);
     out.push({ proveedor:nombre, alias:provAlias(nombre), comprador:provComprador(nombre), activo:provActivo(nombre),
       abiertas:abiertas.length, sinFecha:lin.filter(r => ACTIVOS.has(r.estado) && !r.fecha_prometida).length,
@@ -1862,6 +1954,8 @@ function metricasProveedores(){
       diasResp: respondidas ? sumDias / respondidas : null,
       riesgo:lin.filter(enRiesgo).length, cambios, lineasConCambios:lin.filter(r => +r.contador_cambios > 0).length,
       maxCambios:lin.reduce((m, r) => Math.max(m, +r.contador_cambios || 0), 0),
+      sinNecesidad:lin.filter(r => ACTIVOS.has(r.estado) && r.sinNecesidad).length, porCancelar:lin.filter(r => r.estado === 'POR_CANCELAR').length,
+      rojas:lin.filter(r => semaforo(r) === 'rojo').length, verdes:lin.filter(r => semaforo(r) === 'verde').length,
       epc:lin.filter(r => r.estado === 'ENTREGADO_POR_CONFIRMAR').length, almacen:lin.filter(revisarAlmacen).length,
       cerradas:lin.filter(r => CERRADOS.has(r.estado)).length });
   }
@@ -1884,6 +1978,8 @@ function vistaTablero(){
     <div class="kpi"><div class="v">${pct(preg ? resp / preg : null)}</div><div class="l">respuesta (${resp}/${preg} mensajes)</div></div>
     <div class="kpi ${riesgo.length ? 'rojo' : ''}"><div class="v">${riesgo.length}</div><div class="l">riesgo de faltante (prometida &gt; requerida)</div></div>
     <div class="kpi"><div class="v">${tot('cambios')}</div><div class="l">cambios de fecha</div></div>
+    <div class="kpi"><div class="v">${tot('sinNecesidad')}</div><div class="l">sin necesidad en planeación</div></div>
+    <div class="kpi"><div class="v">${tot('porCancelar')}</div><div class="l">por cancelar en Siesa</div></div>
     <div class="kpi"><div class="v">${tot('epc')}</div><div class="l">entregados por confirmar</div></div>
     <div class="kpi ${tot('almacen') ? 'rojo' : ''}"><div class="v">${tot('almacen')}</div><div class="l">revisar con almacén</div></div></div>
   <div class="panel fila">
@@ -1893,13 +1989,13 @@ function vistaTablero(){
     <label class="chk"><input type="checkbox" id="tbInact" ${TAB.inactivos ? 'checked' : ''}> Incluir proveedores no activos</label>
     <span class="sp"></span><button class="b pri" id="tbExport">Exportar tablero a Excel</button></div>`;
   if (TAB.vista === 'resumen'){
-    h += `<div class="panel"><h2>Por proveedor</h2><div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>Comprador</th><th class="n">Abiertas</th><th class="n">Sin fecha</th><th class="n">Vencidas</th>
+    h += `<div class="panel"><h2>Por proveedor</h2><div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>Comprador</th><th class="n">Abiertas</th><th class="n">Semáforo<br>verde / rojo</th><th class="n">Sin fecha</th><th class="n">Vencidas</th><th class="n">Sin necesidad</th><th class="n">Por cancelar</th>
       <th class="n">Mensajes</th><th class="n">% respuesta</th><th class="n">Días prom. respuesta</th><th class="n">Riesgo faltante</th><th class="n">Cambios de fecha</th>
       <th class="n">Líneas con cambios</th><th class="n">Máx. cambios / línea</th><th class="n">Entregados por confirmar</th><th class="n">Revisar almacén</th></tr></thead><tbody>
       ${m.map(x => `<tr><td><b>${esc(x.alias)}</b>${x.activo ? '' : ' <span class="chip">inactivo</span>'}<br><span class="peq mut">${esc(x.proveedor)}</span></td><td>${esc(x.comprador)}</td>
-        <td class="n">${x.abiertas}</td><td class="n">${x.sinFecha}</td><td class="n ${x.vencidas ? 'rojo' : ''}">${x.vencidas}</td><td class="n">${x.preguntas}</td>
+        <td class="n">${x.abiertas}</td><td class="n"><span class="verde">${x.verdes}</span> / <span class="rojo">${x.rojas}</span></td><td class="n">${x.sinFecha}</td><td class="n ${x.vencidas ? 'rojo' : ''}">${x.vencidas}</td><td class="n">${x.sinNecesidad}</td><td class="n">${x.porCancelar}</td><td class="n">${x.preguntas}</td>
         <td class="n">${pct(x.pctResp)}</td><td class="n">${d1(x.diasResp)}</td><td class="n ${x.riesgo ? 'rojo' : ''}">${x.riesgo}</td><td class="n">${x.cambios}</td>
-        <td class="n">${x.lineasConCambios}</td><td class="n">${x.maxCambios}</td><td class="n">${x.epc}</td><td class="n ${x.almacen ? 'rojo' : ''}">${x.almacen}</td></tr>`).join('') || '<tr><td colspan="14" class="vacio">Sin datos</td></tr>'}
+        <td class="n">${x.lineasConCambios}</td><td class="n">${x.maxCambios}</td><td class="n">${x.epc}</td><td class="n ${x.almacen ? 'rojo' : ''}">${x.almacen}</td></tr>`).join('') || '<tr><td colspan="17" class="vacio">Sin datos</td></tr>'}
       </tbody></table></div></div>`;
   } else if (TAB.vista === 'riesgo'){
     h += `<div class="panel"><h2>Riesgo de faltante</h2><p class="peq mut">Líneas abiertas cuya fecha prometida supera la fecha requerida, de mayor a menor desfase.</p>
@@ -1925,9 +2021,9 @@ function historialFechas(clave){
 function libroTablero(){
   const wb = XLSX.utils.book_new();
   const m = metricasProveedores();
-  const ws1 = XLSX.utils.aoa_to_sheet([['Proveedor','Alias','Comprador','Líneas abiertas','Sin fecha','Vencidas','Mensajes enviados','Mensajes respondidos','% respuesta','Días promedio respuesta','Líneas riesgo faltante','Cambios de fecha','Líneas con cambios','Máx. cambios por línea','Entregados por confirmar','Revisar con almacén','Cerradas'],
-    ...m.map(x => [x.proveedor, x.alias, x.comprador, x.abiertas, x.sinFecha, x.vencidas, x.preguntas, x.respondidas, x.pctResp == null ? '' : Math.round(x.pctResp * 1000) / 1000, x.diasResp == null ? '' : Math.round(x.diasResp * 10) / 10, x.riesgo, x.cambios, x.lineasConCambios, x.maxCambios, x.epc, x.almacen, x.cerradas])]);
-  for (let i = 1; i <= m.length; i++){ const c = ws1[XLSX.utils.encode_cell({ r:i, c:8 })]; if (c && c.t === 'n') c.z = '0%'; }
+  const ws1 = XLSX.utils.aoa_to_sheet([['Proveedor','Alias','Comprador','Líneas abiertas','Semáforo verde','Semáforo rojo','Sin necesidad en planeación','Por cancelar','Sin fecha','Vencidas','Mensajes enviados','Mensajes respondidos','% respuesta','Días promedio respuesta','Líneas riesgo faltante','Cambios de fecha','Líneas con cambios','Máx. cambios por línea','Entregados por confirmar','Revisar con almacén','Cerradas'],
+    ...m.map(x => [x.proveedor, x.alias, x.comprador, x.abiertas, x.verdes, x.rojas, x.sinNecesidad, x.porCancelar, x.sinFecha, x.vencidas, x.preguntas, x.respondidas, x.pctResp == null ? '' : Math.round(x.pctResp * 1000) / 1000, x.diasResp == null ? '' : Math.round(x.diasResp * 10) / 10, x.riesgo, x.cambios, x.lineasConCambios, x.maxCambios, x.epc, x.almacen, x.cerradas])]);
+  for (let i = 1; i <= m.length; i++){ const c = ws1[XLSX.utils.encode_cell({ r:i, c:12 })]; if (c && c.t === 'n') c.z = '0%'; }
   ws1['!cols'] = [{wch:44},{wch:14},{wch:18}, ...Array(14).fill({wch:12})];
   XLSX.utils.book_append_sheet(wb, ws1, 'resumen_proveedores');
   const lin = (rs, extra) => rs.map(r => ({ ...r, proveedor_alias:provAlias(r.proveedor), desfase_dias:desfase(r) == null ? '' : desfase(r),
@@ -1993,15 +2089,16 @@ function vistaAdmin(){
     <div class="fila"><input type="date" id="admSim" value="${esc(SIMULADA || '')}"><button class="b" id="admSimOk">Aplicar</button><button class="b" id="admSimNo" ${fechaSimulada() ? '' : 'disabled'}>Volver a la fecha real</button>
     <span class="peq">Hoy para la herramienta: <b>${fmtF(hoy())}</b></span></div></div>`;
   // Proveedores
-  h += `<div class="panel"><h2>Proveedores</h2><p class="peq mut">«proveedor» debe ser el nombre exacto de la explosión. Celular de 10 dígitos (se antepone 57). Solo los activos (SI) reciben mensajes.</p>
+  h += `<div class="panel"><h2>Proveedores</h2><p class="peq mut">«proveedor» debe ser el nombre exacto del listado de OC de Siesa. «Nombre en WhatsApp» es como aparece el contacto al copiar de WhatsApp Web (ej. «PRAMEC - Carlos»; varios separados por ;). Celular de 10 dígitos (se antepone 57). Solo los activos (SI) reciben mensajes.</p>
     <datalist id="dlProv">${nombresEx.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
-    <table><tr><th>Proveedor (nombre en la explosión)</th><th>Alias</th><th>Activo</th><th>Contacto</th><th>Celular</th><th>Comprador</th><th>Trato</th><th>En explosión</th><th></th></tr>
+    <table><tr><th>Proveedor (nombre en la explosión)</th><th>Alias</th><th>Activo</th><th>Contacto</th><th>Celular</th><th>Nombre en WhatsApp</th><th>Comprador</th><th>Trato</th><th>En explosión</th><th></th></tr>
     ${cfg.proveedores.map((p, i) => `<tr data-i="${i}">
       <td><input type="text" data-f="proveedor" list="dlProv" value="${esc(p.proveedor)}" style="width:100%;min-width:340px"></td>
       <td><input type="text" data-f="alias" value="${esc(p.alias)}" size="10"></td>
       <td><select data-f="activo"><option ${p.activo !== 'NO' ? 'selected' : ''}>SI</option><option ${p.activo === 'NO' ? 'selected' : ''}>NO</option></select></td>
       <td><input type="text" data-f="contacto" value="${esc(p.contacto)}" size="16"></td>
       <td><input type="text" data-f="celular" value="${esc(p.celular)}" size="12"> ${p.celular && !celularWa(p.celular) ? '<span class="rojo peq">inválido</span>' : ''}</td>
+      <td><input type="text" data-f="nombre_whatsapp" value="${esc(p.nombre_whatsapp || '')}" size="18" placeholder="PRAMEC - Carlos"></td>
       <td><input type="text" data-f="comprador" value="${esc(p.comprador)}" size="14"></td>
       <td><select data-f="trato"><option value="usted" ${p.trato !== 'tu' ? 'selected' : ''}>usted</option><option value="tu" ${p.trato === 'tu' ? 'selected' : ''}>tú</option></select></td>
       <td>${S.explosion ? (enEx[Object.keys(enEx).find(n => normH(n) === normH(p.proveedor))] ? '<span class="verde">✓ ' + enEx[Object.keys(enEx).find(n => normH(n) === normH(p.proveedor))] + ' líneas</span>' : '<span class="rojo">no aparece</span>') : ''}</td>
@@ -2087,9 +2184,9 @@ function enlazarAdmin(){
   main.onclick = e => {
     const a = e.target.dataset && e.target.dataset.adm; if (!a) return;
     const tr = e.target.closest('tr');
-    if (a === 'addProv') cfg.proveedores.push({ proveedor:'', alias:'', activo:'SI', contacto:'', celular:'', comprador:'', trato:'usted' });
+    if (a === 'addProv') cfg.proveedores.push({ proveedor:'', alias:'', activo:'SI', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' });
     else if (a === 'delProv'){ if (!confirm('¿Quitar este proveedor de la configuración?')) return; cfg.proveedores.splice(+tr.dataset.i, 1); }
-    else if (a === 'addEx') cfg.proveedores.push({ proveedor:e.target.dataset.nombre, alias:'', activo:'NO', contacto:'', celular:'', comprador:'', trato:'usted' });
+    else if (a === 'addEx') cfg.proveedores.push({ proveedor:e.target.dataset.nombre, alias:'', activo:'NO', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' });
     else if (a === 'addExc') cfg.exclusiones.push({ tipo:'OC', valor:'', motivo:'' });
     else if (a === 'delEx') cfg.exclusiones.splice(+tr.dataset.x, 1);
     else return;
@@ -2133,7 +2230,7 @@ async function init(){
 }
 window.App = { S, R, parseFecha, parseFechaHora, procesarOC, procesarExplosion, calcularFechasRequeridas, leerMatriz, textoAMatriz, normItem, numOC, reqEf, semaforo, estadoVisible, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
   conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
-  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor, separarWhatsApp, identificarRemitente, analizarPegado, confirmarPanel, deshacerUltima, ultimoLote, mensajesVigentes, guardadoAutomatico, aplicarFechaSimulada, fechaSimulada, archivoDelDia,
+  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor, separarWhatsApp, identificarRemitente, analizarPegado, confirmarPanel, deshacerUltima, ultimoLote, mensajesVigentes, guardadoAutomatico, libroDepuracion, analizarDepuracion, depuracionPendiente, lineasDepuracion, aplicarFechaSimulada, fechaSimulada, archivoDelDia,
   interpretarNatural, loteMensaje, numerarPorOC, detalleMensaje, fechaPalabras, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
 init();
 </script>

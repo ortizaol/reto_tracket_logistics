@@ -86,3 +86,11 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - Con la carpeta conectada y el comprador elegido, cada pregunta, respuesta confirmada, deshacer o depuración se guarda sola en `respuestas/seguimiento_<comprador>_<aaaammdd>.xlsx` (un archivo por comprador y por día, que se sobrescribe durante el día). Sin carpeta, el botón "Exportar mi seguimiento" sigue disponible.
 - Fecha simulada en el Administrador (antes solo con `?hoy=` en la dirección): franja roja visible y guardado automático apagado mientras esté activa.
 - **Motivo:** que nadie dependa de acordarse de exportar, y poder probar escenarios de otros días sin ensuciar la carpeta real.
+
+### Bloque 6 · Depuración inicial
+- Antes del primer WhatsApp a un proveedor, su tarjeta pide la depuración: **Excel con todas sus líneas abiertas** (OC, ítem, descripción, cantidad pendiente, fecha OC, fecha requerida, solicitud) y columnas `ACCION` (ENTREGADO / NUEVA FECHA / CANCELAR), `NUEVA_FECHA` y `OBSERVACION`, más una hoja de instrucciones. Se guarda en `depuracion/`.
+- Al cargar el Excel conciliado se muestra el mismo panel de confirmación de las respuestas (filas en rojo si la acción o la fecha no son válidas). Candado: si el archivo trae líneas de otro proveedor, se bloquea.
+- Nuevo estado **Por cancelar en Siesa** (no se pregunta al proveedor; se cierra cuando la OC deja de estar abierta).
+- Opción "Omitir depuración" (queda registrada). El botón de WhatsApp se habilita al terminar u omitir la depuración.
+- Tablero: columnas de semáforo (verde/rojo), "Sin necesidad en planeación" y "Por cancelar"; Administrador: columna `nombre_whatsapp`.
+- **Motivo:** el listado de Siesa trae líneas viejas o ya recibidas; depurarlas por llamada una sola vez evita que el primer WhatsApp llegue lleno de ruido y le quite credibilidad al proceso.
