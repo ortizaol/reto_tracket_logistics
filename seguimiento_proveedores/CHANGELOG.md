@@ -81,3 +81,8 @@ Formato: cada versión explica **qué** cambió y **por qué**.
 - Confirmación con el nombre del proveedor en grande, resumen y líneas a cambiar; botón "Confirmar respuesta de <PROVEEDOR>", deshabilitado mientras haya filas en rojo o amarillo.
 - "Deshacer última respuesta" por proveedor: restaura el estado anterior de cada línea y queda en el historial (evento DESHACER).
 - **Motivo:** eliminar por diseño el error de cruzar respuestas entre proveedores sin depender de la API de WhatsApp.
+
+### Bloque 5 · Guardado automático y fecha simulada
+- Con la carpeta conectada y el comprador elegido, cada pregunta, respuesta confirmada, deshacer o depuración se guarda sola en `respuestas/seguimiento_<comprador>_<aaaammdd>.xlsx` (un archivo por comprador y por día, que se sobrescribe durante el día). Sin carpeta, el botón "Exportar mi seguimiento" sigue disponible.
+- Fecha simulada en el Administrador (antes solo con `?hoy=` en la dirección): franja roja visible y guardado automático apagado mientras esté activa.
+- **Motivo:** que nadie dependa de acordarse de exportar, y poder probar escenarios de otros días sin ensuciar la carpeta real.

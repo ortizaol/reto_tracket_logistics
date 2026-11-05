@@ -62,6 +62,7 @@ td.c,th.c{text-align:center}
 tr.amar td{background:var(--warnbg)}
 .amar-tx{color:var(--warn);font-weight:600}
 button.b.grande{font-size:15px;padding:8px 16px}
+.simulada{width:100%;background:#b42318;color:#fff;font-weight:700;padding:4px 10px;border-radius:4px;margin-top:4px}
 .sem{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:middle}
 .sem.verde{background:#1e9e5a}.sem.rojo{background:#d92d20}.sem.gris{background:#c3c8d2}
 .chip.rojo{background:var(--errbg);color:var(--err)}
@@ -142,6 +143,17 @@ let OFFSET_MS = 0;
     OFFSET_MS = t - n;
   }
 })();
+/** Fecha simulada desde el Administrador (solo pruebas). Se guarda en este navegador. */
+let SIMULADA = '';
+function aplicarFechaSimulada(iso){
+  SIMULADA = iso || '';
+  try{ if (SIMULADA) localStorage.setItem('segprov.hoySim', SIMULADA); else localStorage.removeItem('segprov.hoySim'); }catch(e){}
+  if (!SIMULADA){ OFFSET_MS = 0; return; }
+  const n = new Date();
+  OFFSET_MS = new Date(+iso.slice(0,4), +iso.slice(5,7)-1, +iso.slice(8,10), n.getHours(), n.getMinutes(), n.getSeconds()) - n;
+}
+(function(){ try{ const v = localStorage.getItem('segprov.hoySim'); if (v && !new URLSearchParams(location.search).get('hoy')) aplicarFechaSimulada(v); }catch(e){} })();
+const fechaSimulada = () => !!SIMULADA || OFFSET_MS !== 0;
 function ahoraDate(){ return new Date(Date.now() + OFFSET_MS); }
 function dateToIso(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 function dateToIsoDT(d){ return dateToIso(d) + `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
@@ -928,8 +940,8 @@ function renderCabecera(){
     `Config: <b>${esc(S.configFuente)}</b>`,
     `Seguimiento: <b>${S.archivosSeg.length} archivo(s)</b>`,
     `Hoy: <b>${fmtF(hoy())}</b>`,
-    pend ? `<span class="rojo">${pend} línea(s) con cambios sin guardar en respuestas/</span>` : '<span class="verde">Todo guardado</span>'
-  ].join(' · ');
+    pend ? `<span class="rojo">${pend} línea(s) con cambios sin guardar en respuestas/${S.dirHandle ? '' : ' (conecte la carpeta o use «Exportar mi seguimiento»)'}</span>` : `<span class="verde">${esc(ESTADO_GUARDADO || 'Todo guardado')}</span>`
+  ].join(' · ') + (fechaSimulada() ? `<div class="simulada">FECHA SIMULADA: ${fmtF(hoy())} · solo para pruebas · el guardado automático está apagado</div>` : '');
 }
 function renderTodo(){
   renderCabecera();
@@ -1497,11 +1509,33 @@ function datosMiSeguimiento(){
   const eventos = S.eventos.filter(e => !e.comprador || norm(e.comprador) === me);
   return { lineas, eventos };
 }
-function guardadoAutomatico(){}
+/** Archivo del día del comprador (uno por comprador y por día; se sobrescribe durante el día). */
+const archivoDelDia = () => `seguimiento_${slug(S.comprador)}_${hoy().replace(/-/g, '')}.xlsx`;
+let TEMPO_GUARDADO = null, ESTADO_GUARDADO = '';
+/**
+ * Guardado automático: tras cada pregunta, respuesta, deshacer o depuración escribe respuestas/seguimiento_<comprador>_<aaaammdd>.xlsx.
+ * Requiere carpeta conectada y comprador elegido; no corre con fecha simulada (para no ensuciar la carpeta real).
+ */
+function guardadoAutomatico(){
+  if (!S.dirHandle || !S.comprador || fechaSimulada()) return;
+  clearTimeout(TEMPO_GUARDADO);
+  TEMPO_GUARDADO = setTimeout(async () => {
+    try{
+      const d = datosMiSeguimiento(), nombre = archivoDelDia();
+      let dir = await S.dirHandle.getDirectoryHandle('respuestas', { create:true });
+      const fh = await dir.getFileHandle(nombre, { create:true }), w = await fh.createWritable();
+      await w.write(XLSX.write(libroSeguimiento(d.lineas, d.eventos), { bookType:'xlsx', type:'array' })); await w.close();
+      S.modificadas.clear(); if (!S.archivosSeg.includes(nombre)) S.archivosSeg.push(nombre);
+      ESTADO_GUARDADO = 'Guardado automático ' + ahora().slice(11,16) + ' en respuestas/' + nombre;
+      guardarLocal(); renderCabecera();
+    }catch(e){ ESTADO_GUARDADO = 'No se pudo guardar automáticamente: ' + e.message + '. Use «Guardar ahora».'; renderCabecera(); }
+  }, 800);
+}
 async function exportarSeguimiento(){
   if (!S.comprador){ alert('Elija primero su nombre de comprador (arriba a la derecha).'); return; }
+  if (fechaSimulada() && !confirm('Hay una FECHA SIMULADA activa. ¿Exportar de todas formas? (las marcas de tiempo serán de la fecha simulada)')) return;
   const d = datosMiSeguimiento();
-  const nombre = `seguimiento_${slug(S.comprador)}_${sello()}.xlsx`;
+  const nombre = S.dirHandle ? archivoDelDia() : `seguimiento_${slug(S.comprador)}_${sello()}.xlsx`;
   const donde = await guardarLibro(libroSeguimiento(d.lineas, d.eventos), nombre, 'respuestas');
   S.modificadas.clear(); if (!S.archivosSeg.includes(nombre)) S.archivosSeg.push(nombre);
   guardarLocal(); lsSet(LS.ultExport, ahora());
@@ -1955,6 +1989,9 @@ function vistaAdmin(){
   let h = S.configLocalSucia ? '<div class="aviso">Hay cambios de configuración guardados solo en este navegador. Use «Exportar config.xlsx» para publicarlos a los compradores.</div>' : '';
   h += `<div class="panel fila"><b>Configuración:</b> <span class="mut">${esc(S.configFuente)}</span><span class="sp"></span>
     <button class="b pri" id="admExportar">Exportar config.xlsx</button><button class="b" id="admDescartar">Descartar cambios locales</button><button class="b" id="admSalir">Bloquear</button></div>`;
+  h += `<div class="panel"><h2>Fecha simulada (solo pruebas)</h2><p class="peq mut">Permite ver qué preguntaría la herramienta otro día. Mientras esté activa se muestra una franja roja y no se guarda automáticamente en respuestas/.</p>
+    <div class="fila"><input type="date" id="admSim" value="${esc(SIMULADA || '')}"><button class="b" id="admSimOk">Aplicar</button><button class="b" id="admSimNo" ${fechaSimulada() ? '' : 'disabled'}>Volver a la fecha real</button>
+    <span class="peq">Hoy para la herramienta: <b>${fmtF(hoy())}</b></span></div></div>`;
   // Proveedores
   h += `<div class="panel"><h2>Proveedores</h2><p class="peq mut">«proveedor» debe ser el nombre exacto de la explosión. Celular de 10 dígitos (se antepone 57). Solo los activos (SI) reciben mensajes.</p>
     <datalist id="dlProv">${nombresEx.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
@@ -2009,6 +2046,8 @@ function enlazarAdmin(){
     return;
   }
   const cfg = S.config;
+  $('#admSimOk').onclick = () => { const v = $('#admSim').value; if (!v){ alert('Elija una fecha.'); return; } aplicarFechaSimulada(v); S.avisos = ['Fecha simulada: ' + fmtF(v) + '.']; if (ULTIMA_CARGA) procesar(ULTIMA_CARGA); else renderTodo(); };
+  $('#admSimNo').onclick = () => { aplicarFechaSimulada(''); S.avisos = ['Se volvió a la fecha real.']; if (ULTIMA_CARGA) procesar(ULTIMA_CARGA); else renderTodo(); };
   $('#admSalir').onclick = () => { try{ sessionStorage.removeItem('segprov.adm'); }catch(e){} ADM.ok = false; renderTodo(); };
   $('#admExportar').onclick = async () => {
     if (S.dirHandle && !confirm('Se sobrescribirá config.xlsx en la carpeta «' + S.dirHandle.name + '». ¿Continuar?')) return;
@@ -2075,7 +2114,7 @@ function enlazarGlobal(){
   $('#selComprador').onchange = e => {
     let v = e.target.value;
     if (v === '__otro__'){ v = (prompt('Nombre del comprador:') || '').trim(); }
-    S.comprador = v; lsSet(LS.comprador, v); renderTodo();
+    S.comprador = v; lsSet(LS.comprador, v); renderTodo(); if (S.modificadas.size) guardadoAutomatico();
   };
 }
 async function init(){
@@ -2094,7 +2133,7 @@ async function init(){
 }
 window.App = { S, R, parseFecha, parseFechaHora, procesarOC, procesarExplosion, calcularFechasRequeridas, leerMatriz, textoAMatriz, normItem, numOC, reqEf, semaforo, estadoVisible, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
   conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
-  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor, separarWhatsApp, identificarRemitente, analizarPegado, confirmarPanel, deshacerUltima, ultimoLote, mensajesVigentes,
+  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor, separarWhatsApp, identificarRemitente, analizarPegado, confirmarPanel, deshacerUltima, ultimoLote, mensajesVigentes, guardadoAutomatico, aplicarFechaSimulada, fechaSimulada, archivoDelDia,
   interpretarNatural, loteMensaje, numerarPorOC, detalleMensaje, fechaPalabras, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
 init();
 </script>
