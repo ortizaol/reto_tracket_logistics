@@ -1,0 +1,2238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seguimiento de entregas</title>
+<!-- Única dependencia: SheetJS. Orden: CDN oficial (0.20.3) → cdnjs (0.18.5) → copia local xlsx.full.min.js junto a este archivo. -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>if (!window.XLSX) document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>');</script>
+<script>if (!window.XLSX) document.write('<script src="xlsx.full.min.js"><\/script>');</script>
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#fff; --tx:#1d2330; --tx2:#5b6475; --bd:#d9dde5; --bd2:#eceef3;
+  --pri:#1f4e79; --pri2:#e8eef6; --ok:#1e7b4a; --okbg:#e6f4ec; --warn:#9a6700; --warnbg:#fff4d6;
+  --err:#b42318; --errbg:#fdecea; --mut:#8a93a3;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+header{background:var(--pri);color:#fff;padding:10px 18px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+header h1{font-size:17px;margin:0;font-weight:600}
+header .ver{opacity:.7;font-size:12px}
+header .sp{flex:1}
+header select,header button{font:inherit}
+.estado-carga{background:#fff;border-bottom:1px solid var(--bd);padding:8px 18px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--tx2)}
+.estado-carga b{color:var(--tx)}
+nav{display:flex;gap:2px;padding:0 18px;background:#fff;border-bottom:1px solid var(--bd)}
+nav button{border:0;background:none;padding:10px 14px;font:inherit;color:var(--tx2);cursor:pointer;border-bottom:3px solid transparent}
+nav button.act{color:var(--pri);border-bottom-color:var(--pri);font-weight:600}
+main{padding:16px 18px;max-width:1500px;margin:0 auto}
+button.b{border:1px solid var(--bd);background:#fff;color:var(--tx);border-radius:6px;padding:6px 12px;font:inherit;cursor:pointer}
+button.b:hover{background:var(--pri2)}
+button.b.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+button.b.pri:hover{background:#173c5e}
+button.b.wa{background:#1e7b4a;border-color:#1e7b4a;color:#fff}
+button.b.peq{padding:3px 8px;font-size:12px}
+button.b:disabled{opacity:.45;cursor:not-allowed}
+header button.b{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff}
+header button.b:hover{background:rgba(255,255,255,.22)}
+.panel{background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.panel h2{font-size:15px;margin:0 0 10px}
+.panel h3{font-size:14px;margin:14px 0 8px}
+.fila{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sp{flex:1}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--bd2);padding:5px 7px;text-align:left;vertical-align:top}
+th{background:#f0f2f6;font-weight:600;color:var(--tx2);font-size:12px;white-space:nowrap;position:sticky;top:0}
+td.n,th.n{text-align:right}
+td.c,th.c{text-align:center}
+.tabla-scroll{max-height:70vh;overflow:auto;border:1px solid var(--bd2);border-radius:6px}
+.chip{display:inline-block;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:600;white-space:nowrap;background:#eef0f4;color:var(--tx2)}
+.chip.NUEVA{background:#e8eef6;color:var(--pri)}
+.chip.ESPERANDO_FECHA{background:var(--warnbg);color:var(--warn)}
+.chip.CONFIRMADA{background:var(--okbg);color:var(--ok)}
+.chip.CAMBIADA{background:#fde9d9;color:#a4460b}
+.chip.ENTREGADO_POR_CONFIRMAR{background:#e3f1f7;color:#0b6283}
+.chip.CERRADA,.chip.CERRADA_SIESA{background:#eceef1;color:var(--mut)}
+.chip.SIN_NECESIDAD{background:#f1ecf9;color:#5b3d8a}
+.chip.POR_CANCELAR{background:#fdecea;color:#8a1c12}
+.bloqueo{background:var(--errbg);border:2px solid var(--err);border-radius:8px;padding:10px 14px;margin-top:10px}
+.confirmar{background:#f7faff;border:2px solid var(--pri);border-radius:8px;padding:10px 14px;margin-top:10px}
+.prov-grande{font-size:20px;font-weight:700;margin-bottom:4px}
+tr.amar td{background:var(--warnbg)}
+.amar-tx{color:var(--warn);font-weight:600}
+button.b.grande{font-size:15px;padding:8px 16px}
+.simulada{width:100%;background:#b42318;color:#fff;font-weight:700;padding:4px 10px;border-radius:4px;margin-top:4px}
+.sem{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:middle}
+.sem.verde{background:#1e9e5a}.sem.rojo{background:#d92d20}.sem.gris{background:#c3c8d2}
+.chip.rojo{background:var(--errbg);color:var(--err)}
+.chip.amar{background:var(--warnbg);color:var(--warn)}
+.rojo{color:var(--err);font-weight:600}
+.verde{color:var(--ok)}
+.mut{color:var(--mut)}
+.peq{font-size:12px}
+.aviso{background:var(--warnbg);border:1px solid #f0d58a;color:#6b4a00;padding:8px 12px;border-radius:6px;margin-bottom:12px}
+.error{background:var(--errbg);border:1px solid #f3b8b1;color:var(--err);padding:8px 12px;border-radius:6px;margin-bottom:12px}
+.okbox{background:var(--okbg);border:1px solid #a9d8bd;color:var(--ok);padding:8px 12px;border-radius:6px;margin-bottom:12px}
+input[type=text],input[type=number],input[type=date],input[type=password],select,textarea{font:inherit;border:1px solid var(--bd);border-radius:5px;padding:4px 6px;background:#fff;color:var(--tx)}
+textarea{width:100%;min-height:80px;resize:vertical}
+label.chk{display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+.oculto{display:none!important}
+.vacio{color:var(--mut);padding:20px;text-align:center}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:8px 14px;min-width:150px}
+.kpi .v{font-size:22px;font-weight:600}
+.kpi .l{font-size:12px;color:var(--tx2)}
+.kpi.rojo .v{color:var(--err)}
+tr.err td{background:var(--errbg)}
+tr.riesgo td{background:#fff6f5}
+pre.msg{white-space:pre-wrap;background:#f7f8fa;border:1px solid var(--bd2);border-radius:6px;padding:10px;font:13px/1.45 "Segoe UI",system-ui,sans-serif;margin:8px 0;max-height:360px;overflow:auto}
+@media (max-width:900px){main{padding:10px}header{padding:8px 10px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Seguimiento de entregas · Proveedores nacionales</h1><span class="ver" id="ver"></span>
+  <span class="sp"></span>
+  <label>Comprador:
+    <select id="selComprador"></select>
+  </label>
+  <button class="b" id="btnCarpeta" title="Elegir la carpeta de OneDrive (Edge/Chrome recuerda el permiso)">Conectar carpeta</button>
+  <button class="b oculto" id="btnReconectar"></button>
+  <button class="b" id="btnArchivos" title="Seleccionar a mano la explosión, config.xlsx y archivos de seguimiento">Cargar archivos…</button>
+  <button class="b" id="btnRecargar">Recargar</button>
+  <input type="file" id="inpArchivos" multiple accept=".xlsx,.xls" class="oculto">
+</header>
+<div class="estado-carga" id="estadoCarga"></div>
+<nav id="tabs">
+  <button data-tab="hoy" class="act">Gestión de hoy</button>
+  <button data-tab="lineas">Todas las líneas</button>
+  <button data-tab="tablero">Tablero</button>
+  <button data-tab="admin">Administrador</button>
+</nav>
+<main id="main"></main>
+
+<script>
+'use strict';
+const VERSION = 'v0.6';
+
+/* =========================================================================
+   Utilidades
+   ========================================================================= */
+const LS = { trabajo:'segprov.trabajo', mapeo:'segprov.mapeo', config:'segprov.config',
+  comprador:'segprov.comprador', modificadas:'segprov.modificadas', ultExport:'segprov.ultExport' };
+function lsGet(k, def){ try{ const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); }catch(e){ return def; } }
+function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ console.warn('localStorage', e); } }
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const pad = n => String(n).padStart(2, '0');
+/** Mayúsculas, sin tildes, espacios simples. */
+const norm = s => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
+/** Encabezado normalizado: solo letras/números separados por un espacio. */
+const normH = s => norm(s).replace(/[^A-Z0-9]+/g, ' ').trim();
+const normCol = s => normH(s).toLowerCase().replace(/ /g, '_');
+
+/* ---- Reloj (permite simular la fecha con ?hoy=AAAA-MM-DD para pruebas) ---- */
+let OFFSET_MS = 0;
+(function(){
+  const p = new URLSearchParams(location.search).get('hoy');
+  if (p && /^\d{4}-\d{2}-\d{2}$/.test(p)){
+    const n = new Date();
+    const t = new Date(+p.slice(0,4), +p.slice(5,7)-1, +p.slice(8,10), n.getHours(), n.getMinutes(), n.getSeconds());
+    OFFSET_MS = t - n;
+  }
+})();
+/** Fecha simulada desde el Administrador (solo pruebas). Se guarda en este navegador. */
+let SIMULADA = '';
+function aplicarFechaSimulada(iso){
+  SIMULADA = iso || '';
+  try{ if (SIMULADA) localStorage.setItem('segprov.hoySim', SIMULADA); else localStorage.removeItem('segprov.hoySim'); }catch(e){}
+  if (!SIMULADA){ OFFSET_MS = 0; return; }
+  const n = new Date();
+  OFFSET_MS = new Date(+iso.slice(0,4), +iso.slice(5,7)-1, +iso.slice(8,10), n.getHours(), n.getMinutes(), n.getSeconds()) - n;
+}
+(function(){ try{ const v = localStorage.getItem('segprov.hoySim'); if (v && !new URLSearchParams(location.search).get('hoy')) aplicarFechaSimulada(v); }catch(e){} })();
+const fechaSimulada = () => !!SIMULADA || OFFSET_MS !== 0;
+function ahoraDate(){ return new Date(Date.now() + OFFSET_MS); }
+function dateToIso(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function dateToIsoDT(d){ return dateToIso(d) + `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+function ahora(){ return dateToIsoDT(ahoraDate()); }
+function hoy(){ return dateToIso(ahoraDate()); }
+function isoToLocalDate(iso){
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(iso || '');
+  return m ? new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0)) : null;
+}
+function setAhora(iso){ OFFSET_MS = isoToLocalDate(iso) - new Date(); }
+function isoUTC(iso){ return Date.UTC(+iso.slice(0,4), +iso.slice(5,7)-1, +iso.slice(8,10)); }
+/** Días de a hasta b (b - a), fechas AAAA-MM-DD. */
+function diasEntre(a, b){ return Math.round((isoUTC(b) - isoUTC(a)) / 864e5); }
+function addDias(iso, n){ const d = new Date(isoUTC(iso) + n*864e5); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`; }
+function horasEntre(a, b){ return (isoToLocalDate(b) - isoToLocalDate(a)) / 36e5; }
+const fmtF  = iso => iso ? `${iso.slice(8,10)}/${iso.slice(5,7)}/${iso.slice(0,4)}` : '';
+const fmtC  = iso => iso ? `${iso.slice(8,10)}/${iso.slice(5,7)}` : '';
+const fmtFH = iso => iso ? fmtF(iso) + (iso.length > 10 ? ' ' + iso.slice(11,16) : '') : '';
+function fechaValida(y, m, d){ if (m < 1 || m > 12 || d < 1) return false; return d <= new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+const EXCEL_EPOCH = Date.UTC(1899, 11, 30);
+function serialToIso(v, conHora){
+  const d = new Date(Math.round(v * 86400) * 1000 + EXCEL_EPOCH);
+  const f = `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+  return conHora ? f + `T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}` : f;
+}
+function isoToSerial(iso){
+  if (!iso) return null;
+  let s = (isoUTC(iso) - EXCEL_EPOCH) / 864e5;
+  if (iso.length > 10) s += (+iso.slice(11,13)*3600 + +iso.slice(14,16)*60 + +(iso.slice(17,19)||0)) / 86400;
+  return s;
+}
+/** Convierte celda Excel / texto a 'AAAA-MM-DD' (o ''). Acepta serial, Date, ISO, d/m/aaaa, d-m-aa. */
+function parseFecha(v){
+  if (v == null || v === '') return '';
+  if (v instanceof Date) return isNaN(v) ? '' : dateToIso(v);
+  if (typeof v === 'number') return (v > 20000 && v < 80000) ? serialToIso(v, false) : '';
+  const s = String(v).trim();
+  let m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
+  if (m && fechaValida(+m[1], +m[2], +m[3])) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+  m = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/.exec(s);
+  if (m){ let y = +m[3]; if (y < 100) y += 2000; if (fechaValida(y, +m[2], +m[1])) return `${y}-${pad(+m[2])}-${pad(+m[1])}`; }
+  if (/^\d+(\.\d+)?$/.test(s)) return parseFecha(+s);
+  return '';
+}
+function parseFechaHora(v){
+  if (v == null || v === '') return '';
+  if (typeof v === 'number') return (v > 20000 && v < 80000) ? serialToIso(v, true) : '';
+  if (v instanceof Date) return dateToIsoDT(v);
+  const s = String(v).trim();
+  let m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/.exec(s);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]||'00'}`;
+  m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(s);
+  if (m) return `${m[3]}-${pad(+m[2])}-${pad(+m[1])}T${pad(+m[4])}:${m[5]}:${m[6]||'00'}`;
+  const f = parseFecha(s); return f ? f + 'T00:00:00' : '';
+}
+function num(v){
+  if (typeof v === 'number') return v;
+  let s = String(v == null ? '' : v).trim().replace(/\s/g, '');
+  if (!s) return 0;
+  if (s.indexOf(',') >= 0 && s.indexOf('.') >= 0){
+    s = s.lastIndexOf(',') > s.lastIndexOf('.') ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, '');
+  } else if (/^-?\d+,\d+$/.test(s)) s = s.replace(',', '.');
+  const n = parseFloat(s); return isNaN(n) ? 0 : n;
+}
+const fmtN = n => (Math.round(n*100)/100).toLocaleString('es-CO');
+const maxStr = (a, b) => (a || '') > (b || '') ? (a || '') : (b || '');
+function nuevoId(){ return ahora().replace(/\D/g,'') + '-' + Math.random().toString(36).slice(2, 8); }
+
+/* =========================================================================
+   Modelo
+   ========================================================================= */
+// Estados persistidos. "Sin necesidad en planeación" NO es un estado guardado: se calcula en cada carga
+// a partir de la explosión (una línea puede ganar o perder necesidad entre cortes).
+const ESTADOS = ['NUEVA','ESPERANDO_FECHA','CONFIRMADA','CAMBIADA','ENTREGADO_POR_CONFIRMAR','POR_CANCELAR','CERRADA','CERRADA_SIESA'];
+const ACTIVOS = new Set(['NUEVA','ESPERANDO_FECHA','CONFIRMADA','CAMBIADA']);
+const CERRADOS = new Set(['CERRADA','CERRADA_SIESA']);
+const ALIAS_ESTADO = { CERRADA_POR_EXPLOSION:'CERRADA_SIESA' };
+const ETQ_ESTADO = { NUEVA:'Nueva', ESPERANDO_FECHA:'Esperando fecha', CONFIRMADA:'Confirmada', CAMBIADA:'Cambiada',
+  ENTREGADO_POR_CONFIRMAR:'Entregado por confirmar', POR_CANCELAR:'Por cancelar en Siesa', CERRADA:'Cerrada',
+  CERRADA_SIESA:'Cerrada en Siesa', SIN_NECESIDAD:'Sin necesidad en planeación' };
+/** Estado que se muestra: el guardado, o "Sin necesidad en planeación" si la línea abierta no tiene necesidad. */
+const estadoVisible = r => (r.sinNecesidad && ACTIVOS.has(r.estado)) ? 'SIN_NECESIDAD' : r.estado;
+const chipEstado = e => `<span class="chip ${esc(e)}">${esc(ETQ_ESTADO[e] || e)}</span>`;
+
+/** Columnas del archivo de seguimiento (hoja "lineas"). Clave = OC | ítem | Nro solicitud. */
+const COLS_SEG = ['clave','oc','item','solicitud','descripcion','unidad','proveedor','comprador','cantidad_pendiente',
+  'fecha_oc','fecha_entrega_siesa','fecha_requerida','estado','fecha_prometida','fecha_prometida_anterior','contador_cambios',
+  'primera_pregunta','ultima_pregunta','preguntado_por','ultima_respuesta','fecha_entregado','ultima_vista_siesa','nota',
+  'actualizado','actualizado_por'];
+/** Columnas del archivo de seguimiento (hoja "eventos"). "lote" agrupa una respuesta; "antes" guarda el estado previo para deshacer. */
+const COLS_EV = ['id','fecha_hora','tipo','proveedor','comprador','clave','lineas','plantilla','estado_anterior',
+  'estado_nuevo','fecha_anterior','fecha_nueva','texto','lote','antes'];
+const COL_FECHA = new Set(['fecha_requerida_efectiva','fecha_oc','fecha_entrega_siesa','fecha_requerida','fecha_prometida','fecha_prometida_anterior','ultima_vista_siesa','fecha_anterior','fecha_nueva']);
+const COL_FH = new Set(['primera_pregunta','ultima_pregunta','ultima_respuesta','fecha_entregado','actualizado','fecha_hora']);
+const COL_NUM = new Set(['cantidad_pendiente','contador_cambios']);
+
+/* ---- Configuración por defecto (piloto) ---- */
+const REGLAS_DEF = {
+  prefijos_oc: 'OC-', horizonte_semanas: 4, dias_antes_repregunta: '7,2,0', frecuencia_vencidas_dias: 2,
+  horas_sin_respuesta_para_recordatorio: 24, dias_revisar_almacen: 7, max_lineas_mensaje: 15, max_oc_mensaje: 6,
+  dias_alerta_archivos: 4, nombre_cuenta_busscar: 'Compras Busscar', formato_fecha_whatsapp: 'd/m', pin_admin: '1234'
+};
+const REGLAS_DESC = {
+  prefijos_oc: 'Prefijos de documento que entran al seguimiento (separados por coma). Ej.: OC-  o  OC-,OCA-. Siempre se excluyen OCI-.',
+  horizonte_semanas: 'Semanas hacia adelante (3–6) para preguntar por fechas requeridas próximas.',
+  dias_antes_repregunta: 'Días antes de la fecha prometida en que se repregunta (lista separada por comas; 0 = el mismo día).',
+  frecuencia_vencidas_dias: 'Cada cuántos días se vuelve a preguntar una línea vencida.',
+  horas_sin_respuesta_para_recordatorio: 'Horas sin fecha tras la pregunta para enviar recordatorio.',
+  dias_revisar_almacen: 'Días que una línea "entregada" puede seguir abierta en Siesa antes de marcar "Revisar con almacén".',
+  max_lineas_mensaje: 'Máximo de líneas por mensaje de WhatsApp (las más urgentes primero; el resto va en el siguiente envío).',
+  max_oc_mensaje: 'Máximo de OC distintas por mensaje.',
+  dias_alerta_archivos: 'Alerta si el listado de OC o la explosión tienen más de estos días.',
+  nombre_cuenta_busscar: 'Nombre(s) con que aparecen los mensajes propios al copiar de WhatsApp Web (separados por ;). Se ignoran.',
+  formato_fecha_whatsapp: 'Orden de la fecha en el encabezado copiado de WhatsApp Web: d/m (Colombia) o m/d.',
+  pin_admin: 'PIN del modo administrador (freno visual, no es seguridad).'
+};
+const AVISO_PLATAFORMA = 'Este seguimiento no reemplaza la facturación en la plataforma de proveedores.';
+const PLANTILLAS_NOMBRES = ['primera_solicitud','repregunta','recordatorio','vencida'];
+const PLANTILLAS_DEF = {
+  primera_solicitud: {
+    usted: 'Buenos días {contacto}, le escribe Compras Busscar. Estas son las entregas pendientes de {proveedor}:\n\n{detalle}\n\n¿Nos confirma las fechas de entrega? Puede responder con sus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA,
+    tu: 'Hola {contacto}, te escribe Compras Busscar. Estas son las entregas pendientes de {proveedor}:\n\n{detalle}\n\n¿Nos confirmas las fechas de entrega? Puedes responder con tus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA
+  },
+  repregunta: {
+    usted: 'Buenos días {contacto}, le escribe Compras Busscar. Estas son las entregas pendientes de {proveedor}:\n\n{detalle}\n\n¿Se mantienen estas fechas? Puede responder con sus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA,
+    tu: 'Hola {contacto}, te escribe Compras Busscar. Estas son las entregas pendientes de {proveedor}:\n\n{detalle}\n\n¿Se mantienen estas fechas? Puedes responder con tus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA
+  },
+  recordatorio: {
+    usted: 'Buenos días {contacto}, le recuerda Compras Busscar: aún no tenemos fecha de entrega de estas líneas de {proveedor}:\n\n{detalle}\n\nPuede responder con sus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA,
+    tu: 'Hola {contacto}, te recuerda Compras Busscar: aún no tenemos fecha de entrega de estas líneas de {proveedor}:\n\n{detalle}\n\nPuedes responder con tus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA
+  },
+  vencida: {
+    usted: 'Buenos días {contacto}, le escribe Compras Busscar. Algunas entregas de {proveedor} ya están vencidas o se requieren hoy:\n\n{detalle}\n\n¿Nos confirma el estado? Puede responder con sus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA,
+    tu: 'Hola {contacto}, te escribe Compras Busscar. Algunas entregas de {proveedor} ya están vencidas o se requieren hoy:\n\n{detalle}\n\n¿Nos confirmas el estado? Puedes responder con tus palabras, por ejemplo:\n{ejemplos}\n\nGracias. ' + AVISO_PLATAFORMA
+  }
+};
+const COLS_PROV = ['proveedor','alias','activo','contacto','celular','nombre_whatsapp','comprador','trato'];
+const PROVEEDORES_DEF = [
+  { proveedor:'PRAMEC SAS', alias:'Pramec', activo:'SI', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' },
+  { proveedor:'INDUSTRIA TRANSFORMADORA DE ALUMINIO S A S', alias:'Intralum', activo:'SI', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' },
+  { proveedor:'VIDRIOS DE SEGURIDAD S.A', alias:'Viseg', activo:'SI', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' }
+];
+function configDefecto(){ return { proveedores: clone(PROVEEDORES_DEF), reglas: { ...REGLAS_DEF }, plantillas: clone(PLANTILLAS_DEF), exclusiones: [] }; }
+
+/* ---- Estado global ---- */
+const S = {
+  config: configDefecto(), configFuente: 'por defecto (sin config.xlsx)', configLocalSucia: false,
+  ocs: null,                  // listado de OC abiertas: { nombre, fecha, lineas:{clave:L}, stats }
+  explosion: null,            // índice de la explosión: { nombre, fecha, modo:'amarre'|'fifo', filas:[[oc,item,fecha,cant]] }
+  pendienteMapeo: null,       // { tipo:'oc'|'explosion', headers, mapeo, faltan, reintentar }
+  seg: {},                    // clave -> registro de seguimiento
+  eventos: [], eventIds: new Set(),
+  archivosSeg: [],
+  avisos: [],
+  comprador: lsGet(LS.comprador, ''),
+  dirHandle: null, modoCarpeta: '',
+  modificadas: new Set(lsGet(LS.modificadas, [])),
+  tab: 'hoy'
+};
+
+/* ---- Reglas normalizadas ---- */
+function R(){
+  const r = { ...REGLAS_DEF, ...(S.config.reglas || {}) };
+  const ent = (v, d) => { const n = parseInt(v, 10); return isNaN(n) ? d : n; };
+  const dias = String(r.dias_antes_repregunta).split(/[,;\s]+/).map(x => parseInt(x, 10)).filter(x => !isNaN(x) && x >= 0);
+  const pref = String(r.prefijos_oc || 'OC-').split(/[,;\s]+/).map(p => norm(p)).filter(Boolean).map(p => p.endsWith('-') ? p : p + '-');
+  return {
+    prefijos_oc: pref.length ? pref : ['OC-'],
+    horizonte_semanas: Math.min(6, Math.max(3, ent(r.horizonte_semanas, 4))),
+    dias_antes_repregunta: [...new Set(dias.length ? dias : [7,2,0])].sort((a,b) => b - a),
+    frecuencia_vencidas_dias: Math.max(1, ent(r.frecuencia_vencidas_dias, 2)),
+    horas_sin_respuesta_para_recordatorio: Math.max(1, ent(r.horas_sin_respuesta_para_recordatorio, 24)),
+    dias_revisar_almacen: Math.max(1, ent(r.dias_revisar_almacen, 7)),
+    max_lineas_mensaje: Math.max(1, ent(r.max_lineas_mensaje, 15)),
+    max_oc_mensaje: Math.max(1, ent(r.max_oc_mensaje, 6)),
+    dias_alerta_archivos: Math.max(1, ent(r.dias_alerta_archivos, 4)),
+    nombre_cuenta_busscar: String(r.nombre_cuenta_busscar || '').split(';').map(normH).filter(Boolean),
+    formato_fecha_whatsapp: /^m/i.test(String(r.formato_fecha_whatsapp || '')) ? 'm/d' : 'd/m',
+    pin_admin: String(r.pin_admin == null || r.pin_admin === '' ? '1234' : r.pin_admin)
+  };
+}
+
+/* ---- Proveedores ---- */
+function provCfg(nombre){
+  const k = normH(nombre);
+  return (S.config.proveedores || []).find(p => normH(p.proveedor) === k) || null;
+}
+function provActivo(nombre){ const p = provCfg(nombre); return !!p && norm(p.activo) !== 'NO'; }
+function provAlias(nombre){ const p = provCfg(nombre); return (p && p.alias) || nombre; }
+/** Comprador responsable: el de config.xlsx; si no hay, el más frecuente en el listado de OC. */
+function provComprador(nombre){
+  const p = provCfg(nombre);
+  if (p && String(p.comprador || '').trim()) return String(p.comprador).trim();
+  const cont = {};
+  for (const r of Object.values(S.seg)) if (normH(r.proveedor) === normH(nombre) && r.comprador) cont[r.comprador] = (cont[r.comprador] || 0) + 1;
+  return Object.keys(cont).sort((a,b) => cont[b] - cont[a])[0] || '';
+}
+/** Celular en formato internacional 57XXXXXXXXXX (acepta espacios, guiones y +57). */
+function celularWa(cel){
+  const d = String(cel || '').replace(/\D/g, '');
+  if (d.length === 10) return '57' + d;
+  if (d.length === 12 && d.startsWith('57')) return d;
+  return '';
+}
+function excluida(rec){
+  for (const x of (S.config.exclusiones || [])){
+    const v = norm(x.valor); if (!v) continue;
+    const t = norm(x.tipo);
+    if ((!t || t === 'OC') && (v === norm(rec.oc) || v === numOC(rec.oc))) return true;
+    if ((!t || t === 'ITEM') && normItem(v) === normItem(rec.item)) return true;
+    if ((!t || t === 'LINEA') && v === norm(rec.clave)) return true;
+  }
+  return false;
+}
+/** Código de ítem sin ceros a la izquierda (el listado trae "0226167"; la explosión, "226167"). */
+const normItem = s => { const t = String(s == null ? '' : s).trim().toUpperCase(); return /^\d+$/.test(t) ? (t.replace(/^0+/, '') || '0') : t; };
+/** Número corto de la OC para mostrar y para reconocer en respuestas: "OC-00051420" → "51420". */
+const numOC = oc => { const m = /(\d+)\s*$/.exec(String(oc || '')); return m ? (m[1].replace(/^0+/, '') || '0') : String(oc || ''); };
+
+/* =========================================================================
+   Fuentes de Siesa: listado de OC abiertas y explosión
+   ========================================================================= */
+/** Campos del listado de OC abiertas (exportado de Siesa como texto con tabuladores o Excel). */
+const CAMPOS_OC = [
+  { k:'oc', label:'Nro orden', req:true, syn:['NRO ORDEN','NUMERO ORDEN','NO ORDEN','ORDEN','OC','NRO OC','DOCUMENTO'] },
+  { k:'proveedor', label:'Razón social proveedor', req:true, syn:['RAZON SOCIAL PROVEEDOR','PROVEEDOR','RAZON SOCIAL','NOMBRE PROVEEDOR'], test: h => /PROVEEDOR/.test(h) && !/(NIT|COD)/.test(h) },
+  { k:'item', label:'Item', req:true, syn:['ITEM','REFERENCIA','CODIGO ITEM','COD ITEM'] },
+  { k:'descripcion', label:'Desc. item', req:true, syn:['DESC ITEM','DESCRIPCION','DESCRIPCION ITEM'], test: h => /^DESC/.test(h) },
+  { k:'unidad', label:'U.M.', req:false, syn:['U M','UM','UNIDAD','UND INV','UNIDAD MEDIDA'] },
+  { k:'pendiente', label:'Cant. pendiente', req:true, syn:['CANT PENDIENTE','CANTIDAD PENDIENTE'] },
+  { k:'fecha_oc', label:'Fecha orden', req:true, syn:['FECHA ORDEN','FECHA OC','FECHA DOCUMENTO'] },
+  { k:'fecha_entrega', label:'Fecha entrega', req:false, syn:['FECHA ENTREGA','FECHA DE ENTREGA'] },
+  { k:'comprador', label:'Comprador', req:false, syn:['COMPRADOR','NOMBRE COMPRADOR'] },
+  { k:'solicitud', label:'Nro solicitud', req:false, syn:['NRO SOLICITUD','NUMERO SOLICITUD','SOLICITUD','NO SOLICITUD'] }
+];
+/** Campos de la explosión de abastecimiento. Si existe "TD_FECHAS.Nro orden", cada necesidad viene amarrada a su OC. */
+const CAMPOS_EXP = [
+  { k:'item', label:'Item', req:true, syn:['ITEM','REFERENCIA','CODIGO ITEM'] },
+  { k:'pendiente', label:'Cant Penditiente - Inventario', req:true, syn:['CANT PENDITIENTE INVENTARIO','CANT PENDIENTE INVENTARIO','CANTIDAD PENDIENTE INVENTARIO'], test: h => /PEND/.test(h) && /INVENT/.test(h) },
+  { k:'fecha', label:'Fecha Planeación', req:true, syn:['FECHA PLANEACION','FECHA DE PLANEACION','FECHA PLAN'] },
+  { k:'oc', label:'Nro orden amarrada (TD_FECHAS.Nro orden)', req:false, syn:['TD FECHAS NRO ORDEN','NRO ORDEN','NRO OC','OC'], test: h => /NRO ORDEN$/.test(h) }
+];
+function reconoce(campos, h){ const n = normH(h); return !!n && campos.some(c => c.syn.includes(n) || (c.test && c.test(n))); }
+/** Asigna columnas a campos: 1) mapeo guardado, 2) nombre exacto, 3) patrón. Devuelve {campo: índice | -1}. */
+function detectarColumnas(campos, headers, guardado){
+  const H = headers.map(normH), usado = new Set(), m = {};
+  for (const c of campos){
+    const g = guardado && guardado[c.k];
+    if (g === '__NINGUNA__' && !c.req){ m[c.k] = -1; continue; }
+    if (g){ const i = headers.findIndex((h, ix) => h === g && !usado.has(ix)); if (i >= 0){ m[c.k] = i; usado.add(i); } }
+  }
+  for (const c of campos){ if (m[c.k] != null) continue; const i = H.findIndex((h, ix) => !usado.has(ix) && c.syn.includes(h)); if (i >= 0){ m[c.k] = i; usado.add(i); } }
+  for (const c of campos){ if (m[c.k] != null) continue; const i = H.findIndex((h, ix) => !usado.has(ix) && h && c.test && c.test(h)); if (i >= 0){ m[c.k] = i; usado.add(i); } }
+  return m;
+}
+/** Busca la fila de encabezados (la que más columnas reconoce entre las primeras 30). */
+function filaEncabezados(aoa, campos){
+  let best = null;
+  for (let r = 0; r < Math.min(30, aoa.length); r++){
+    const sc = (aoa[r] || []).filter(h => reconoce(campos, h)).length;
+    if (!best || sc > best.sc) best = { r, sc };
+  }
+  return best && best.sc >= 2 ? best.r : -1;
+}
+function fechaDeNombre(nombre){
+  const m = /_(\d{2})(\d{2})(\d{4})/.exec(nombre || '');
+  return (m && fechaValida(+m[3], +m[2], +m[1])) ? `${m[3]}-${m[2]}-${m[1]}` : '';
+}
+const fechaDeNombreExplosion = fechaDeNombre;
+/** De una lista de archivos elige el más reciente según la fecha del nombre (desempate: fecha de modificación). */
+function masReciente(archivos){
+  const c = [...archivos].sort((a, b) => {
+    const fa = fechaDeNombre(a.name), fb = fechaDeNombre(b.name);
+    if (fa !== fb) return fa < fb ? 1 : -1;
+    return (b.lastModified || 0) - (a.lastModified || 0);
+  });
+  return c[0] || null;
+}
+const elegirExplosion = archivos => masReciente(archivos.filter(f => /^ABASTECIMIENTO_/i.test(f.name)));
+const esPrefijoValido = oc => !/^OCI-/.test(oc) && R().prefijos_oc.some(p => oc.startsWith(p));
+
+/** Texto delimitado (Siesa exporta con tabuladores, en Latin-1) → matriz. */
+function decodificarTexto(buf){
+  try{ return new TextDecoder('utf-8', { fatal:true }).decode(buf); }
+  catch(e){ return new TextDecoder('windows-1252').decode(buf); }
+}
+function textoAMatriz(t){
+  const lineas = t.replace(/^﻿/, '').split(/\r?\n/);
+  const muestra = lineas.slice(0, 5).join('\n');
+  const sep = (muestra.match(/\t/g) || []).length ? '\t' : (muestra.match(/;/g) || []).length > (muestra.match(/,/g) || []).length ? ';' : ',';
+  return lineas.filter(l => l.trim()).map(l => {
+    if (sep === '\t') return l.split('\t');
+    const out = []; let cur = '', q = false;
+    for (let i = 0; i < l.length; i++){
+      const ch = l[i];
+      if (q){ if (ch === '"' && l[i+1] === '"'){ cur += '"'; i++; } else if (ch === '"') q = false; else cur += ch; }
+      else if (ch === '"') q = true; else if (ch === sep){ out.push(cur); cur = ''; } else cur += ch;
+    }
+    out.push(cur); return out;
+  });
+}
+/** Lee cualquier archivo tabular (.txt/.csv/.xlsx/.zip con CSV dentro) y devuelve la matriz de la hoja que más se parece a los campos. */
+async function leerMatriz(file, campos){
+  const buf = new Uint8Array(await file.arrayBuffer());
+  const esZip = buf[0] === 0x50 && buf[1] === 0x4B;
+  if (/\.zip$/i.test(file.name) && esZip){
+    const z = XLSX.CFB.read(buf, { type:'array' });
+    const ent = z.FileIndex.find(e => e.type === 2 && /\.(csv|txt|xlsx)$/i.test(e.name));
+    if (!ent) throw new Error('el .zip no contiene un .csv, .txt o .xlsx');
+    return leerMatriz(new File([ent.content], ent.name), campos);
+  }
+  if (!esZip && !/\.xls[xmb]?$/i.test(file.name)) return textoAMatriz(decodificarTexto(buf));
+  const wb = XLSX.read(buf, { type:'array', dense:true });
+  let best = null;
+  for (const sn of wb.SheetNames){
+    const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:'', raw:true, blankrows:false });
+    const r = filaEncabezados(aoa, campos);
+    const sc = r >= 0 ? aoa[r].filter(h => reconoce(campos, h)).length : 0;
+    if (!best || sc > best.sc) best = { aoa, sc };
+  }
+  return best ? best.aoa : [];
+}
+
+/**
+ * Listado de OC abiertas → líneas de seguimiento. Clave interna: OC | ítem | Nro solicitud.
+ * Solo prefijos configurados (por defecto OC-), nunca OCI-, y cantidad pendiente > 0.
+ */
+function procesarOC(aoa, guardado){
+  const r0 = filaEncabezados(aoa, CAMPOS_OC);
+  if (r0 < 0) return { error:'No se encontró la fila de encabezados del listado de OC.' };
+  const headers = aoa[r0].map(h => String(h).trim());
+  const mapeo = detectarColumnas(CAMPOS_OC, headers, guardado);
+  const faltan = CAMPOS_OC.filter(c => mapeo[c.k] == null).map(c => c.k);
+  if (faltan.length) return { necesitaMapeo:true, headers, mapeo, faltan };
+  const lineas = {}, stats = { filas:0, excluidasPrefijo:0, oci:0, cero:0, abiertas:0, duplicadas:0 };
+  for (let i = r0 + 1; i < aoa.length; i++){
+    const row = aoa[i], get = k => mapeo[k] >= 0 ? row[mapeo[k]] : '';
+    const oc = norm(get('oc')).replace(/\s*-\s*/, '-');
+    if (!oc || /TOTAL/.test(oc)) continue;
+    stats.filas++;
+    if (/^OCI-/.test(oc)){ stats.oci++; continue; }
+    if (!esPrefijoValido(oc)){ stats.excluidasPrefijo++; continue; }
+    const pend = num(get('pendiente'));
+    if (!(pend > 0)){ stats.cero++; continue; }
+    const item = String(get('item')).trim(), sol = String(get('solicitud')).trim();
+    const clave = oc + '|' + normItem(item) + '|' + sol;
+    if (lineas[clave]){ lineas[clave].cantidad_pendiente += pend; stats.duplicadas++; continue; }
+    stats.abiertas++;
+    lineas[clave] = { clave, oc, item, solicitud:sol, descripcion:String(get('descripcion')).trim(), unidad:String(get('unidad')).trim(),
+      cantidad_pendiente:pend, fecha_oc:parseFecha(get('fecha_oc')), fecha_entrega_siesa:parseFecha(get('fecha_entrega')),
+      proveedor:String(get('proveedor')).trim().replace(/\s+/g, ' '), comprador:String(get('comprador')).trim().replace(/\s+/g, ' ') };
+  }
+  return { ok:true, lineas, stats, mapeo, headers };
+}
+/**
+ * Explosión → índice compacto de necesidades pendientes: [oc, ítem, fecha planeación, cantidad].
+ * Solo filas con "Cant Penditiente - Inventario" > 0. Si no existe la columna de OC amarrada, modo FIFO.
+ */
+function procesarExplosion(aoa, guardado){
+  const r0 = filaEncabezados(aoa, CAMPOS_EXP);
+  if (r0 < 0) return { error:'No se encontró la fila de encabezados de la explosión.' };
+  const headers = aoa[r0].map(h => String(h).trim());
+  const mapeo = detectarColumnas(CAMPOS_EXP, headers, guardado);
+  const faltan = CAMPOS_EXP.filter(c => mapeo[c.k] == null).map(c => c.k);
+  if (faltan.length) return { necesitaMapeo:true, headers, mapeo, faltan };
+  const modo = mapeo.oc >= 0 ? 'amarre' : 'fifo';
+  const filas = []; let total = 0;
+  for (let i = r0 + 1; i < aoa.length; i++){
+    const row = aoa[i]; total++;
+    const cant = num(row[mapeo.pendiente]); if (!(cant > 0)) continue;
+    const f = parseFecha(row[mapeo.fecha]); if (!f) continue;
+    const oc = modo === 'amarre' ? norm(row[mapeo.oc]).replace(/\s*-\s*/, '-') : '';
+    filas.push([/^(OC|OM|OCA|OCM)[A-Z]*-/.test(oc) ? oc : '', normItem(row[mapeo.item]), f, cant]);
+  }
+  return { ok:true, modo, filas, total, mapeo, headers };
+}
+/** Reparte necesidades (ordenadas por fecha) entre líneas de OC (en el orden dado), cubriendo cantidades. */
+function cubrirFIFO(lineas, necesidades, res){
+  const nec = necesidades.slice().sort((a, b) => a.f < b.f ? -1 : a.f > b.f ? 1 : 0);
+  let qi = 0, resto = nec.length ? nec[0].c : 0;
+  for (const L of lineas){
+    if (qi >= nec.length){ res[L.clave] = null; continue; }
+    res[L.clave] = nec[qi].f;
+    let q = L.cantidad_pendiente;
+    while (q > 1e-9 && qi < nec.length){
+      const t = Math.min(q, resto); q -= t; resto -= t;
+      if (resto <= 1e-9){ qi++; resto = qi < nec.length ? nec[qi].c : 0; }
+    }
+  }
+}
+/**
+ * Fecha requerida de cada línea de OC = fecha de planeación de la primera necesidad que cubre.
+ *  - Modo amarre: necesidades de la misma OC + ítem; si hay varias líneas OC+ítem (distinta solicitud), FIFO entre ellas
+ *    por fecha de entrega Siesa.
+ *  - Modo FIFO: necesidades del ítem (de cualquier OP) vs. líneas del ítem ordenadas por fecha de OC.
+ * Devuelve {clave: 'AAAA-MM-DD' | null}; null = sin necesidad en planeación.
+ */
+function calcularFechasRequeridas(lineasOC, exp){
+  const res = {};
+  if (!exp) return res;
+  const nec = {};
+  const llave = exp.modo === 'amarre' ? (oc, it) => oc + '|' + it : (oc, it) => it;
+  for (const [oc, it, f, c] of exp.filas){
+    if (exp.modo === 'amarre' && !oc) continue;
+    (nec[llave(oc, it)] || (nec[llave(oc, it)] = [])).push({ f, c });
+  }
+  const grupos = {};
+  for (const L of Object.values(lineasOC)){ const k = llave(L.oc, normItem(L.item)); (grupos[k] || (grupos[k] = [])).push(L); }
+  for (const [k, ls] of Object.entries(grupos)){
+    ls.sort((a, b) => exp.modo === 'amarre'
+      ? ((a.fecha_entrega_siesa || '') < (b.fecha_entrega_siesa || '') ? -1 : (a.fecha_entrega_siesa || '') > (b.fecha_entrega_siesa || '') ? 1 : (a.solicitud < b.solicitud ? -1 : 1))
+      : ((a.fecha_oc || '') < (b.fecha_oc || '') ? -1 : (a.fecha_oc || '') > (b.fecha_oc || '') ? 1 : (a.clave < b.clave ? -1 : 1)));
+    cubrirFIFO(ls, nec[k] || [], res);
+  }
+  return res;
+}
+
+/* =========================================================================
+   config.xlsx
+   ========================================================================= */
+function hojaObjs(wb, nombre){
+  const sn = wb.SheetNames.find(n => normH(n) === normH(nombre));
+  if (!sn) return null;
+  return XLSX.utils.sheet_to_json(wb.Sheets[sn], { defval:'', raw:true }).map(r => {
+    const o = {}; for (const k in r) o[normCol(k)] = r[k]; return o;
+  });
+}
+const txt = v => String(v == null ? '' : v).trim();
+function leerConfig(wb){
+  const cfg = configDefecto();
+  const prov = hojaObjs(wb, 'proveedores');
+  if (prov) cfg.proveedores = prov.filter(p => txt(p.proveedor)).map(p => ({
+    proveedor: txt(p.proveedor).replace(/\s+/g, ' '), alias: txt(p.alias), activo: norm(p.activo) === 'NO' ? 'NO' : 'SI',
+    contacto: txt(p.contacto), celular: txt(p.celular), nombre_whatsapp: txt(p.nombre_whatsapp), comprador: txt(p.comprador),
+    trato: /^T/.test(norm(p.trato)) ? 'tu' : 'usted' }));
+  const reg = hojaObjs(wb, 'reglas');
+  if (reg) for (const r of reg){ const k = normCol(r.parametro); if (k) cfg.reglas[k] = typeof r.valor === 'number' ? r.valor : txt(r.valor); }
+  const pl = hojaObjs(wb, 'plantillas');
+  if (pl) for (const p of pl){
+    const k = normCol(p.plantilla); if (!PLANTILLAS_NOMBRES.includes(k)) continue;
+    if (txt(p.usted)) cfg.plantillas[k].usted = String(p.usted);
+    if (txt(p.tu)) cfg.plantillas[k].tu = String(p.tu);
+  }
+  const ex = hojaObjs(wb, 'exclusiones');
+  if (ex) cfg.exclusiones = ex.filter(x => txt(x.valor)).map(x => ({ tipo: norm(x.tipo), valor: txt(x.valor), motivo: txt(x.motivo) }));
+  return cfg;
+}
+function libroConfig(cfg){
+  const wb = XLSX.utils.book_new();
+  const cols = COLS_PROV;
+  const ws1 = XLSX.utils.aoa_to_sheet([cols, ...cfg.proveedores.map(p => cols.map(c => p[c] || ''))]);
+  ws1['!cols'] = [{wch:46},{wch:14},{wch:7},{wch:22},{wch:16},{wch:26},{wch:24},{wch:8}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'proveedores');
+  const reg = { ...REGLAS_DEF, ...cfg.reglas };
+  const ws2 = XLSX.utils.aoa_to_sheet([['parametro','valor','descripcion'], ...Object.keys(reg).map(k => [k, reg[k], REGLAS_DESC[k] || ''])]);
+  ws2['!cols'] = [{wch:40},{wch:12},{wch:90}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'reglas');
+  const ws3 = XLSX.utils.aoa_to_sheet([['plantilla','usted','tu'], ...PLANTILLAS_NOMBRES.map(k => [k, cfg.plantillas[k].usted, cfg.plantillas[k].tu])]);
+  ws3['!cols'] = [{wch:20},{wch:80},{wch:80}];
+  XLSX.utils.book_append_sheet(wb, ws3, 'plantillas');
+  const ws4 = XLSX.utils.aoa_to_sheet([['tipo','valor','motivo'], ...cfg.exclusiones.map(x => [x.tipo, x.valor, x.motivo])]);
+  ws4['!cols'] = [{wch:8},{wch:24},{wch:50}];
+  XLSX.utils.book_append_sheet(wb, ws4, 'exclusiones');
+  return wb;
+}
+
+/* =========================================================================
+   Archivos de seguimiento: lectura, consolidación, escritura
+   ========================================================================= */
+function normRegistro(o){
+  const r = {};
+  for (const c of COLS_SEG){
+    const v = o[c];
+    if (COL_FECHA.has(c)) r[c] = parseFecha(v);
+    else if (COL_FH.has(c)) r[c] = parseFechaHora(v);
+    else if (COL_NUM.has(c)) r[c] = num(v);
+    else r[c] = txt(v);
+  }
+  const e = ALIAS_ESTADO[norm(r.estado)] || norm(r.estado);
+  r.estado = ESTADOS.includes(e) ? e : 'NUEVA';
+  return r;
+}
+function normEvento(o){
+  const e = {};
+  for (const c of COLS_EV){
+    const v = o[c];
+    e[c] = COL_FECHA.has(c) ? parseFecha(v) : COL_FH.has(c) ? parseFechaHora(v) : txt(v);
+  }
+  return e;
+}
+/** Une un registro: gana el de "actualizado" más reciente. */
+function mergeRegistro(r){
+  if (!r.clave) return;
+  const e = S.seg[r.clave];
+  if (!e || (r.actualizado || '') >= (e.actualizado || '')) S.seg[r.clave] = r;
+}
+function mergeEvento(e){
+  if (!e.id || S.eventIds.has(e.id)) return;
+  S.eventIds.add(e.id); S.eventos.push(e);
+}
+function leerSeguimiento(wb){
+  const lin = hojaObjs(wb, 'lineas') || [], ev = hojaObjs(wb, 'eventos') || [];
+  return { lineas: lin.map(normRegistro), eventos: ev.map(normEvento) };
+}
+function hojaConFechas(cols, filas){
+  const ws = XLSX.utils.aoa_to_sheet([cols, ...filas.map(f => cols.map(c => {
+    const v = f[c];
+    if ((COL_FECHA.has(c) || COL_FH.has(c))) return v ? isoToSerial(v) : '';
+    return v == null ? '' : v;
+  }))]);
+  cols.forEach((c, j) => {
+    if (!COL_FECHA.has(c) && !COL_FH.has(c)) return;
+    for (let i = 1; i <= filas.length; i++){
+      const cell = ws[XLSX.utils.encode_cell({ r:i, c:j })];
+      if (cell && cell.t === 'n') cell.z = COL_FH.has(c) ? 'dd/mm/yyyy hh:mm:ss' : 'dd/mm/yyyy';
+    }
+  });
+  ws['!cols'] = cols.map(c => ({ wch: c === 'descripcion' ? 40 : c === 'proveedor' ? 30 : c === 'lineas' || c === 'texto' ? 50 : 16 }));
+  return ws;
+}
+function libroSeguimiento(lineas, eventos){
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, hojaConFechas(COLS_SEG, lineas), 'lineas');
+  XLSX.utils.book_append_sheet(wb, hojaConFechas(COLS_EV, eventos), 'eventos');
+  return wb;
+}
+function guardarLocal(){
+  const seg = {};
+  for (const k in S.seg){ const r = S.seg[k]; if (r.actualizado){ const o = {}; COLS_SEG.forEach(c => o[c] = r[c]); seg[k] = o; } }
+  lsSet(LS.trabajo, { seg, eventos: S.eventos });
+  lsSet(LS.modificadas, [...S.modificadas]);
+}
+/** Marca un registro como modificado por el usuario actual. */
+function tocar(rec){
+  rec.actualizado = ahora(); rec.actualizado_por = S.comprador || '';
+  S.modificadas.add(rec.clave);
+}
+function registrarEvento(e){
+  const ev = { id: nuevoId(), fecha_hora: ahora(), comprador: S.comprador || '' };
+  COLS_EV.forEach(c => { if (ev[c] == null) ev[c] = ''; });
+  Object.assign(ev, e);
+  mergeEvento(ev); return ev;
+}
+
+/* =========================================================================
+   Conciliación listado de OC ↔ seguimiento, y fecha requerida desde planeación
+   ========================================================================= */
+const CAMPOS_DESC_OC = ['oc','item','solicitud','descripcion','unidad','proveedor','comprador','cantidad_pendiente','fecha_oc','fecha_entrega_siesa'];
+function nuevoRegistro(L){
+  const r = {}; COLS_SEG.forEach(c => r[c] = COL_NUM.has(c) ? 0 : '');
+  CAMPOS_DESC_OC.forEach(c => r[c] = L[c]);
+  r.clave = L.clave; r.estado = 'NUEVA';
+  return r;
+}
+/**
+ * Aplica el listado de OC abiertas al seguimiento:
+ *  - agrega líneas nuevas (NUEVA) y actualiza datos descriptivos;
+ *  - línea que ya no está abierta: ENTREGADO_POR_CONFIRMAR → CERRADA; cualquier otra → CERRADA_SIESA;
+ *  - línea cerrada que reaparece abierta: se reabre.
+ * Los cambios automáticos usan como marca de tiempo la fecha del listado, para no pisar respuestas posteriores.
+ */
+function conciliar(){
+  const L0 = S.ocs; if (!L0) return { cerradas:0, cerradasSiesa:0, reabiertas:0, nuevas:0, viejas:0 };
+  const ts = L0.fecha + 'T00:00:00';
+  const res = { cerradas:0, cerradasSiesa:0, reabiertas:0, nuevas:0, viejas:0 };
+  for (const L of Object.values(L0.lineas)){
+    let r = S.seg[L.clave];
+    if (!r){ r = S.seg[L.clave] = nuevoRegistro(L); res.nuevas++; }
+    else {
+      CAMPOS_DESC_OC.forEach(c => { if (L[c] !== '' && L[c] != null) r[c] = L[c]; });
+      if (CERRADOS.has(r.estado) && L0.fecha > (r.ultima_vista_siesa || '') && L0.fecha > (r.actualizado || '').slice(0,10)){
+        const ant = r.estado;
+        r.estado = r.fecha_prometida ? 'CONFIRMADA' : (r.ultima_pregunta ? 'ESPERANDO_FECHA' : 'NUEVA');
+        r.actualizado = maxStr(r.actualizado, ts); r.nota = 'Reabierta: volvió a aparecer abierta en el listado del ' + fmtF(L0.fecha);
+        mergeEvento({ id:`REAPERTURA|${r.clave}|${L0.fecha}`, fecha_hora:ts, tipo:'REAPERTURA', proveedor:r.proveedor, comprador:'',
+          clave:r.clave, lineas:'', plantilla:'', estado_anterior:ant, estado_nuevo:r.estado, fecha_anterior:'', fecha_nueva:'', texto:'', lote:'', antes:'' });
+        res.reabiertas++;
+      }
+    }
+    r.ultima_vista_siesa = maxStr(r.ultima_vista_siesa, L0.fecha);
+  }
+  for (const r of Object.values(S.seg)){
+    if (L0.lineas[r.clave] || CERRADOS.has(r.estado)) continue;
+    if (r.ultima_vista_siesa && L0.fecha < r.ultima_vista_siesa){ res.viejas++; continue; }
+    const ant = r.estado;
+    r.estado = ant === 'ENTREGADO_POR_CONFIRMAR' ? 'CERRADA' : 'CERRADA_SIESA';
+    r.cantidad_pendiente = 0;
+    if ((r.actualizado || '') < ts) r.actualizado = ts;
+    mergeEvento({ id:`CIERRE|${r.clave}|${L0.fecha}`, fecha_hora:ts, tipo:'CIERRE', proveedor:r.proveedor, comprador:'',
+      clave:r.clave, lineas:'', plantilla:'', estado_anterior:ant, estado_nuevo:r.estado, fecha_anterior:'', fecha_nueva:'',
+      texto:'Ya no está abierta en ' + L0.nombre, lote:'', antes:'' });
+    if (r.estado === 'CERRADA') res.cerradas++; else res.cerradasSiesa++;
+  }
+  return res;
+}
+/** Asigna a cada línea abierta su fecha requerida (planeación) y la marca de "sin necesidad". */
+function aplicarFechasRequeridas(){
+  if (!S.ocs) return;
+  const f = calcularFechasRequeridas(S.ocs.lineas, S.explosion);
+  for (const k of Object.keys(S.ocs.lineas)){
+    const r = S.seg[k]; if (!r) continue;
+    if (!S.explosion){ r.sinNecesidad = false; continue; }
+    const v = f[k];
+    r.sinNecesidad = v == null;
+    if (v) r.fecha_requerida = v;
+  }
+}
+
+/* ---- Indicadores por línea (calculados) ---- */
+/** Fecha requerida efectiva: la de planeación; si ya pasó, hoy (eliminado cualquier colchón). */
+const reqEf = r => !r.fecha_requerida ? '' : (r.fecha_requerida < hoy() ? hoy() : r.fecha_requerida);
+const reqVencida = r => !!r.fecha_requerida && r.fecha_requerida < hoy();
+function enRiesgo(r){ return ACTIVOS.has(r.estado) && !r.sinNecesidad && !!r.fecha_prometida && !!r.fecha_requerida && r.fecha_prometida > reqEf(r); }
+function desfase(r, f){ const p = f || r.fecha_prometida, q = reqEf(r); return (p && q) ? diasEntre(q, p) : null; }
+/** Semáforo interno: verde (prometida ≤ requerida), rojo (prometida > requerida, o requerida vencida sin fecha), gris (sin fecha aún). */
+function semaforo(r){
+  if (!ACTIVOS.has(r.estado) || r.sinNecesidad) return '';
+  if (r.fecha_prometida) return enRiesgo(r) ? 'rojo' : 'verde';
+  return reqVencida(r) || r.fecha_requerida === hoy() ? 'rojo' : 'gris';
+}
+const SEM_ETQ = { verde:'A tiempo', rojo:'Riesgo', gris:'Sin fecha' };
+const chipSem = r => { const s = semaforo(r); return s ? `<span class="sem ${s}" title="${SEM_ETQ[s]}"></span>` : ''; };
+function revisarAlmacen(r){
+  if (r.estado !== 'ENTREGADO_POR_CONFIRMAR' || !S.ocs || !S.ocs.lineas[r.clave] || !r.fecha_entregado) return false;
+  return diasEntre(r.fecha_entregado.slice(0,10), S.ocs.fecha) > R().dias_revisar_almacen;
+}
+
+/* =========================================================================
+   Carga de archivos (carpeta con File System Access API o selección manual)
+   ========================================================================= */
+function idb(){ return new Promise((ok, ko) => { const q = indexedDB.open('segprov', 1); q.onupgradeneeded = () => q.result.createObjectStore('kv'); q.onsuccess = () => ok(q.result); q.onerror = () => ko(q.error); }); }
+async function idbGet(k){ try{ const db = await idb(); return await new Promise(ok => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); }); }catch(e){ return null; } }
+async function idbSet(k, v){ try{ const db = await idb(); await new Promise(ok => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = ok; t.onerror = ok; }); }catch(e){} }
+
+async function leerLibro(file){ const buf = await file.arrayBuffer(); return XLSX.read(buf, { type:'array' }); }
+const EXT_DATOS = /\.(xlsx|xlsm|xls|txt|csv|zip)$/i;
+
+/** Estructura esperada: raíz (config.xlsx), explosiones/, oc_abiertas/, respuestas/, depuracion/. */
+async function listarCarpeta(dir){
+  const out = { raiz: [], explosiones: [], oc_abiertas: [], respuestas: [], depuracion: [] };
+  for await (const [nombre, h] of dir.entries()){
+    if (h.kind === 'file' && EXT_DATOS.test(nombre)) out.raiz.push(await h.getFile());
+    else if (h.kind === 'directory'){
+      const k = Object.keys(out).find(x => x !== 'raiz' && x === nombre.toLowerCase());
+      if (!k) continue;
+      for await (const [n2, h2] of h.entries()) if (h2.kind === 'file' && EXT_DATOS.test(n2)) out[k].push(await h2.getFile());
+    }
+  }
+  return out;
+}
+/** Clasifica archivos por nombre: ABASTECIMIENTO_* (explosión), OC_* (OC abiertas), config.xlsx, seguimiento_*. */
+function clasificar(files){
+  const r = { explosiones: [], ocs: [], config: null, seguimientos: [] };
+  for (const f of files){
+    const n = f.name.split('/').pop();
+    if (/^ABASTECIMIENTO_/i.test(n)) r.explosiones.push(f);
+    else if (/^OC(_ABIERTAS)?_\d{8}/i.test(n)) r.ocs.push(f);
+    else if (/^config.*\.xlsx$/i.test(n)) r.config = f;
+    else if (/^seguimiento_.*\.xlsx$/i.test(n)) r.seguimientos.push(f);
+  }
+  return r;
+}
+async function conectarCarpeta(){
+  if (!window.showDirectoryPicker){ alert('Este navegador no permite recordar carpetas. Use Edge o Chrome, o "Cargar archivos…".'); return; }
+  try{
+    const h = await window.showDirectoryPicker({ id:'segprov', mode:'readwrite' });
+    await idbSet('carpeta', h); S.dirHandle = h; await cargarDesdeCarpeta();
+  }catch(e){ if (e.name !== 'AbortError') alert('No se pudo abrir la carpeta: ' + e.message); }
+}
+async function reconectarCarpeta(){
+  const h = await idbGet('carpeta'); if (!h) return;
+  try{ if ((await h.requestPermission({ mode:'readwrite' })) === 'granted'){ S.dirHandle = h; $('#btnReconectar').classList.add('oculto'); await cargarDesdeCarpeta(); } }
+  catch(e){ alert('No se pudo reconectar: ' + e.message); }
+}
+async function cargarDesdeCarpeta(){
+  const l = await listarCarpeta(S.dirHandle);
+  const c = clasificar([...l.raiz, ...l.explosiones, ...l.oc_abiertas]);
+  c.seguimientos = [...c.seguimientos, ...clasificar(l.respuestas).seguimientos];
+  S.modoCarpeta = S.dirHandle.name;
+  await procesar(c);
+}
+async function cargarArchivosSueltos(files){
+  S.dirHandle = null; S.modoCarpeta = '';
+  await procesar(clasificar([...files]));
+}
+async function progreso(msg){ $('#main').innerHTML = `<div class="panel vacio">${esc(msg)}</div>`; await new Promise(r => setTimeout(r, 30)); }
+let ULTIMA_CARGA = null;
+/** Proceso completo: config → seguimiento (+ trabajo local) → OC abiertas → explosión → conciliar → fechas requeridas. */
+async function procesar(c){
+  ULTIMA_CARGA = c;
+  S.avisos = []; S.pendienteMapeo = null;
+  // 1. Configuración
+  const local = lsGet(LS.config, null);
+  if (c.config){
+    S.config = leerConfig(await leerLibro(c.config));
+    S.configFuente = c.config.name + ' (' + fmtFH(dateToIsoDT(new Date(c.config.lastModified || Date.now()))) + ')';
+    S.configLocalSucia = false;
+    if (local && local.sucia && local.ts > (c.config.lastModified || 0)){
+      S.config = local.config; S.configLocalSucia = true;
+      S.configFuente += ' + cambios locales sin exportar';
+    }
+  } else if (local){ S.config = local.config; S.configLocalSucia = !!local.sucia; S.configFuente = 'guardada en este navegador'; }
+  else { S.config = configDefecto(); S.configFuente = 'por defecto (falta config.xlsx)'; S.avisos.push('No se encontró config.xlsx: se usa la configuración por defecto del piloto (sin celulares).'); }
+  // 2. Seguimiento: archivos (orden por nombre = orden cronológico) + trabajo local
+  S.seg = {}; S.eventos = []; S.eventIds = new Set(); S.archivosSeg = [];
+  for (const f of [...(c.seguimientos || [])].sort((a, b) => a.name < b.name ? -1 : 1)){
+    try{ const d = leerSeguimiento(await leerLibro(f)); d.lineas.forEach(mergeRegistro); d.eventos.forEach(mergeEvento); S.archivosSeg.push(f.name); }
+    catch(e){ S.avisos.push('No se pudo leer ' + f.name + ': ' + e.message); }
+  }
+  const t = lsGet(LS.trabajo, null);
+  if (t){ Object.values(t.seg || {}).forEach(o => mergeRegistro(normRegistro(o))); (t.eventos || []).forEach(e => mergeEvento(normEvento(e))); }
+  // 3. Listado de OC abiertas (base del seguimiento)
+  S.ocs = null; S.explosion = null;
+  const mapeos = lsGet(LS.mapeo, {});
+  const fo = masReciente(c.ocs || []);
+  if (fo){
+    await progreso('Leyendo listado de OC abiertas…');
+    const res = procesarOC(await leerMatriz(fo, CAMPOS_OC), mapeos.oc || {});
+    if (res.error) S.avisos.push(fo.name + ': ' + res.error);
+    else if (res.necesitaMapeo){ S.pendienteMapeo = { tipo:'oc', archivo:fo.name, ...res }; renderTodo(); return; }
+    else S.ocs = { nombre:fo.name, fecha:fechaDeNombre(fo.name) || dateToIso(new Date(fo.lastModified || Date.now())), lineas:res.lineas, stats:res.stats };
+  } else S.avisos.push('No se encontró el listado de OC abiertas (OC_ddmmaaaa.txt en la carpeta oc_abiertas/). Es la base del seguimiento.');
+  // 4. Explosión (índice compacto en caché: solo la primera carga de cada archivo es lenta)
+  const fx = elegirExplosion(c.explosiones || []);
+  if (fx){
+    const firma = [fx.name, fx.size, fx.lastModified, JSON.stringify(mapeos.explosion || {})].join('|');
+    const cache = await idbGet('explosion');
+    let idx = cache && cache.firma === firma ? cache.idx : null;
+    if (!idx){
+      const t0 = performance.now();
+      await progreso(`Leyendo explosión ${fx.name} (${Math.round(fx.size / 1e6)} MB). La primera vez puede tardar hasta un minuto…`);
+      const res = procesarExplosion(await leerMatriz(fx, CAMPOS_EXP), mapeos.explosion || {});
+      if (res.error) S.avisos.push(fx.name + ': ' + res.error);
+      else if (res.necesitaMapeo){ S.pendienteMapeo = { tipo:'explosion', archivo:fx.name, ...res }; renderTodo(); return; }
+      else { idx = { modo:res.modo, filas:res.filas, total:res.total, segundos:Math.round((performance.now() - t0) / 100) / 10 }; await idbSet('explosion', { firma, idx }); }
+    }
+    if (idx) S.explosion = { nombre:fx.name, fecha:fechaDeNombre(fx.name) || dateToIso(new Date(fx.lastModified || Date.now())), ...idx };
+  } else S.avisos.push('No se encontró la explosión ABASTECIMIENTO_ddmmaaaa (carpeta explosiones/). Sin ella no hay fecha requerida y no se pregunta a proveedores.');
+  // 5. Conciliar y calcular fechas requeridas
+  if (S.ocs){
+    const r = conciliar();
+    if (r.viejas) S.avisos.push(`El listado ${S.ocs.nombre} es más antiguo que el seguimiento para ${r.viejas} línea(s); no se cerraron.`);
+    S.ultimaConciliacion = r;
+    aplicarFechasRequeridas();
+  }
+  guardarLocal();
+  renderTodo();
+}
+/** Antigüedad (días) de los archivos fuente para la alerta de la pantalla principal. */
+function antiguedad(f){ return f ? diasEntre(f, hoy()) : null; }
+
+/* =========================================================================
+   Interfaz
+   ========================================================================= */
+function compradoresConocidos(){
+  const s = new Set();
+  (S.config.proveedores || []).forEach(p => p.comprador && s.add(String(p.comprador).trim()));
+  Object.values(S.seg).forEach(r => r.comprador && provActivo(r.proveedor) && s.add(r.comprador));
+  if (S.comprador) s.add(S.comprador);
+  return [...s].sort();
+}
+/** Texto y alerta de antigüedad de los archivos fuente. */
+function estadoFuentes(){
+  const lim = R().dias_alerta_archivos, out = [];
+  for (const [etq, f] of [['OC abiertas', S.ocs], ['Explosión', S.explosion]]){
+    if (!f){ out.push(`${etq}: <b class="rojo">sin cargar</b>`); continue; }
+    const d = antiguedad(f.fecha);
+    out.push(`${etq}: <b class="${d > lim ? 'rojo' : ''}">${fmtF(f.fecha)}</b>${d > lim ? ` <span class="chip rojo">${d} días</span>` : ''}`);
+  }
+  return out.join(' · ');
+}
+function archivosViejos(){
+  const lim = R().dias_alerta_archivos;
+  return [['listado de OC abiertas', S.ocs], ['explosión', S.explosion]].filter(([, f]) => f && antiguedad(f.fecha) > lim).map(([n, f]) => `${n} (${fmtF(f.fecha)})`);
+}
+function renderCabecera(){
+  $('#ver').textContent = VERSION;
+  const sel = $('#selComprador');
+  sel.innerHTML = '<option value="">— elegir —</option>' + compradoresConocidos().map(c => `<option ${c === S.comprador ? 'selected' : ''}>${esc(c)}</option>`).join('') + '<option value="__otro__">Otro…</option>';
+  const pend = S.modificadas.size;
+  $('#estadoCarga').innerHTML = [
+    estadoFuentes(),
+    `Carpeta: <b>${esc(S.modoCarpeta || 'no conectada')}</b>`,
+    `Config: <b>${esc(S.configFuente)}</b>`,
+    `Seguimiento: <b>${S.archivosSeg.length} archivo(s)</b>`,
+    `Hoy: <b>${fmtF(hoy())}</b>`,
+    pend ? `<span class="rojo">${pend} línea(s) con cambios sin guardar en respuestas/${S.dirHandle ? '' : ' (conecte la carpeta o use «Exportar mi seguimiento»)'}</span>` : `<span class="verde">${esc(ESTADO_GUARDADO || 'Todo guardado')}</span>`
+  ].join(' · ') + (fechaSimulada() ? `<div class="simulada">FECHA SIMULADA: ${fmtF(hoy())} · solo para pruebas · el guardado automático está apagado</div>` : '');
+}
+function renderTodo(){
+  renderCabecera();
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('act', b.dataset.tab === S.tab));
+  const m = $('#main');
+  m.onchange = m.oninput = m.onclick = null;
+  let html = S.avisos.map(a => `<div class="aviso">${esc(a)}</div>`).join('');
+  if (S.pendienteMapeo) html += vistaMapeo();
+  else if (S.tab === 'hoy') html += vistaHoy();
+  else if (S.tab === 'lineas') html += vistaLineas();
+  else if (S.tab === 'tablero') html += vistaTablero();
+  else if (S.tab === 'admin') html += vistaAdmin();
+  m.innerHTML = html;
+  if (S.pendienteMapeo) enlazarMapeo();
+  else if (S.tab === 'hoy') enlazarHoy();
+  else if (S.tab === 'lineas') enlazarLineas();
+  else if (S.tab === 'tablero') enlazarTablero();
+  else if (S.tab === 'admin') enlazarAdmin();
+}
+
+/* ---- Mapeo manual de columnas (listado de OC o explosión) ---- */
+function vistaMapeo(){
+  const p = S.pendienteMapeo, campos = p.tipo === 'oc' ? CAMPOS_OC : CAMPOS_EXP;
+  const opts = sel => '<option value="">— elegir —</option>' + p.headers.map((h, i) => h ? `<option value="${i}" ${sel === i ? 'selected' : ''}>${esc(h)}</option>` : '').join('');
+  return `<div class="panel"><h2>Mapeo de columnas ${p.tipo === 'oc' ? 'del listado de OC abiertas' : 'de la explosión'}</h2>
+  <p>No se reconocieron todas las columnas de <b>${esc(p.archivo)}</b>. Indique qué columna corresponde a cada campo. El mapeo se recuerda en este navegador.</p>
+  <table style="max-width:760px"><tr><th>Campo</th><th>Columna en el archivo</th></tr>
+  ${campos.map(c => `<tr><td>${esc(c.label)}${c.req ? ' *' : ''}</td><td><select data-campo="${c.k}">${!c.req ? `<option value="-1" ${p.mapeo[c.k] === -1 ? 'selected' : ''}>(no existe)</option>` : ''}${opts(p.mapeo[c.k])}</select>
+    ${p.faltan.includes(c.k) ? '<span class="rojo peq"> no detectada</span>' : ''}</td></tr>`).join('')}
+  </table><p><button class="b pri" id="btnMapeo">Aplicar y recordar</button> <span class="peq mut">* obligatorio.</span></p></div>`;
+}
+function enlazarMapeo(){
+  $('#btnMapeo').onclick = async () => {
+    const p = S.pendienteMapeo, campos = p.tipo === 'oc' ? CAMPOS_OC : CAMPOS_EXP, g = {};
+    let ok = true;
+    document.querySelectorAll('select[data-campo]').forEach(s => {
+      const c = campos.find(x => x.k === s.dataset.campo);
+      if (s.value === '') { if (c.req) ok = false; return; }
+      g[c.k] = s.value === '-1' ? '__NINGUNA__' : p.headers[+s.value];
+    });
+    if (!ok){ alert('Faltan campos obligatorios.'); return; }
+    const m = lsGet(LS.mapeo, {}); m[p.tipo] = { ...(m[p.tipo] || {}), ...g }; lsSet(LS.mapeo, m);
+    S.pendienteMapeo = null;
+    if (ULTIMA_CARGA) await procesar(ULTIMA_CARGA);
+  };
+}
+
+/* ---- Todas las líneas ---- */
+const FILTRO = { prov:'', estado:'', q:'', piloto:true };
+function filasLineas(){
+  return Object.values(S.seg).filter(r => {
+    if (FILTRO.piloto && !provActivo(r.proveedor)) return false;
+    if (FILTRO.prov && r.proveedor !== FILTRO.prov) return false;
+    const ev = estadoVisible(r);
+    if (FILTRO.estado === 'ABIERTAS' && CERRADOS.has(r.estado)) return false;
+    if (FILTRO.estado && FILTRO.estado !== 'ABIERTAS' && ev !== FILTRO.estado) return false;
+    if (FILTRO.q){ const q = norm(FILTRO.q); if (!norm([r.oc, r.item, r.descripcion, r.proveedor, r.solicitud].join(' ')).includes(q)) return false; }
+    return true;
+  }).sort((a, b) => (a.proveedor + a.oc + a.clave).localeCompare(b.proveedor + b.oc + b.clave));
+}
+function vistaLineas(){
+  const provs = [...new Set(Object.values(S.seg).map(r => r.proveedor))].sort();
+  const filas = filasLineas();
+  return `<div class="panel"><div class="fila">
+    <select id="fProv"><option value="">Todos los proveedores</option>${provs.map(p => `<option ${p === FILTRO.prov ? 'selected' : ''} value="${esc(p)}">${esc(provAlias(p))}</option>`).join('')}</select>
+    <select id="fEstado"><option value="">Todos los estados</option><option value="ABIERTAS" ${FILTRO.estado === 'ABIERTAS' ? 'selected' : ''}>Abiertas</option>${[...ESTADOS, 'SIN_NECESIDAD'].map(e => `<option value="${e}" ${e === FILTRO.estado ? 'selected' : ''}>${ETQ_ESTADO[e]}</option>`).join('')}</select>
+    <input type="text" id="fQ" placeholder="Buscar OC, ítem, descripción, solicitud…" value="${esc(FILTRO.q)}">
+    <label class="chk"><input type="checkbox" id="fPiloto" ${FILTRO.piloto ? 'checked' : ''}> Solo proveedores activos</label>
+    <span class="sp"></span><span class="mut">${filas.length} línea(s)</span></div></div>
+  <div class="tabla-scroll"><table><thead><tr><th></th><th>Proveedor</th><th>OC</th><th>Ítem</th><th>Descripción</th><th>Solicitud</th><th class="n">Pend.</th><th>Fecha OC</th><th>Requerida</th><th>Prometida</th><th class="n">Desfase</th><th>Estado</th><th class="n">Cambios</th><th>Últ. pregunta</th><th>Últ. respuesta</th><th>Alertas</th></tr></thead><tbody>
+  ${filas.slice(0, 2000).map(r => { const d = desfase(r); return `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td>${chipSem(r)}</td><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td><td class="peq">${esc(r.solicitud)}</td>
+    <td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtF(r.fecha_oc)}</td><td>${r.sinNecesidad ? '<span class="mut">—</span>' : fmtF(reqEf(r))}${reqVencida(r) && !r.sinNecesidad ? `<br><span class="peq rojo">plan. ${fmtF(r.fecha_requerida)}</span>` : ''}</td>
+    <td>${fmtF(r.fecha_prometida)}${r.fecha_prometida_anterior ? `<br><span class="peq mut">antes ${fmtF(r.fecha_prometida_anterior)}</span>` : ''}</td>
+    <td class="n ${d > 0 && enRiesgo(r) ? 'rojo' : ''}">${d == null || r.sinNecesidad ? '' : (d > 0 ? '+' : '') + d}</td><td>${chipEstado(estadoVisible(r))}</td><td class="n">${r.contador_cambios || ''}</td>
+    <td>${fmtFH(r.ultima_pregunta)}</td><td>${fmtFH(r.ultima_respuesta)}</td>
+    <td>${enRiesgo(r) ? '<span class="chip rojo">Riesgo de faltante</span> ' : ''}${revisarAlmacen(r) ? '<span class="chip amar">Revisar con almacén</span> ' : ''}${excluida(r) ? '<span class="chip">Excluida</span>' : ''}</td></tr>`; }).join('') || '<tr><td colspan="16" class="vacio">Sin líneas</td></tr>'}
+  </tbody></table></div>${filas.length > 2000 ? '<p class="peq mut">Se muestran las primeras 2.000 líneas; use los filtros.</p>' : ''}`;
+}
+function enlazarLineas(){
+  $('#fProv').onchange = e => { FILTRO.prov = e.target.value; renderTodo(); };
+  $('#fEstado').onchange = e => { FILTRO.estado = e.target.value; renderTodo(); };
+  $('#fQ').onchange = e => { FILTRO.q = e.target.value; renderTodo(); };
+  $('#fPiloto').onchange = e => { FILTRO.piloto = e.target.checked; renderTodo(); };
+}
+
+/* =========================================================================
+   Qué preguntar hoy
+   ========================================================================= */
+function vencida(r){
+  const h = hoy();
+  return (r.fecha_prometida && r.fecha_prometida < h) || (!r.fecha_prometida && r.fecha_requerida && r.fecha_requerida < h);
+}
+/**
+ * Decide si una línea se pregunta hoy.
+ *  - Solo fecha requerida ≤ hoy + horizonte, más todas las vencidas.
+ *  - Sin fecha prometida: si nunca se preguntó o si pasaron las horas de recordatorio sin respuesta.
+ *  - Con fecha prometida: en cada "día antes" configurado (si no hubo contacto desde ese hito) y el mismo día;
+ *    vencidas, cada N días.
+ *  - Nunca dos veces el mismo día.
+ */
+function evaluarLinea(r){
+  const no = motivo => ({ preguntar:false, motivo });
+  if (!ACTIVOS.has(r.estado)) return no('estado ' + (ETQ_ESTADO[r.estado] || r.estado));
+  if (!provActivo(r.proveedor)) return no('proveedor inactivo');
+  if (excluida(r)) return no('excluida');
+  if (S.ocs && !S.ocs.lineas[r.clave]) return no('ya no está abierta en Siesa');
+  if (r.sinNecesidad) return no('sin necesidad en planeación');
+  if (!r.fecha_requerida) return no('sin fecha requerida (cargue la explosión)');
+  const h = hoy(), rg = R(), fin = addDias(h, rg.horizonte_semanas * 7), venc = vencida(r);
+  if (reqEf(r) > fin && !venc) return no('fuera del horizonte');
+  if (r.ultima_pregunta && r.ultima_pregunta.slice(0,10) === h) return no('ya se preguntó hoy');
+  const contacto = maxStr(r.ultima_pregunta, r.ultima_respuesta);
+  if (!r.fecha_prometida){
+    if (!r.ultima_pregunta) return { preguntar:true, motivo: venc ? 'vencida sin fecha' : 'primera solicitud' };
+    const hrs = horasEntre(contacto, ahora());
+    if (hrs >= rg.horas_sin_respuesta_para_recordatorio) return { preguntar:true, motivo:`sin fecha hace ${Math.floor(hrs)} h` };
+    return no('esperando respuesta');
+  }
+  const d = diasEntre(h, r.fecha_prometida);
+  if (d < 0){
+    const dd = contacto ? diasEntre(contacto.slice(0,10), h) : 999;
+    if (dd >= rg.frecuencia_vencidas_dias) return { preguntar:true, motivo:`vencida hace ${-d} día(s)` };
+    return no(`vencida; se vuelve a preguntar en ${rg.frecuencia_vencidas_dias - dd} día(s)`);
+  }
+  const hitos = rg.dias_antes_repregunta.filter(c => c >= d);
+  if (!hitos.length) return no('próxima repregunta ' + fmtF(addDias(r.fecha_prometida, -rg.dias_antes_repregunta[0])));
+  const hito = addDias(r.fecha_prometida, -Math.min(...hitos));
+  if (!contacto || contacto.slice(0,10) < hito) return { preguntar:true, motivo: d === 0 ? 'entrega prometida hoy' : `faltan ${d} día(s)` };
+  return no('confirmada recientemente');
+}
+/** Urgencia: fecha requerida (planeación) más cercana primero; una fecha prometida ya vencida cuenta si es anterior. */
+function claveUrgencia(r){
+  let k = r.fecha_requerida || '9999-12-31';
+  if (r.fecha_prometida && r.fecha_prometida < hoy() && r.fecha_prometida < k) k = r.fecha_prometida;
+  return k;
+}
+function ordenUrgencia(a, b){
+  const ka = claveUrgencia(a), kb = claveUrgencia(b);
+  return ka < kb ? -1 : ka > kb ? 1 : (a.clave < b.clave ? -1 : 1);
+}
+function ultimaPregunta(prov){
+  let u = null; const k = normH(prov);
+  for (const e of S.eventos) if (e.tipo === 'PREGUNTA' && normH(e.proveedor) === k && (!u || e.fecha_hora > u.fecha_hora)) u = e;
+  return u;
+}
+function ultimaRespuestaDesde(prov, desde){
+  let u = null;
+  for (const e of respuestasProv(prov)) if (e.fecha_hora >= desde && (!u || e.fecha_hora > u.fecha_hora)) u = e;
+  return u;
+}
+/** Líneas (en orden) del último mensaje enviado al proveedor: la numeración que usa la respuesta. */
+function lineasDeMensaje(ev){ return String(ev.lineas || '').split(/\s*;\s*/).filter(Boolean).map(k => S.seg[k]).filter(Boolean); }
+function plantillaPara(rs){
+  if (rs.some(vencida)) return 'vencida';
+  if (rs.some(r => !r.ultima_pregunta)) return 'primera_solicitud';
+  if (rs.some(r => !r.fecha_prometida)) return 'recordatorio';
+  return 'repregunta';
+}
+const recortar = (s, n) => { s = String(s || '').trim(); return s.length > n ? s.slice(0, n - 1).trim() + '…' : s; };
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESES_LARGO = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+/** Fecha en palabras para el proveedor: "hoy", "20 nov", "5 ene 2027" (año solo si no es el actual). */
+function fechaPalabras(iso){
+  if (!iso) return '';
+  if (iso === hoy()) return 'hoy';
+  const t = `${+iso.slice(8,10)} ${MESES[+iso.slice(5,7) - 1]}`;
+  return iso.slice(0,4) === hoy().slice(0,4) ? t : t + ' ' + iso.slice(0,4);
+}
+/**
+ * Selecciona el lote del siguiente mensaje: las líneas más urgentes, máximo N líneas y M OC distintas.
+ * Devuelve las líneas agrupadas por OC (en orden de urgencia) y numeradas dentro de cada OC.
+ */
+function loteMensaje(rs){
+  const rg = R(), ord = rs.slice().sort(ordenUrgencia), lote = [], ocs = [];
+  for (const r of ord){
+    if (lote.length >= rg.max_lineas_mensaje) break;
+    if (!ocs.includes(r.oc)){ if (ocs.length >= rg.max_oc_mensaje) continue; ocs.push(r.oc); }
+    lote.push(r);
+  }
+  return ocs.flatMap(oc => lote.filter(r => r.oc === oc));
+}
+/** Numeración dentro de cada OC para una lista ya agrupada: [{r, oc, n}]. */
+function numerarPorOC(rs){
+  const cont = {};
+  return rs.map(r => { cont[r.oc] = (cont[r.oc] || 0) + 1; return { r, oc:r.oc, n:cont[r.oc] }; });
+}
+function detalleMensaje(rs){
+  const out = []; let ocAct = null;
+  for (const { r, oc, n } of numerarPorOC(rs)){
+    if (oc !== ocAct){ if (ocAct) out.push(''); out.push(`OC ${numOC(oc)}`); ocAct = oc; }
+    const desc = recortar(r.descripcion, 30) + (r.item ? ` (${r.item})` : '');
+    out.push(`• Ítem ${n} · ${desc} · ${fmtN(r.cantidad_pendiente)} ${String(r.unidad || '').toLowerCase()} · Requerida ${fechaPalabras(reqEf(r))} · ` +
+      (r.fecha_prometida ? `Confirmada: ${fechaPalabras(r.fecha_prometida)}` : 'Sin confirmar'));
+  }
+  return out.join('\n');
+}
+/** Ejemplos de respuesta con números reales del mensaje, para que el proveedor responda sin plantillas rígidas. */
+function ejemplosRespuesta(rs){
+  const ocs = [...new Set(rs.map(r => r.oc))].map(numOC);
+  const f = addDias(hoy(), 7);
+  const ej = [rs.some(r => r.fecha_prometida) ? '"Todo igual"' : `"Todo llega el ${+f.slice(8,10)} de ${MESES_LARGO[+f.slice(5,7) - 1]}"`];
+  ej.push(`"La ${ocs[0]} llega el ${+f.slice(8,10)} de ${MESES_LARGO[+f.slice(5,7) - 1]}"`);
+  const conVarios = numerarPorOC(rs).find(x => x.n === 2);
+  if (conVarios) ej.push(ocs.length > 1 ? `"El ítem 2 de la ${numOC(conVarios.oc)} llega el ${+addDias(hoy(), 3).slice(8,10)}"` : `"El ítem 2 llega el ${+addDias(hoy(), 3).slice(8,10)}"`);
+  ej.push(`"La ${ocs[ocs.length - 1]} ya la entregamos"`);
+  return ej.join(' · ');
+}
+function construirMensaje(prov, rs, plantilla, comprador){
+  const p = provCfg(prov) || {}, trato = p.trato === 'tu' ? 'tu' : 'usted';
+  const pl = (S.config.plantillas && S.config.plantillas[plantilla]) || PLANTILLAS_DEF[plantilla];
+  let t = pl[trato] || PLANTILLAS_DEF[plantilla][trato];
+  const vals = { contacto: p.contacto || '', proveedor: (p.proveedor || prov), comprador: comprador || S.comprador || provComprador(prov) || 'Compras',
+    detalle: detalleMensaje(rs), n_lineas: String(rs.length), n_oc: String(new Set(rs.map(r => r.oc)).size), ejemplos: ejemplosRespuesta(rs),
+    formato: ejemplosRespuesta(rs) };
+  t = t.replace(/\{(\w+)\}/g, (m, k) => (k in vals ? vals[k] : m));
+  if (!t.includes(AVISO_PLATAFORMA)) t += '\n\n' + AVISO_PLATAFORMA;
+  return t.replace(/[ \t]+,/g, ',').replace(/[ \t]+\n/g, '\n');
+}
+/** Arma la gestión del día por proveedor. */
+function gestionHoy(verTodos, mostrarSinGestion){
+  const porProv = {};
+  for (const r of Object.values(S.seg)){
+    if (!provActivo(r.proveedor)) continue;
+    const k = normH(r.proveedor);
+    const g = porProv[k] || (porProv[k] = { proveedor: provCfg(r.proveedor).proveedor, nombreExp: r.proveedor, hoy: [], motivos: {}, activas: 0 });
+    if (ACTIVOS.has(r.estado) && !excluida(r)) g.activas++;
+    const ev = evaluarLinea(r);
+    if (ev.preguntar){ g.hoy.push(r); g.motivos[r.clave] = ev.motivo; }
+  }
+  const me = norm(S.comprador);
+  const lista = [];
+  for (const g of Object.values(porProv)){
+    g.hoy.sort(ordenUrgencia);
+    g.envio = loteMensaje(g.hoy);
+    g.resto = g.hoy.length - g.envio.length;
+    g.comprador = provComprador(g.nombreExp);
+    g.pregunta = ultimaPregunta(g.nombreExp);
+    g.respuesta = g.pregunta ? ultimaRespuestaDesde(g.nombreExp, g.pregunta.fecha_hora) : null;
+    g.esperando = !!g.pregunta && !g.respuesta;
+    if (!verTodos && me && norm(g.comprador) !== me) continue;
+    if (!g.hoy.length && !g.esperando && !(mostrarSinGestion && g.activas) && !(depuracionPendiente(g.nombreExp) && g.activas)) continue;
+    lista.push(g);
+  }
+  lista.sort((a, b) => {
+    if (!!a.hoy.length !== !!b.hoy.length) return a.hoy.length ? -1 : 1;
+    if (a.hoy.length) return ordenUrgencia(a.hoy[0], b.hoy[0]);
+    return provAlias(a.proveedor).localeCompare(provAlias(b.proveedor));
+  });
+  return lista;
+}
+
+/* =========================================================================
+   Intérprete de respuestas en lenguaje natural (reglas, sin IA)
+   ========================================================================= */
+/** Fecha numérica d/m, dd-mm o dd/mm/aaaa → AAAA-MM-DD (sin año: la más cercana a hoy). */
+function fechaRespuesta(s){
+  const m = /^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/.exec(s);
+  if (!m) return '';
+  return fechaDiaMes(+m[1], +m[2], m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : null);
+}
+/** Día + mes (+ año opcional) → AAAA-MM-DD. Sin año: el año que deja la fecha más cerca de hoy. */
+function fechaDiaMes(d, mo, y){
+  if (y) return fechaValida(y, mo, d) ? `${y}-${pad(mo)}-${pad(d)}` : '';
+  const h = hoy(), y0 = +h.slice(0,4);
+  let mejor = '';
+  for (const yy of [y0 - 1, y0, y0 + 1]){
+    if (!fechaValida(yy, mo, d)) continue;
+    const f = `${yy}-${pad(mo)}-${pad(d)}`;
+    if (!mejor || Math.abs(diasEntre(h, f)) < Math.abs(diasEntre(h, mejor))) mejor = f;
+  }
+  return mejor;
+}
+/** Solo día ("el 25"): mes actual, o el siguiente si ese día ya pasó. */
+function fechaSoloDia(d){
+  const h = hoy(); let y = +h.slice(0,4), mo = +h.slice(5,7);
+  if (d < +h.slice(8,10)){ mo++; if (mo > 12){ mo = 1; y++; } }
+  return fechaValida(y, mo, d) ? `${y}-${pad(mo)}-${pad(d)}` : '';
+}
+const MES_NUM = { ENE:1, ENERO:1, FEB:2, FEBRERO:2, MAR:3, MARZO:3, ABR:4, ABRIL:4, MAY:5, MAYO:5, JUN:6, JUNIO:6, JUL:7, JULIO:7,
+  AGO:8, AGOSTO:8, SEP:9, SEPT:9, SEPTIEMBRE:9, SETIEMBRE:9, OCT:10, OCTUBRE:10, NOV:11, NOVIEMBRE:11, DIC:12, DICIEMBRE:12 };
+const RX_MES = 'ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE|ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEPT|SEP|OCT|NOV|DIC';
+const DIAS_SEM = { DOMINGO:0, LUNES:1, MARTES:2, MIERCOLES:3, JUEVES:4, VIERNES:5, SABADO:6 };
+function proximoDiaSemana(n){ const h = hoy(); const dw = new Date(isoUTC(h)).getUTCDay(); let d = (n - dw + 7) % 7; if (d === 0) d = 7; return addDias(h, d); }
+
+const RX_VAGA = /\b(PROXIMA SEMANA|LA OTRA SEMANA|SEMANA ENTRANTE|SIGUIENTE SEMANA|ESTA SEMANA|EN \d+ (DIAS|SEMANAS)|EN UNOS DIAS|APENAS|CUANDO (SALGA|ESTE|TENGAMOS|LLEGUE)|PRONTO|FIN(ALES)? DE( MES)?|PRINCIPIOS DE|MEDIADOS DE|LO ANTES POSIBLE|NO SABEMOS|NO TENEMOS FECHA|SIN FECHA|POR CONFIRMAR|POR DEFINIR|ESTAMOS REVISANDO|MAS TARDE|(LUEGO|DESPUES) (LE|TE|LES) CONFIRM\w*)\b/;
+const RX_SI_FUERTE = /\b(SIN NOVEDAD(ES)?|NO HAY NOVEDAD(ES)?|NINGUNA NOVEDAD|NO HAY CAMBIOS?|SIN CAMBIOS?|TODO IGUAL|TODO BIEN|SE MANTIENEN?)\b/;
+const RX_ENT = /\b(ENTREGAD[OA]S?|SE ENTREGO|SE ENTREGARON|YA (LA |LO |LAS |LOS |SE )?(ENTREGAMOS|ENTREGARON|LLEGO|LLEGARON|RECIBIERON)|LLEGO|LLEGARON|RECIBID[OA]S?|YA ESTA(N)? EN (PLANTA|BUSSCAR))\b/;
+const RX_ENT_PRESENTE = /\b(ENTREGAMOS|ENTREGAN)\b/;
+const RX_DESP = /\b(DESPACHAD[OA]S?|DESPACHAMOS|YA (SALIO|SALIERON|DESPACHAMOS)|EN CAMINO|EN TRANSITO|VA EN CAMINO|VAN EN CAMINO)\b/;
+const RX_SI = /\b(TODO IGUAL|TODO BIEN|TODAS? IGUAL(ES)?|IGUAL(ES)?|OK|OKAY|OKEY|SE MANTIENEN?|SE MANTIENE IGUAL|MANTENEMOS|SI|SII|CONFIRMAD[OA]S?|CONFIRMO|CONFIRMAMOS|SIN CAMBIOS?|CORRECTO|DE ACUERDO|LISTO)\b/;
+const RX_NO = /\b(NO SE MANTIENE|NO)\b/;
+const RX_TODO = /\b(TODO|TODOS|TODAS|TODA|LO DEMAS|LAS DEMAS|LOS DEMAS|EL RESTO|LO RESTANTE)\b/;
+const RX_PARCIAL = /\b(PARCIAL|PARCIALES|PARCIALMENTE|UNA PARTE|FALTA(N)? \d+)\b/;
+
+/** Extrae fechas de una cláusula (texto normalizado). Devuelve { fechas:[{f, txt}], resto, invalidas:[txt] }. */
+function extraerFechas(t){
+  const fechas = [], invalidas = [];
+  const tomar = (rx, fn) => { t = t.replace(rx, (...m) => { const f = fn(m); if (f) fechas.push({ f, txt:m[0].trim() }); else invalidas.push(m[0].trim()); return ' '; }); };
+  tomar(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/g, m => fechaDiaMes(+m[1], +m[2], m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : null));
+  tomar(new RegExp(`\\b(\\d{1,2})\\s*(?:DE\\s+)?(${RX_MES})\\b\\.?(?:\\s*(?:DE|DEL)?\\s*(\\d{4}))?`, 'g'), m => fechaDiaMes(+m[1], MES_NUM[m[2]], m[3] ? +m[3] : null));
+  tomar(new RegExp(`\\b(${RX_MES})\\s+(\\d{1,2})\\b`, 'g'), m => fechaDiaMes(+m[2], MES_NUM[m[1]], null));
+  tomar(/\bPASADO MANANA\b/g, () => addDias(hoy(), 2));
+  tomar(/\bMANANA\b/g, () => addDias(hoy(), 1));
+  tomar(/\bHOY\b/g, () => hoy());
+  tomar(/\b(?:EL\s+)?(LUNES|MARTES|MIERCOLES|JUEVES|VIERNES|SABADO)\b/g, m => proximoDiaSemana(DIAS_SEM[m[1]]));
+  // "el 25" como fecha solo si va después de un verbo de entrega o de "para/hasta/el día"
+  tomar(/\b(?:(?:LLEGA\w*|ENTREGA\w*|DESPACH\w*|SALE\w*|SALDRIA\w*|ESTARIA\w*|ESTA\w*|QUEDA\w*|PARA|HASTA|ANTES DEL?|DESDE)\s+(?:EL\s+)?(?:DIA\s+)?|EL DIA\s+)(\d{1,2})\b(?!\s*(?:UND|UNIDADES|UN\b|KG|M\b|METROS|PZ|PIEZAS))/g, m => fechaSoloDia(+m[1]));
+  return { fechas, resto:t, invalidas };
+}
+/**
+ * Interpreta la respuesta de UN proveedor.
+ * ctx = { proveedor, alcance:[{r, oc, n}] (líneas de los mensajes vigentes con su numeración por OC),
+ *         lineasProv:[r] (líneas abiertas del proveedor), ocAjenas:{numOC: proveedor}, itemsAjenos:Set }
+ * Devuelve { filas:[{clave, r, accion, fecha, error, revisar, nota, origen}], bloqueos:[texto], ignorado:[texto], sinRespuesta:[r] }.
+ * Precedencia: ítem > OC > "todo"; a igual nivel gana la última mención.
+ */
+function interpretarNatural(texto, ctx){
+  const bloqueos = [], ignorado = [], errGlobal = [];
+  const alcance = ctx.alcance, lineasProv = ctx.lineasProv;
+  const ocsProv = {}; lineasProv.forEach(r => { (ocsProv[numOC(r.oc)] || (ocsProv[numOC(r.oc)] = [])).push(r); });
+  alcance.forEach(({ r }) => { (ocsProv[numOC(r.oc)] || (ocsProv[numOC(r.oc)] = [])).includes(r) || ocsProv[numOC(r.oc)].push(r); });
+  const itemsProv = {}; [...lineasProv, ...alcance.map(x => x.r)].forEach(r => { const k = normItem(r.item); (itemsProv[k] || (itemsProv[k] = new Set())).add(r); });
+  const ocsAlcance = [...new Set(alcance.map(x => numOC(x.oc)))];
+  // 1. Cláusulas: renglones y oraciones; "excepto / menos / salvo / pero" abren una cláusula nueva.
+  const crudo = String(texto || '').replace(/\r/g, '');
+  const clausulas = [];
+  for (const linea of crudo.split('\n')){
+    for (const parte of linea.split(/(?<=[.;!?])\s+|(?<=[;!?])/)){
+      const n = norm(parte).replace(/[¿¡"“”]/g, ' ');
+      if (!n.trim()) continue;
+      n.split(/\b(?=EXCEPTO\b|MENOS\b|SALVO\b|PERO\b)/).forEach(x => x.trim() && clausulas.push({ txt:parte.trim(), n:x.replace(/\b(EXCEPTO|MENOS|SALVO|PERO)\b/, ' ') }));
+    }
+  }
+  // 2. Análisis de cada segmento. Una cláusula se parte en "," / " y " cuando cada parte trae su propia referencia
+  //    y su propia acción ("la 51420 llega el 25 y la 51425 ya la entregamos").
+  const analizar = c => {
+    let t = ' ' + c.n.replace(/(\d)[.,](\d{3})\b/g, '$1$2') + ' ';
+    t = t.replace(/\b\d{1,2}:\d{2}\s*(A\.? ?M\.?|P\.? ?M\.?)?/g, ' ');                       // horas
+    const vaga = RX_VAGA.test(t);
+    const fx = extraerFechas(t); t = fx.resto;
+    const a = { txt:c.txt, vaga, fechas:fx.fechas, invalidas:fx.invalidas, refsOC:[], refsItem:[], refsNumItem:[], todo:RX_TODO.test(t), parcial:RX_PARCIAL.test(t) };
+    // Referencias a OC explícitas
+    t = t.replace(/\b(?:OC|O C|ORDEN(?: DE COMPRA)?|ORDENES|PEDIDO)\s*[-#:.°º]*\s*(?:N[O°º]?\.?\s*)?((?:0*\d{3,8}(?:\s*(?:,|Y|E|\/)\s*)?)+)/g, (m, nums) => {
+      nums.match(/\d+/g).forEach(x => a.refsOC.push({ num:x.replace(/^0+/, ''), explicita:true })); return ' ';
+    });
+    // Ítems por posición: "ítem 2", "ítems 1 y 3", "el ítem 18"
+    t = t.replace(/\b(?:ITEMS?|ITEN|LINEAS?|POSICION(?:ES)?)\s*[#:.°º]*\s*(?:N[O°º]?\.?\s*)?((?:\d{1,8}\b(?:\s*(?:,|Y|E)\s*)?)+)/g, (m, nums) => {
+      nums.match(/\d+/g).forEach(x => { if (x.length >= 4) a.refsItem.push(normItem(x)); else a.refsNumItem.push(+x); }); return ' ';
+    });
+    // Códigos de ítem explícitos: "código 0054740", "ref 54740"
+    t = t.replace(/\b(?:CODIGO|COD|REF|REFERENCIA)\s*[#:.]*\s*(\d{4,8})\b/g, (m, x) => { a.refsItem.push(normItem(x)); return ' '; });
+    // Cantidades ("200 unidades") se ignoran
+    t = t.replace(/\b\d+\s*(UND|UNDS|UNIDADES|UNIDAD|UN|KG|KILOS|M|MTS|METROS|PZ|PZS|PIEZAS|LAMINAS|JUEGOS)\b/g, ' ');
+    // Números sueltos de 4+ dígitos: OC del proveedor, ítem del proveedor, o ajenos (candado)
+    t = t.replace(/\b0*(\d{4,8})\b/g, (m, x) => {
+      if (/^(19|20)\d\d$/.test(x) && !ocsProv[x] && !itemsProv[x]) return ' ';
+      if (ocsProv[x]) a.refsOC.push({ num:x });
+      else if (itemsProv[x]) a.refsItem.push(x);
+      else if (ctx.ocAjenas[x]) a.refsOC.push({ num:x, ajena:ctx.ocAjenas[x] });
+      else if (ctx.itemsAjenos.has(x)) a.refsItem.push(x);
+      else a.desconocidos = (a.desconocidos || []).concat(x);
+      return ' ';
+    });
+    // "el 18" sin verbo de entrega antes → ítem por posición
+    t = t.replace(/\b(?:EL|LA)\s+(\d{1,2})\b/g, (m, x) => { a.refsNumItem.push(+x); return ' '; });
+    // Acción
+    const ya = /\bYA\b/.test(t);
+    if (RX_DESP.test(t) && (!a.fechas.length || ya)) a.accion = 'DESP';
+    else if (RX_ENT.test(t) && (!a.fechas.length || ya)) a.accion = 'ENT';
+    else if (a.fechas.length) a.accion = 'FECHA';
+    else if (a.vaga) a.accion = 'VAGA';
+    else if (RX_ENT_PRESENTE.test(t) && ya) a.accion = 'ENT';
+    else if (RX_SI_FUERTE.test(t)) a.accion = 'SI';
+    else if (RX_NO.test(t) && !RX_SI.test(t)) a.accion = 'NO';
+    else if (RX_SI.test(t)) a.accion = 'SI';
+    a.tieneRefs = a.refsOC.length + a.refsItem.length + a.refsNumItem.length > 0;
+    a.resto = t.replace(/\b(BUENOS? (DIAS|TARDES|NOCHES)|BUEN DIA|HOLA|GRACIAS|MUCHAS|SALUDOS|CORDIAL|ATENTAMENTE|DON|DONA|SENOR\w*|QUE|LA|EL|LAS|LOS|DE|DEL|Y|E|A|EN|SE|LO|LE|LES|PARA|POR|CON|YA|ESTA|ESTAN|LLEGA|LLEGAN|ES|SON|NOS|LA OC)\b/g, ' ').replace(/[^A-Z0-9]+/g, ' ').trim();
+    return a;
+  };
+  const analizadas = [];
+  for (const c of clausulas){
+    const piezas = c.n.split(/\s*,\s*|\s+\bY\b\s+/).filter(x => x.trim());
+    let cur = null;
+    for (const p of piezas){
+      const ap = analizar({ txt:p, n:p });
+      if (cur && ap.tieneRefs && cur.a.tieneRefs && cur.a.accion){ analizadas.push(cur.a); cur = null; }
+      if (!cur) cur = { n:p, a:ap };
+      else { cur.n += ' Y ' + p; cur.a = analizar({ txt:cur.n, n:cur.n }); }
+    }
+    if (cur) analizadas.push(cur.a);
+    // texto original para mostrar
+    analizadas.slice(-1)[0] && analizadas.filter(a => !a.txtOrig).forEach(a => a.txtOrig = c.txt);
+  }
+  // 3. Cláusula con referencias pero sin acción + siguiente con acción y sin referencias → se unen
+  for (let i = 0; i < analizadas.length - 1; i++){
+    const a = analizadas[i], b = analizadas[i + 1];
+    if (a.tieneRefs && !a.accion && b.accion && !b.tieneRefs && !b.todo){ Object.assign(a, { accion:b.accion, fechas:b.fechas, vaga:b.vaga }); b.usada = true; }
+  }
+  // 4. Resolver referencias → líneas, con nivel de precedencia
+  const asign = {};   // clave -> {nivel, orden, accion, fecha, nota, origen, error, revisar}
+  const poner = (r, nivel, orden, val) => {
+    const e = asign[r.clave];
+    if (!e || nivel > e.nivel || (nivel === e.nivel && orden >= e.orden)) asign[r.clave] = { r, nivel, orden, ...val };
+  };
+  analizadas.forEach((a, orden) => {
+    if (a.usada) return;
+    a.refsOC.filter(x => x.ajena).forEach(x => bloqueos.push(`La OC ${x.num} es de ${x.ajena}, no de este proveedor. Posible cruce de mensajes: verifique antes de continuar.`));
+    if (a.invalidas.length) a.invalidas.forEach(x => errGlobal.push(`Fecha no válida: «${x}»`));
+    if (!a.accion && !a.tieneRefs){ if (a.resto) ignorado.push(a.txt); return; }
+    let val;
+    if (a.accion === 'FECHA'){
+      if (a.fechas.length > 1 && new Set(a.fechas.map(x => x.f)).size > 1) val = { accion:'FECHA', fecha:'', error:'varias fechas en la misma frase: ' + a.fechas.map(x => x.txt).join(', ') };
+      else val = { accion:'FECHA', fecha:a.fechas[0].f, nota:'«' + a.fechas[0].txt.toLowerCase() + '»' };
+    } else if (a.accion === 'VAGA') val = { accion:'FECHA', fecha:'', revisar:true, nota:'fecha vaga: elija la fecha' };
+    else if (a.accion === 'ENT') val = { accion:'ENT', fecha:'' };
+    else if (a.accion === 'DESP') val = { accion:'ENT', fecha:'', nota:'despachada (confirmar recibo)' };
+    else if (a.accion === 'SI') val = { accion:'SI', fecha:'' };
+    else if (a.accion === 'NO') val = { accion:'FECHA', fecha:'', error:'dice que no se mantiene, pero no da nueva fecha' };
+    else val = { accion:'NINGUNA', fecha:'', error:'no se reconoce qué pasa con esta referencia' };
+    if (a.parcial) val = { ...val, revisar:true, nota:((val.nota || '') + ' · menciona entrega parcial').trim() };
+    val.origen = a.txtOrig || a.txt;
+    if (!a.tieneRefs){ alcance.forEach(({ r }) => poner(r, 0, orden, val)); return; }
+    // OC
+    const ocsClausula = [];
+    for (const x of a.refsOC){
+      if (x.ajena) continue;
+      const rs = (ocsProv[x.num] || []).filter(r => !CERRADOS.has(r.estado));
+      if (!rs.length){ errGlobal.push(`La OC ${x.num} no tiene líneas abiertas de este proveedor.`); continue; }
+      ocsClausula.push(x.num);
+      if (!a.refsNumItem.length && !a.refsItem.length){
+        const enAlcance = rs.filter(r => alcance.some(y => y.r === r));
+        (enAlcance.length ? enAlcance : rs.filter(r => !r.sinNecesidad)).forEach(r => poner(r, 1, orden, { ...val, nota:[val.nota, enAlcance.length ? '' : 'OC no estaba en el mensaje'].filter(Boolean).join(' · ') }));
+      }
+    }
+    // Ítem por código
+    for (const code of a.refsItem){
+      const rs = [...(itemsProv[code] || [])].filter(r => !CERRADOS.has(r.estado) && (!ocsClausula.length || ocsClausula.includes(numOC(r.oc))));
+      if (!rs.length){ bloqueos.push(`El ítem ${code} no corresponde a líneas abiertas de este proveedor. Posible cruce de mensajes.`); continue; }
+      rs.forEach(r => poner(r, 2, orden, val));
+    }
+    // Ítem por posición en el mensaje
+    for (const n of a.refsNumItem){
+      const cands = alcance.filter(x => x.n === n && (!ocsClausula.length || ocsClausula.includes(numOC(x.oc))));
+      if (cands.length === 1) poner(cands[0].r, 2, orden, val);
+      else if (!cands.length) errGlobal.push(`«${a.txt}»: el ítem ${n} no existe en ${ocsClausula.length ? 'la OC ' + ocsClausula.join(', ') : 'el mensaje'}.`);
+      else cands.forEach(x => poner(x.r, 2, orden, { ...val, revisar:true, nota:`ambiguo: hay ítem ${n} en ${cands.map(c => numOC(c.oc)).join(' y ')}; deje solo el correcto` }));
+    }
+    if (a.desconocidos) a.desconocidos.forEach(x => errGlobal.push(`El número ${x} no es una OC ni un ítem de este proveedor.`));
+  });
+  const filas = Object.values(asign).map(e => ({ clave:e.r.clave, r:e.r, ...ajustarAccion(e.r, e) }));
+  const sinRespuesta = alcance.map(x => x.r).filter(r => !asign[r.clave]);
+  return { filas, bloqueos, errores:errGlobal, ignorado, sinRespuesta };
+}
+/** Mensajes vigentes de un proveedor: los enviados después de su última respuesta (o el último enviado). */
+function mensajesVigentes(prov){
+  const k = normH(prov);
+  const preg = S.eventos.filter(e => e.tipo === 'PREGUNTA' && normH(e.proveedor) === k).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
+  if (!preg.length) return [];
+  const ultResp = respuestasProv(prov).reduce((m, e) => maxStr(m, e.fecha_hora), '');
+  const v = preg.filter(e => e.fecha_hora > ultResp);
+  return v.length ? v : [preg[preg.length - 1]];
+}
+/** Contexto para interpretar la respuesta de un proveedor (alcance numerado + candados contra cruces). */
+function ctxProveedor(prov){
+  const k = normH(prov), porOC = {};
+  for (const ev of mensajesVigentes(prov)) for (const x of numerarPorOC(lineasDeMensaje(ev))) {
+    if (!porOC[x.oc] || porOC[x.oc].ev !== ev) porOC[x.oc] = { ev, items:[] };
+    porOC[x.oc].items.push(x);
+  }
+  const alcance = Object.values(porOC).flatMap(o => o.items);
+  const todas = Object.values(S.seg);
+  const lineasProv = todas.filter(r => normH(r.proveedor) === k && !CERRADOS.has(r.estado));
+  const itemsProv = new Set(todas.filter(r => normH(r.proveedor) === k).map(r => normItem(r.item)));
+  const ocAjenas = {}, itemsAjenos = new Set();
+  for (const r of todas){
+    if (normH(r.proveedor) === k) continue;
+    ocAjenas[numOC(r.oc)] = r.proveedor;
+    if (!itemsProv.has(normItem(r.item))) itemsAjenos.add(normItem(r.item));
+  }
+  for (const n of Object.keys(ocAjenas)) if (todas.some(r => normH(r.proveedor) === k && numOC(r.oc) === n)) delete ocAjenas[n];
+  return { proveedor:prov, alcance, lineasProv, ocAjenas, itemsAjenos };
+}
+/** Ajusta la acción interpretada al estado de la línea (SI sin fecha, fecha igual a la prometida, línea cerrada). */
+function ajustarAccion(r, e){
+  const o = { accion:e.accion, fecha:e.fecha || '', error:e.error || '', revisar:!!e.revisar, nota:e.nota || '', origen:e.origen || '' };
+  if (o.error) return o;
+  if (CERRADOS.has(r.estado)) return { ...o, accion:'NINGUNA', nota:'línea ya cerrada; no se modifica' };
+  if (o.accion === 'SI' && !r.fecha_prometida)
+    return { ...o, accion:'FECHA', fecha:reqEf(r), revisar:true, nota:'dice que se mantiene, pero no tenía fecha confirmada: se propone la requerida' };
+  if (o.accion === 'FECHA' && o.fecha && r.fecha_prometida){
+    if (o.fecha === r.fecha_prometida) return { ...o, accion:'SI' };
+    return { ...o, accion:'NO' };
+  }
+  return o;
+}
+/** Validación de una fila editada a mano en la vista previa. */
+function validarAccion(r, accion, fecha){
+  if (accion === 'NINGUNA') return { accion, fecha:'', error:'' };
+  if (!r) return { accion, fecha, error:'línea no encontrada' };
+  if (CERRADOS.has(r.estado)) return { accion:'NINGUNA', fecha:'', error:'', nota:'línea ya cerrada; no se modifica' };
+  if (accion === 'ENT' || accion === 'CANCELAR') return { accion, fecha:'', error:'' };
+  if (accion === 'SI') return r.fecha_prometida ? { accion, fecha:r.fecha_prometida, error:'' } : { accion, fecha:'', error:'no tiene fecha confirmada: indique la fecha' };
+  if (!fecha) return { accion, fecha:'', error:'falta la fecha' };
+  if (!r.fecha_prometida) return { accion:'FECHA', fecha, error:'' };
+  return fecha === r.fecha_prometida ? { accion:'SI', fecha, error:'' } : { accion:'NO', fecha, error:'' };
+}
+const ACC_ETQ = { NINGUNA:'Sin cambio', SI:'Se mantiene', NO:'Nueva fecha (cambio)', FECHA:'Fecha (primera)', ENT:'Entregado / despachado', CANCELAR:'Cancelar en Siesa' };
+function resultadoAccion(r, a){
+  if (a.accion === 'SI') return { estado:'CONFIRMADA', fecha:r.fecha_prometida };
+  if (a.accion === 'FECHA') return { estado:'CONFIRMADA', fecha:a.fecha };
+  if (a.accion === 'NO') return { estado:'CAMBIADA', fecha:a.fecha };
+  if (a.accion === 'ENT') return { estado:'ENTREGADO_POR_CONFIRMAR', fecha:r.fecha_prometida };
+  if (a.accion === 'CANCELAR') return { estado:'POR_CANCELAR', fecha:r.fecha_prometida };
+  return { estado:r.estado, fecha:r.fecha_prometida };
+}
+const CAMPOS_DESHACER = ['estado','fecha_prometida','fecha_prometida_anterior','contador_cambios','ultima_respuesta','fecha_entregado','nota'];
+/** Aplica una acción confirmada a la línea y registra el evento (con el estado anterior, para poder deshacer). */
+function aplicarAccion(r, a, prov, texto, lote){
+  if (a.accion === 'NINGUNA') return false;
+  const ant = r.estado, fAnt = r.fecha_prometida, ts = ahora();
+  const antes = {}; CAMPOS_DESHACER.forEach(c => antes[c] = r[c]);
+  if (a.accion === 'SI') r.estado = 'CONFIRMADA';
+  else if (a.accion === 'FECHA'){ r.fecha_prometida = a.fecha; r.estado = 'CONFIRMADA'; }
+  else if (a.accion === 'NO'){
+    r.fecha_prometida_anterior = fAnt; r.fecha_prometida = a.fecha;
+    r.contador_cambios = (+r.contador_cambios || 0) + 1; r.estado = 'CAMBIADA';
+  } else if (a.accion === 'ENT'){ r.estado = 'ENTREGADO_POR_CONFIRMAR'; r.fecha_entregado = ts; }
+  else if (a.accion === 'CANCELAR'){ r.estado = 'POR_CANCELAR'; }
+  if (a.nota && (/despach|parcial/.test(a.nota) || a.accion === 'CANCELAR' || /^Depuraci/.test(a.origen || ''))) r.nota = a.nota;
+  r.ultima_respuesta = ts; tocar(r);
+  registrarEvento({ tipo:'RESPUESTA', proveedor:prov, clave:r.clave, estado_anterior:ant, estado_nuevo:r.estado,
+    fecha_anterior:fAnt, fecha_nueva:r.fecha_prometida, plantilla:a.accion, texto:String(a.origen || texto || '').slice(0, 500),
+    lote: lote || '', antes: JSON.stringify(antes) });
+  return true;
+}
+
+/* =========================================================================
+   Envío y exportación
+   ========================================================================= */
+function registrarPregunta(prov, rs, plantilla, msg){
+  const ts = ahora();
+  for (const r of rs){
+    if (!r.primera_pregunta) r.primera_pregunta = ts;
+    r.ultima_pregunta = ts; r.preguntado_por = S.comprador;
+    if (r.estado === 'NUEVA') r.estado = 'ESPERANDO_FECHA';
+    tocar(r);
+  }
+  registrarEvento({ tipo:'PREGUNTA', proveedor:prov, lineas: rs.map(r => r.clave).join(' ; '), plantilla, texto: msg.slice(0, 2000) });
+  guardarLocal(); guardadoAutomatico();
+}
+const slug = s => norm(s).replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'SIN_NOMBRE';
+const sello = () => { const a = ahora(); return a.slice(0,10).replace(/-/g, '') + '_' + a.slice(11,13) + a.slice(14,16); };
+async function guardarLibro(wb, nombre, sub){
+  if (S.dirHandle){
+    try{
+      let d = S.dirHandle; if (sub) d = await d.getDirectoryHandle(sub, { create:true });
+      const fh = await d.getFileHandle(nombre, { create:true }); const w = await fh.createWritable();
+      await w.write(XLSX.write(wb, { bookType:'xlsx', type:'array' })); await w.close();
+      return 'carpeta';
+    }catch(e){ alert('No se pudo escribir en la carpeta (' + e.message + '). Se descargará el archivo.'); }
+  }
+  XLSX.writeFile(wb, nombre); return 'descarga';
+}
+function datosMiSeguimiento(){
+  const me = norm(S.comprador);
+  const lineas = Object.values(S.seg).filter(r => r.actualizado && (S.modificadas.has(r.clave) || norm(provComprador(r.proveedor)) === me || norm(r.actualizado_por) === me));
+  const eventos = S.eventos.filter(e => !e.comprador || norm(e.comprador) === me);
+  return { lineas, eventos };
+}
+/** Archivo del día del comprador (uno por comprador y por día; se sobrescribe durante el día). */
+const archivoDelDia = () => `seguimiento_${slug(S.comprador)}_${hoy().replace(/-/g, '')}.xlsx`;
+let TEMPO_GUARDADO = null, ESTADO_GUARDADO = '';
+/**
+ * Guardado automático: tras cada pregunta, respuesta, deshacer o depuración escribe respuestas/seguimiento_<comprador>_<aaaammdd>.xlsx.
+ * Requiere carpeta conectada y comprador elegido; no corre con fecha simulada (para no ensuciar la carpeta real).
+ */
+function guardadoAutomatico(){
+  if (!S.dirHandle || !S.comprador || fechaSimulada()) return;
+  clearTimeout(TEMPO_GUARDADO);
+  TEMPO_GUARDADO = setTimeout(async () => {
+    try{
+      const d = datosMiSeguimiento(), nombre = archivoDelDia();
+      let dir = await S.dirHandle.getDirectoryHandle('respuestas', { create:true });
+      const fh = await dir.getFileHandle(nombre, { create:true }), w = await fh.createWritable();
+      await w.write(XLSX.write(libroSeguimiento(d.lineas, d.eventos), { bookType:'xlsx', type:'array' })); await w.close();
+      S.modificadas.clear(); if (!S.archivosSeg.includes(nombre)) S.archivosSeg.push(nombre);
+      ESTADO_GUARDADO = 'Guardado automático ' + ahora().slice(11,16) + ' en respuestas/' + nombre;
+      guardarLocal(); renderCabecera();
+    }catch(e){ ESTADO_GUARDADO = 'No se pudo guardar automáticamente: ' + e.message + '. Use «Guardar ahora».'; renderCabecera(); }
+  }, 800);
+}
+async function exportarSeguimiento(){
+  if (!S.comprador){ alert('Elija primero su nombre de comprador (arriba a la derecha).'); return; }
+  if (fechaSimulada() && !confirm('Hay una FECHA SIMULADA activa. ¿Exportar de todas formas? (las marcas de tiempo serán de la fecha simulada)')) return;
+  const d = datosMiSeguimiento();
+  const nombre = S.dirHandle ? archivoDelDia() : `seguimiento_${slug(S.comprador)}_${sello()}.xlsx`;
+  const donde = await guardarLibro(libroSeguimiento(d.lineas, d.eventos), nombre, 'respuestas');
+  S.modificadas.clear(); if (!S.archivosSeg.includes(nombre)) S.archivosSeg.push(nombre);
+  guardarLocal(); lsSet(LS.ultExport, ahora());
+  S.avisos = [donde === 'carpeta' ? `Guardado en respuestas/${nombre} (${d.lineas.length} líneas, ${d.eventos.length} eventos).`
+    : `Descargado ${nombre}. Muévalo a la carpeta respuestas/ de OneDrive.`];
+  renderTodo();
+}
+
+/* =========================================================================
+   Pegado general de WhatsApp Web y candados contra cruces de proveedor
+   ========================================================================= */
+/** Lotes de respuesta que fueron deshechos. */
+function lotesDeshechos(){ return new Set(S.eventos.filter(e => e.tipo === 'DESHACER').map(e => e.lote)); }
+/** Respuestas vigentes (no deshechas) de un proveedor. */
+function respuestasProv(prov){ const k = normH(prov), d = lotesDeshechos(); return S.eventos.filter(e => e.tipo === 'RESPUESTA' && normH(e.proveedor) === k && !(e.lote && d.has(e.lote))); }
+
+/**
+ * Separa el texto copiado de WhatsApp Web en mensajes.
+ * Encabezado esperado: "[10:15 a. m., 5/11/2026] PRAMEC - Carlos: texto" (también "[5/11/2026, 10:15]" y 24 h).
+ * Las líneas sin encabezado continúan el mensaje anterior. Devuelve { mensajes:[{ts, remitente, texto}], sinEncabezado }.
+ */
+function separarWhatsApp(texto){
+  const mensajes = []; let sinEncabezado = '';
+  const dm = R().formato_fecha_whatsapp;
+  for (const linea of String(texto || '').replace(/\r/g, '').split('\n')){
+    const m = /^\s*\[([^\]]{6,40})\]\s*([^:]{1,80}?):\s?(.*)$/.exec(linea);
+    const ts = m ? fechaHoraWhatsApp(m[1], dm) : '';
+    if (m && ts) mensajes.push({ ts, remitente:m[2].trim(), texto:m[3] });
+    else if (mensajes.length) mensajes[mensajes.length - 1].texto += '\n' + linea;
+    else if (linea.trim()) sinEncabezado += linea + '\n';
+  }
+  return { mensajes, sinEncabezado:sinEncabezado.trim() };
+}
+/** "10:15 a. m., 5/11/2026" → "2026-11-05T10:15:00". */
+function fechaHoraWhatsApp(s, dm){
+  const f = /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/.exec(s), h = /(\d{1,2}):(\d{2})(?::\d{2})?\s*([ap])?\.?\s*m?\.?/i.exec(s.replace(/\d{1,2}\/\d{1,2}\/\d{2,4}/, ''));
+  if (!f || !h) return '';
+  let d = +f[1], mo = +f[2], y = +f[3]; if (y < 100) y += 2000;
+  if (dm === 'm/d'){ const t = d; d = mo; mo = t; }
+  if (!fechaValida(y, mo, d)) return '';
+  let hh = +h[1]; const ap = (h[3] || '').toLowerCase();
+  if (ap === 'p' && hh < 12) hh += 12; if (ap === 'a' && hh === 12) hh = 0;
+  return `${y}-${pad(mo)}-${pad(d)}T${pad(hh)}:${h[2]}:00`;
+}
+/** Identifica al remitente: cuenta propia de Busscar, proveedor (celular = prioridad 1, nombre_whatsapp = prioridad 2) o desconocido. */
+function identificarRemitente(rem){
+  const n = normH(rem);
+  if (R().nombre_cuenta_busscar.includes(n) || /^(TU|YO|USTED)$/.test(n)) return { tipo:'propio' };
+  const dig = String(rem).replace(/\D/g, '');
+  if (dig.length >= 10){
+    const p = (S.config.proveedores || []).find(p => { const c = celularWa(p.celular); return c && c.slice(-10) === dig.slice(-10); });
+    return p ? { tipo:'proveedor', p, por:'celular' } : { tipo:'desconocido' };
+  }
+  const p = (S.config.proveedores || []).find(p => String(p.nombre_whatsapp || '').split(';').map(normH).filter(Boolean).includes(n));
+  return p ? { tipo:'proveedor', p, por:'nombre' } : { tipo:'desconocido' };
+}
+/**
+ * Analiza un pegado completo: separa mensajes, identifica proveedores, descarta propios y anteriores a la última
+ * pregunta, e interpreta cada proveedor por separado. Devuelve { general:[bloqueos generales], paneles:[...] }.
+ */
+function analizarPegado(texto){
+  const sep = separarWhatsApp(texto), general = [];
+  if (!sep.mensajes.length){
+    general.push('No se encontró el encabezado de WhatsApp (fecha y nombre). Copie desde WhatsApp Web seleccionando los mensajes completos: pase el mouse sobre el mensaje → flecha ⌄ → «Seleccionar mensajes» → marque los mensajes → copiar (Ctrl+C). No copie solo el texto del globo.');
+    return { general, paneles:[] };
+  }
+  if (sep.sinEncabezado) general.push('Se ignoró texto antes del primer mensaje con encabezado: «' + recortar(sep.sinEncabezado, 80) + '».');
+  const grupos = {}, desconocidos = {};
+  let propios = 0;
+  for (const m of sep.mensajes){
+    const id = identificarRemitente(m.remitente);
+    if (id.tipo === 'propio'){ propios++; continue; }
+    if (id.tipo === 'desconocido'){ (desconocidos[m.remitente] || (desconocidos[m.remitente] = [])).push(m); continue; }
+    const k = normH(id.p.proveedor);
+    (grupos[k] || (grupos[k] = { p:id.p, por:id.por, remitentes:new Set(), mensajes:[] })).mensajes.push(m);
+    grupos[k].remitentes.add(m.remitente);
+  }
+  if (propios) general.push(`${propios} mensaje(s) propios de Busscar ignorados.`);
+  const paneles = Object.entries(desconocidos).map(([rem, ms]) => ({ bloqueado:true, titulo:rem,
+    bloqueos:[`Remitente «${rem}» no reconocido: no coincide con ningún celular ni nombre_whatsapp de config.xlsx. Guarde el contacto como «PROVEEDOR - Nombre» y pida al administrador registrarlo, o verifique que copió el chat correcto.`], mensajes:ms }));
+  for (const g of Object.values(grupos)){
+    const prov = g.p.proveedor;
+    const preg = ultimaPregunta(prov);
+    const desde = preg ? preg.fecha_hora.slice(0,16) : '';
+    const usados = g.mensajes.filter(m => !desde || m.ts.slice(0,16) >= desde), viejos = g.mensajes.length - usados.length;
+    const panel = { prov, p:g.p, por:g.por, remitentes:[...g.remitentes], usados, viejos, pregunta:preg, bloqueos:[], errores:[], filas:[], sinRespuesta:[] };
+    if (!preg) panel.errores.push('A este proveedor no se le ha enviado ningún mensaje desde la herramienta: solo se reconocen referencias explícitas a sus OC.');
+    if (!usados.length){ panel.bloqueado = true; panel.bloqueos.push(`Todos los mensajes (${viejos}) son anteriores a la última pregunta (${fmtFH(preg.fecha_hora)}). No hay respuesta nueva.`); paneles.push(panel); continue; }
+    const res = interpretarNatural(usados.map(m => m.texto).join('\n'), ctxProveedor(prov));
+    Object.assign(panel, { bloqueos:res.bloqueos, errores:[...panel.errores, ...res.errores], filas:res.filas, sinRespuesta:res.sinRespuesta, ignorado:res.ignorado });
+    panel.bloqueado = res.bloqueos.length > 0;
+    paneles.push(panel);
+  }
+  return { general, paneles };
+}
+/** Confirma la respuesta de un proveedor: aplica todas sus filas como un lote (deshacible). */
+function confirmarPanel(panel){
+  const lote = 'L' + nuevoId();
+  let n = 0;
+  for (const f of panel.filas){ if (S.seg[f.clave] && aplicarAccion(S.seg[f.clave], f, panel.prov, f.origen, lote)) n++; }
+  if (panel.tipo === 'depuracion') registrarEvento({ tipo:'DEPURACION', proveedor:panel.prov, lote, texto:`Depuración inicial: ${n} línea(s) actualizadas` });
+  guardarLocal(); guardadoAutomatico();
+  return n;
+}
+/** Último lote de respuestas de un proveedor que todavía se puede deshacer. */
+function ultimoLote(prov){
+  const evs = respuestasProv(prov).filter(e => e.lote);
+  if (!evs.length) return null;
+  const ult = evs.reduce((m, e) => e.fecha_hora > m.fecha_hora ? e : m);
+  return { lote:ult.lote, fecha:ult.fecha_hora, eventos:evs.filter(e => e.lote === ult.lote) };
+}
+/** Deshace el último lote: restaura el estado anterior de cada línea y lo deja en el historial. */
+function deshacerUltima(prov){
+  const l = ultimoLote(prov); if (!l) return 0;
+  for (const e of l.eventos){
+    const r = S.seg[e.clave]; if (!r) continue;
+    let antes = {}; try{ antes = JSON.parse(e.antes || '{}'); }catch(x){}
+    const est = r.estado;
+    CAMPOS_DESHACER.forEach(c => { if (c in antes) r[c] = antes[c]; });
+    tocar(r);
+    registrarEvento({ tipo:'DESHACER', proveedor:prov, clave:r.clave, lote:l.lote, estado_anterior:est, estado_nuevo:r.estado, fecha_nueva:r.fecha_prometida, texto:'Deshacer respuesta del ' + fmtFH(l.fecha) });
+  }
+  guardarLocal(); guardadoAutomatico();
+  return l.eventos.length;
+}
+
+/* =========================================================================
+   Depuración inicial (antes del primer envío a cada proveedor)
+   ========================================================================= */
+const COLS_DEP = ['proveedor','oc','item','descripcion','unidad','cantidad_pendiente','fecha_oc','fecha_requerida','solicitud','ACCION','NUEVA_FECHA','OBSERVACION','clave'];
+const ETQ_DEP = { proveedor:'Proveedor', oc:'OC', item:'Ítem', descripcion:'Descripción', unidad:'U.M.', cantidad_pendiente:'Cant. pendiente', fecha_oc:'Fecha OC',
+  fecha_requerida:'Fecha requerida', solicitud:'Nro solicitud', ACCION:'ACCION', NUEVA_FECHA:'NUEVA_FECHA', OBSERVACION:'OBSERVACION', clave:'clave (no modificar)' };
+const depuracionHecha = prov => S.eventos.some(e => e.tipo === 'DEPURACION' && normH(e.proveedor) === normH(prov));
+const depuracionPendiente = prov => !depuracionHecha(prov) && !ultimaPregunta(prov);
+function lineasDepuracion(prov){
+  return Object.values(S.seg).filter(r => normH(r.proveedor) === normH(prov) && !CERRADOS.has(r.estado) && (!S.ocs || S.ocs.lineas[r.clave]))
+    .sort((a, b) => (a.oc + a.item).localeCompare(b.oc + b.item));
+}
+/** Excel de depuración: todas las líneas abiertas del proveedor, con columnas para marcar ENTREGADO / NUEVA FECHA / CANCELAR. */
+function libroDepuracion(prov){
+  const rs = lineasDepuracion(prov);
+  const filas = rs.map(r => ({ ...r, proveedor:r.proveedor, fecha_requerida: r.sinNecesidad ? '' : reqEf(r), ACCION:'', NUEVA_FECHA:'', OBSERVACION: r.sinNecesidad ? 'Sin necesidad en planeación: ¿cancelar o aplazar?' : '' }));
+  const ws = XLSX.utils.aoa_to_sheet([COLS_DEP.map(c => ETQ_DEP[c]), ...filas.map(f => COLS_DEP.map(c => {
+    if (['fecha_oc','fecha_requerida'].includes(c)) return f[c] ? isoToSerial(f[c]) : (c === 'fecha_requerida' ? 'Sin necesidad' : '');
+    return f[c] == null ? '' : f[c];
+  }))]);
+  for (let i = 1; i <= filas.length; i++) for (const j of [6, 7]){ const cell = ws[XLSX.utils.encode_cell({ r:i, c:j })]; if (cell && cell.t === 'n') cell.z = 'dd/mm/yyyy'; }
+  ws['!cols'] = [{wch:30},{wch:13},{wch:10},{wch:40},{wch:6},{wch:10},{wch:11},{wch:13},{wch:16},{wch:14},{wch:13},{wch:36},{wch:28}];
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'depuracion');
+  const ins = XLSX.utils.aoa_to_sheet([['Depuración inicial · ' + prov], [''],
+    ['1. Llame al proveedor y revise cada línea.'],
+    ['2. En la columna ACCION escriba una de estas opciones (o deje vacío si no cambia):'],
+    ['   ENTREGADO    → el proveedor ya la entregó (queda "entregado por confirmar" hasta que Siesa la cierre)'],
+    ['   NUEVA FECHA  → escriba la fecha comprometida en NUEVA_FECHA (dd/mm/aaaa)'],
+    ['   CANCELAR     → la línea se debe cancelar en Siesa (no se le vuelve a preguntar al proveedor)'],
+    ['3. No modifique las columnas Proveedor, OC, Ítem ni clave.'],
+    ['4. Guarde el archivo y cárguelo en la herramienta con «Cargar Excel conciliado» en la tarjeta del proveedor.'],
+    [''], ['Generado: ' + fmtFH(ahora()) + ' · ' + rs.length + ' líneas abiertas']]);
+  ins['!cols'] = [{ wch:110 }];
+  XLSX.utils.book_append_sheet(wb, ins, 'instrucciones');
+  return wb;
+}
+async function descargarDepuracion(prov){
+  const nombre = `depuracion_${slug(provAlias(prov))}_${hoy().replace(/-/g, '')}.xlsx`;
+  const donde = await guardarLibro(libroDepuracion(prov), nombre, 'depuracion');
+  S.avisos = [donde === 'carpeta' ? `Guardado en depuracion/${nombre}. Ábralo, concílielo con el proveedor y cárguelo con «Cargar Excel conciliado».` : `Descargado ${nombre}. Concílielo con el proveedor y cárguelo con «Cargar Excel conciliado».`];
+  renderTodo();
+}
+/**
+ * Lee el Excel conciliado y arma un panel de confirmación (mismo flujo que una respuesta de WhatsApp).
+ * Candado: todas las filas deben ser de este proveedor y de líneas suyas.
+ */
+function analizarDepuracion(wb, prov){
+  const sn = wb.SheetNames.find(n => normH(n) === 'DEPURACION') || wb.SheetNames[0];
+  const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:'', raw:true, blankrows:false });
+  const H = (aoa[0] || []).map(normH), col = k => H.indexOf(normH(ETQ_DEP[k]));
+  const panel = { prov, p:provCfg(prov), tipo:'depuracion', remitentes:['Excel de depuración'], usados:[], viejos:0, bloqueos:[], errores:[], filas:[], sinRespuesta:[] };
+  if (col('clave') < 0 || col('ACCION') < 0){ panel.bloqueado = true; panel.bloqueos.push('El archivo no tiene las columnas «clave» y «ACCION» del Excel de depuración generado por la herramienta.'); return panel; }
+  const ajenos = new Set();
+  for (let i = 1; i < aoa.length; i++){
+    const row = aoa[i], clave = String(row[col('clave')] || '').trim(), pv = String(row[col('proveedor')] || '').trim();
+    if (!clave) continue;
+    const r = S.seg[clave];
+    if ((pv && normH(pv) !== normH(prov)) || (r && normH(r.proveedor) !== normH(prov))){ ajenos.add(pv || (r && r.proveedor) || clave); continue; }
+    if (!r){ panel.errores.push(`La línea ${clave} ya no existe en el seguimiento (¿se cerró en Siesa?).`); continue; }
+    const acc = normH(row[col('ACCION')]), f = parseFecha(row[col('NUEVA_FECHA')]), obs = String(row[col('OBSERVACION')] || '').trim().replace(/^Sin necesidad en planeación: ¿cancelar o aplazar\?$/, '');
+    if (!acc){ continue; }
+    let val;
+    if (/^ENT/.test(acc)) val = validarAccion(r, 'ENT', '');
+    else if (/CANCEL/.test(acc)) val = { accion:'CANCELAR', fecha:'', error:'' };
+    else if (/FECHA/.test(acc)) val = f ? validarAccion(r, 'FECHA', f) : { accion:'FECHA', fecha:'', error:'ACCION «NUEVA FECHA» sin fecha válida en NUEVA_FECHA' };
+    else if (/^(SI|MANTIENE|IGUAL)/.test(acc)) val = validarAccion(r, 'SI', '');
+    else val = { accion:'NINGUNA', fecha:'', error:`ACCION no reconocida: «${row[col('ACCION')]}» (use ENTREGADO, NUEVA FECHA o CANCELAR)` };
+    panel.filas.push({ clave, r, ...val, revisar:false, nota: obs, origen:'Depuración: ' + String(row[col('ACCION')]).trim() + (obs ? ' · ' + obs : '') });
+  }
+  if (ajenos.size){ panel.bloqueado = true; panel.bloqueos.push(`El archivo contiene líneas de otro proveedor (${[...ajenos].slice(0, 3).join(', ')}). Posible cruce de archivos: cargue el Excel de ${prov}.`); }
+  return panel;
+}
+async function cargarDepuracion(prov, file){
+  try{
+    const panel = analizarDepuracion(await leerLibro(file), prov);
+    UI.analisis = { general:[`Excel conciliado de ${provAlias(prov)}: ${file.name}`], paneles:[panel] }; UI.confirmados = {}; UI.pegado = '';
+  }catch(e){ alert('No se pudo leer el archivo: ' + e.message); }
+  renderTodo();
+  const el = document.querySelector('[data-panel]'); if (el) el.scrollIntoView({ block:'start' });
+}
+function marcarDepuracion(prov, texto){ registrarEvento({ tipo:'DEPURACION', proveedor:prov, texto }); guardarLocal(); guardadoAutomatico(); }
+
+/* =========================================================================
+   Vista "Gestión de hoy"
+   ========================================================================= */
+const UI = { verTodos:false, sinGestion:false, verMsg:{}, pegado:'', analisis:null, confirmados:{} };
+function vistaHoy(){
+  let h = '';
+  const viejos = archivosViejos();
+  h += `<div class="panel fila"><span>${estadoFuentes()}</span><span class="sp"></span><button class="b pri" id="btnNuevos">Cargar nuevos archivos</button></div>`;
+  if (viejos.length) h += `<div class="error">Archivos desactualizados (más de ${R().dias_alerta_archivos} días): ${esc(viejos.join(' y '))}. Cargue los cortes nuevos de Siesa antes de preguntar a proveedores.</div>`;
+  if (!S.ocs) return h + (S.avisos.length ? '' : '<div class="panel vacio">Cargue el listado de OC abiertas y la explosión para empezar.</div>');
+  const lista = gestionHoy(UI.verTodos, UI.sinGestion);
+  const nLin = lista.reduce((s, g) => s + g.hoy.length, 0), nProv = lista.filter(g => g.hoy.length).length, esperando = lista.filter(g => g.esperando).length;
+  const todas = Object.values(S.seg).filter(r => provActivo(r.proveedor));
+  const epc = todas.filter(r => r.estado === 'ENTREGADO_POR_CONFIRMAR'), alm = epc.filter(revisarAlmacen);
+  const llamar = todas.filter(r => semaforo(r) === 'rojo' && !r.fecha_prometida);
+  if (!S.comprador) h += '<div class="aviso">Elija su nombre de comprador (arriba a la derecha) para ver sus proveedores y registrar preguntas.</div>';
+  h += `<div class="kpis">
+    <div class="kpi"><div class="v">${nProv}</div><div class="l">proveedores a contactar hoy</div></div>
+    <div class="kpi"><div class="v">${nLin}</div><div class="l">líneas a preguntar</div></div>
+    <div class="kpi"><div class="v">${esperando}</div><div class="l">mensajes esperando respuesta</div></div>
+    <div class="kpi ${llamar.length ? 'rojo' : ''}"><div class="v">${llamar.length}</div><div class="l">requerida vencida sin fecha (llamar)</div></div>
+    <div class="kpi"><div class="v">${epc.length}</div><div class="l">entregados por confirmar</div></div>
+    <div class="kpi ${alm.length ? 'rojo' : ''}"><div class="v">${alm.length}</div><div class="l">revisar con almacén</div></div></div>`;
+  h += vistaPegado();
+  h += `<div class="panel fila">
+    <label class="chk"><input type="checkbox" id="chkTodos" ${UI.verTodos ? 'checked' : ''}> Ver proveedores de todos los compradores</label>
+    <label class="chk"><input type="checkbox" id="chkSinGestion" ${UI.sinGestion ? 'checked' : ''}> Mostrar también proveedores sin gestión hoy</label>
+    <span class="sp"></span><button class="b" id="btnExportar">${S.dirHandle ? 'Guardar ahora en respuestas/' : 'Exportar mi seguimiento'}</button></div>`;
+  if (!lista.length) h += '<div class="panel vacio">No hay proveedores para gestionar hoy con los filtros actuales.</div>';
+  for (const g of lista) h += tarjetaProveedor(g);
+  if (alm.length) h += `<div class="panel"><h2>Revisar con almacén</h2><p class="peq mut">El proveedor reportó ENTREGADO hace más de ${R().dias_revisar_almacen} días y la línea sigue abierta en Siesa.</p>
+    <table><tr><th>Proveedor</th><th>OC</th><th>Ítem</th><th>Descripción</th><th class="n">Pend.</th><th>Entregado (según proveedor)</th></tr>
+    ${alm.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(numOC(r.oc))}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td><td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtFH(r.fecha_entregado)}</td></tr>`).join('')}</table></div>`;
+  return h;
+}
+function vistaPegado(){
+  let h = `<div class="panel"><h2>Pegar respuestas de WhatsApp</h2>
+    <p class="peq mut">En WhatsApp Web: pase el mouse sobre un mensaje → flecha ⌄ → «Seleccionar mensajes» → marque los mensajes del proveedor → copiar (Ctrl+C) y pegue aquí. Puede pegar varios proveedores a la vez: cada uno se procesa por separado.</p>
+    <textarea id="txtPegado" rows="5" placeholder="[10:15 a. m., 5/11/2026] PRAMEC - Carlos: La 51420 llega el 25 de noviembre">${esc(UI.pegado)}</textarea>
+    <div class="fila" style="margin-top:6px"><button class="b pri" id="btnAnalizar">Analizar respuestas</button>${UI.analisis ? '<button class="b" id="btnLimpiar">Limpiar</button>' : ''}</div>`;
+  const a = UI.analisis;
+  if (a){
+    a.general.forEach(g => h += `<div class="${/No se encontró/.test(g) ? 'error' : 'aviso'}" style="margin-top:8px">${esc(g)}</div>`);
+    a.paneles.forEach((p, i) => h += panelRespuesta(p, i));
+  }
+  return h + '</div>';
+}
+function panelRespuesta(p, i){
+  if (UI.confirmados[i]) return `<div class="okbox" style="margin-top:10px">✓ Respuesta de <b>${esc(p.prov)}</b> guardada (${UI.confirmados[i]} línea(s)). Puede deshacerla desde la tarjeta del proveedor.</div>`;
+  if (!p.prov) return `<div class="bloqueo"><div class="prov-grande">⛔ ${esc(p.titulo)}</div>${p.bloqueos.map(b => `<p>${esc(b)}</p>`).join('')}</div>`;
+  let h = `<div class="${p.bloqueado ? 'bloqueo' : 'confirmar'}" data-panel="${i}"><div class="prov-grande">${p.bloqueado ? '⛔ ' : ''}${esc(p.prov)} <span class="peq">(${esc(provAlias(p.prov))})</span></div>
+    <p class="peq">${p.tipo === 'depuracion' ? 'Origen: <b>Excel de depuración conciliado</b>' : `Remitente: <b>${esc(p.remitentes.join(', '))}</b> (identificado por ${p.por === 'celular' ? 'celular' : 'nombre de WhatsApp'})`} · ${p.usados.length} mensaje(s) usados${p.viejos ? ` · ${p.viejos} anterior(es) a la última pregunta ignorado(s)` : ''}${p.pregunta ? ` · última pregunta: ${fmtFH(p.pregunta.fecha_hora)}` : ''}</p>`;
+  p.bloqueos.forEach(b => h += `<div class="error"><b>BLOQUEADO:</b> ${esc(b)}</div>`);
+  if (p.bloqueado) return h + '</div>';
+  p.errores.forEach(e => h += `<div class="error">${esc(e)}</div>`);
+  if (p.ignorado && p.ignorado.length) h += `<div class="aviso peq">Texto sin información de entregas: «${esc(p.ignorado.join(' / '))}»</div>`;
+  const rojas = p.filas.filter(f => f.error).length, amarillas = p.filas.filter(f => f.revisar && !f.error).length;
+  const cambios = p.filas.filter(f => f.accion !== 'NINGUNA' && !f.error);
+  h += `<p><b>Resumen:</b> ${cambios.length} línea(s) a actualizar` +
+    ['SI','FECHA','NO','ENT'].map(a => { const n = cambios.filter(f => f.accion === a).length; return n ? ` · ${n} ${ACC_ETQ[a].toLowerCase()}` : ''; }).join('') +
+    (rojas ? ` · <span class="rojo">${rojas} en rojo</span>` : '') + (amarillas ? ` · <span class="amar-tx">${amarillas} en amarillo</span>` : '') + (p.sinRespuesta.length ? ` · ${p.sinRespuesta.length} sin respuesta` : '') + '</p>';
+  h += `<table><tr><th>OC</th><th>Ítem</th><th>Descripción</th><th>Acción</th><th>Fecha</th><th>Estado</th><th>Fecha prometida</th><th class="n">vs requerida</th><th>Lo que dijo / observación</th><th></th></tr>`;
+  p.filas.forEach((f, j) => {
+    const r = f.r, res = f.error ? { estado:r.estado, fecha:r.fecha_prometida } : resultadoAccion(r, f), d = f.error ? null : desfase(r, res.fecha);
+    const usaFecha = f.accion === 'NO' || f.accion === 'FECHA';
+    h += `<tr class="${f.error ? 'err' : f.revisar ? 'amar' : ''}" data-fila="${j}"><td>${esc(numOC(r.oc))}</td><td>${esc(r.item)}</td><td>${esc(recortar(r.descripcion, 35))}</td>
+      <td><select data-acc="pv-acc">${Object.keys(ACC_ETQ).map(a => `<option value="${a}" ${a === f.accion ? 'selected' : ''}>${ACC_ETQ[a]}</option>`).join('')}</select></td>
+      <td><input type="date" data-acc="pv-fecha" value="${esc(usaFecha ? f.fecha : '')}" ${usaFecha ? '' : 'disabled'}></td>
+      <td>${chipEstado(r.estado)}${res.estado !== r.estado ? ' → ' + chipEstado(res.estado) : ''}</td>
+      <td>${r.fecha_prometida ? fechaPalabras(r.fecha_prometida) : '—'}${res.fecha && res.fecha !== r.fecha_prometida ? ' → <b>' + fechaPalabras(res.fecha) + '</b>' : ''}</td>
+      <td class="n ${d > 0 ? 'rojo' : d != null ? 'verde' : ''}">${d == null ? '' : d > 0 ? '+' + d + ' d' : 'a tiempo'}</td>
+      <td class="peq">${esc(recortar(f.origen, 70))}${f.error || f.nota ? `<br><span class="${f.error ? 'rojo' : 'mut'}">${esc(f.error || f.nota)}</span>` : ''}</td>
+      <td>${f.revisar && !f.error ? '<button class="b peq" data-acc="pv-ok">Aceptar</button>' : ''}</td></tr>`;
+  });
+  h += '</table>';
+  if (p.sinRespuesta.length) h += `<details><summary class="peq">${p.sinRespuesta.length} línea(s) del mensaje sin respuesta (no cambian)</summary><p class="peq mut">${p.sinRespuesta.map(r => `OC ${numOC(r.oc)} · ${esc(recortar(r.descripcion, 30))}`).join(' · ')}</p></details>`;
+  const bloqueado = rojas || amarillas || (!cambios.length && p.tipo !== 'depuracion');
+  h += `<div class="fila" style="margin-top:8px"><button class="b pri grande" data-acc="confirmar" ${bloqueado ? 'disabled' : ''}>${p.tipo === 'depuracion' ? 'Confirmar depuración de' : 'Confirmar respuesta de'} ${esc(p.prov)}</button>
+    ${bloqueado ? `<span class="peq rojo">${!cambios.length ? 'No hay cambios para guardar.' : 'Resuelva las filas en rojo y amarillo (corrija, «Aceptar» o «Sin cambio»).'}</span>` : ''}</div>`;
+  return h + '</div>';
+}
+function tarjetaProveedor(g){
+  const p = provCfg(g.proveedor) || {}, k = normH(g.proveedor), cel = celularWa(p.celular), lote = ultimoLote(g.nombreExp);
+  let h = `<div class="panel" data-prov="${esc(k)}"><div class="fila"><h2 style="margin:0">${esc(provAlias(g.proveedor))}</h2>
+    <span class="mut peq">${esc(g.proveedor)} · ${esc(p.contacto || 'sin contacto')} · ${cel ? '+' + cel : '<span class="rojo">sin celular válido en config</span>'} · comprador: ${esc(g.comprador || '—')}</span>
+    <span class="sp"></span>${g.hoy.length ? `<span class="chip NUEVA">${g.hoy.length} para preguntar hoy</span>` : ''}${g.esperando ? ' <span class="chip ESPERANDO_FECHA">esperando respuesta</span>' : ''}</div>`;
+  if (g.pregunta) h += `<p class="peq mut">Último mensaje: ${fmtFH(g.pregunta.fecha_hora)} (${lineasDeMensaje(g.pregunta).length} líneas) · ${g.respuesta ? 'respondido ' + fmtFH(g.respuesta.fecha_hora) : '<span class="rojo">sin respuesta</span>'}
+    ${lote ? ` · <button class="b peq" data-acc="deshacer">Deshacer última respuesta (${fmtFH(lote.fecha)}, ${lote.eventos.length} línea(s))</button>` : ''}</p>`;
+  const dep = depuracionPendiente(g.nombreExp);
+  if (dep) h += `<div class="aviso"><b>Depuración inicial pendiente.</b> Antes del primer WhatsApp, descargue el Excel con todas las líneas abiertas de ${esc(provAlias(g.proveedor))} (${lineasDepuracion(g.nombreExp).length}), concílielo por llamada (ENTREGADO / NUEVA FECHA / CANCELAR) y cárguelo.
+    <div class="fila" style="margin-top:6px"><button class="b pri" data-acc="dep-bajar">Descargar Excel de depuración</button><button class="b" data-acc="dep-cargar">Cargar Excel conciliado</button><button class="b peq" data-acc="dep-omitir">Omitir depuración</button>
+    <input type="file" class="oculto" accept=".xlsx" data-acc="dep-file"></div></div>`;
+  if (g.envio.length){
+    const pl = plantillaPara(g.envio), msg = construirMensaje(g.proveedor, g.envio, pl);
+    h += `<h3>Siguiente mensaje · ${g.envio.length} línea(s) en ${new Set(g.envio.map(r => r.oc)).size} OC · plantilla «${pl}»</h3>${tablaPorOC(g.envio, g.motivos)}
+      ${g.resto ? `<p class="peq mut">Quedan ${g.resto} línea(s) para el siguiente envío (tope de ${R().max_lineas_mensaje} líneas y ${R().max_oc_mensaje} OC por mensaje).</p>` : ''}
+      <div class="fila" style="margin-top:8px"><button class="b wa" data-acc="wa" ${cel && !dep ? '' : 'disabled'}>Abrir WhatsApp</button>
+      <button class="b" data-acc="copiar" ${dep ? 'disabled' : ''}>Copiar mensaje</button><button class="b" data-acc="vermsg">${UI.verMsg[k] ? 'Ocultar' : 'Ver'} mensaje</button>
+      ${msg.length > 3500 ? '<span class="rojo peq">Mensaje largo: WhatsApp puede recortarlo.</span>' : ''}</div>
+      ${UI.verMsg[k] ? `<pre class="msg">${esc(msg)}</pre>` : ''}`;
+  } else if (g.pregunta && g.esperando) h += tablaPorOC(lineasDeMensaje(g.pregunta), null);
+  return h + '</div>';
+}
+/** Tabla de líneas agrupadas por OC con la numeración del mensaje. */
+function tablaPorOC(rs, motivos){
+  return `<table><tr><th></th><th>OC</th><th class="c">Ítem</th><th>Descripción (código)</th><th class="n">Pendiente</th><th>Requerida</th><th>Prometida</th><th>Estado</th><th></th></tr>` +
+    numerarPorOC(rs).map(({ r, oc, n }) => `<tr class="${enRiesgo(r) ? 'riesgo' : ''}"><td>${chipSem(r)}</td><td>${n === 1 ? '<b>' + esc(numOC(oc)) + '</b>' : ''}</td><td class="c"><b>${n}</b></td>
+      <td>${esc(recortar(r.descripcion, 45))} <span class="mut peq">(${esc(r.item)})</span></td><td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td>
+      <td class="${reqVencida(r) ? 'rojo' : ''}">${fechaPalabras(reqEf(r))}${reqVencida(r) ? ` <span class="peq">(plan. ${fmtC(r.fecha_requerida)})</span>` : ''}</td>
+      <td class="${enRiesgo(r) || (r.fecha_prometida && r.fecha_prometida < hoy()) ? 'rojo' : ''}">${r.fecha_prometida ? fechaPalabras(r.fecha_prometida) : '<span class="mut">Sin confirmar</span>'}</td>
+      <td>${chipEstado(estadoVisible(r))}</td><td class="peq mut">${esc((motivos && motivos[r.clave]) || '')}</td></tr>`).join('') + '</table>';
+}
+function grupoPorClave(k){ return gestionHoy(true, true).find(g => normH(g.proveedor) === k); }
+function enlazarHoy(){
+  const bn = $('#btnNuevos'); if (bn) bn.onclick = () => S.dirHandle ? cargarDesdeCarpeta() : $('#inpArchivos').click();
+  const ex = $('#btnExportar'); if (!ex) return;
+  ex.onclick = exportarSeguimiento;
+  $('#chkTodos').onchange = e => { UI.verTodos = e.target.checked; renderTodo(); };
+  $('#chkSinGestion').onchange = e => { UI.sinGestion = e.target.checked; renderTodo(); };
+  $('#btnAnalizar').onclick = () => {
+    UI.pegado = $('#txtPegado').value;
+    if (!UI.pegado.trim()){ alert('Pegue primero las respuestas copiadas de WhatsApp Web.'); return; }
+    UI.analisis = analizarPegado(UI.pegado); UI.confirmados = {}; renderTodo();
+  };
+  const bl = $('#btnLimpiar'); if (bl) bl.onclick = () => { UI.pegado = ''; UI.analisis = null; UI.confirmados = {}; renderTodo(); };
+  document.querySelectorAll('[data-panel]').forEach(div => {
+    const i = +div.dataset.panel, p = UI.analisis.paneles[i];
+    div.addEventListener('change', ev => {
+      const tr = ev.target.closest('tr[data-fila]'); if (!tr) return;
+      const f = p.filas[+tr.dataset.fila];
+      const accion = tr.querySelector('[data-acc=pv-acc]').value, fecha = tr.querySelector('[data-acc=pv-fecha]').value;
+      const usaFecha = accion === 'NO' || accion === 'FECHA';
+      const v = validarAccion(f.r, accion, usaFecha ? fecha : '');
+      Object.assign(f, { accion: usaFecha && !fecha ? accion : v.accion, fecha: v.fecha, error: v.error, revisar:false, nota: v.nota || 'editado a mano' });
+      renderTodo();
+    });
+    div.addEventListener('click', ev => {
+      const acc = ev.target.dataset && ev.target.dataset.acc;
+      if (acc === 'pv-ok'){ const f = p.filas[+ev.target.closest('tr').dataset.fila]; f.revisar = false; f.nota = (f.nota || '') + ' · aceptado'; renderTodo(); }
+      if (acc === 'confirmar'){
+        if (!S.comprador){ alert('Elija primero su nombre de comprador.'); return; }
+        if (!confirm(`¿Confirmar la respuesta de ${p.prov}?\n\nSe actualizarán ${p.filas.filter(f => f.accion !== 'NINGUNA').length} línea(s).`)) return;
+        UI.confirmados[i] = confirmarPanel(p); renderTodo();
+      }
+    });
+  });
+  document.querySelectorAll('[data-prov]').forEach(card => {
+    const k = card.dataset.prov;
+    card.addEventListener('click', async ev => {
+      const acc = ev.target.dataset && ev.target.dataset.acc; if (!acc || ev.target.tagName !== 'BUTTON') return;
+      const g = grupoPorClave(k); if (!g) return;
+      if (acc === 'vermsg'){ UI.verMsg[k] = !UI.verMsg[k]; renderTodo(); }
+      else if (acc === 'dep-bajar') descargarDepuracion(g.nombreExp);
+      else if (acc === 'dep-cargar'){ const inp = card.querySelector('[data-acc=dep-file]'); inp.onchange = e => { if (e.target.files[0]) cargarDepuracion(g.nombreExp, e.target.files[0]); }; inp.click(); }
+      else if (acc === 'dep-omitir'){ if (confirm(`¿Omitir la depuración inicial de ${g.proveedor}? Se podrá enviar el WhatsApp de inmediato.`)){ marcarDepuracion(g.nombreExp, 'Depuración omitida por ' + (S.comprador || 'comprador')); renderTodo(); } }
+      else if (acc === 'deshacer'){
+        const l = ultimoLote(g.nombreExp);
+        if (l && confirm(`¿Deshacer la respuesta de ${g.proveedor} registrada el ${fmtFH(l.fecha)}?\n\n${l.eventos.length} línea(s) vuelven a su estado anterior. Queda registrado en el historial.`)){
+          const n = deshacerUltima(g.nombreExp); S.avisos = [`Respuesta de ${provAlias(g.proveedor)} deshecha (${n} línea(s)).`]; renderTodo();
+        }
+      }
+      else if (acc === 'wa' || acc === 'copiar'){
+        if (!S.comprador){ alert('Elija primero su nombre de comprador (arriba a la derecha).'); return; }
+        const pl = plantillaPara(g.envio), msg = construirMensaje(g.proveedor, g.envio, pl);
+        if (acc === 'wa'){
+          window.open(`https://wa.me/${celularWa((provCfg(g.proveedor) || {}).celular)}?text=${encodeURIComponent(msg)}`, '_blank');
+          registrarPregunta(g.nombreExp, g.envio, pl, msg);
+        } else {
+          try{ await navigator.clipboard.writeText(msg); }catch(e){ prompt('Copie el mensaje:', msg); }
+          if (confirm('Mensaje copiado. ¿Registrar la pregunta como enviada ahora?')) registrarPregunta(g.nombreExp, g.envio, pl, msg);
+        }
+        renderTodo();
+      }
+    });
+  });
+}
+
+/* =========================================================================
+   Tablero
+   ========================================================================= */
+const TAB = { vista:'resumen', inactivos:false };
+/** Indicadores por proveedor. Una pregunta cuenta como respondida si llega una respuesta antes de la siguiente pregunta. */
+function metricasProveedores(){
+  const nombres = new Map();
+  (S.config.proveedores || []).forEach(p => nombres.set(normH(p.proveedor), p.proveedor));
+  if (TAB.inactivos) Object.values(S.seg).forEach(r => { if (!nombres.has(normH(r.proveedor))) nombres.set(normH(r.proveedor), r.proveedor); });
+  const out = [];
+  for (const [k, nombre] of nombres){
+    if (!TAB.inactivos && !provActivo(nombre)) continue;
+    const lin = Object.values(S.seg).filter(r => normH(r.proveedor) === k);
+    const preg = S.eventos.filter(e => e.tipo === 'PREGUNTA' && normH(e.proveedor) === k).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
+    const resp = respuestasProv(nombre).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);   // sin respuestas deshechas
+    let respondidas = 0, sumDias = 0;
+    preg.forEach((q, i) => {
+      const hasta = preg[i + 1] ? preg[i + 1].fecha_hora : '9999';
+      const r = resp.find(x => x.fecha_hora >= q.fecha_hora && x.fecha_hora < hasta);
+      if (r){ respondidas++; sumDias += horasEntre(q.fecha_hora, r.fecha_hora) / 24; }
+    });
+    const abiertas = lin.filter(r => ACTIVOS.has(r.estado) || r.estado === 'ENTREGADO_POR_CONFIRMAR' || r.estado === 'POR_CANCELAR');
+    const cambios = lin.reduce((s, r) => s + (+r.contador_cambios || 0), 0);
+    out.push({ proveedor:nombre, alias:provAlias(nombre), comprador:provComprador(nombre), activo:provActivo(nombre),
+      abiertas:abiertas.length, sinFecha:lin.filter(r => ACTIVOS.has(r.estado) && !r.fecha_prometida).length,
+      conFecha:lin.filter(r => ACTIVOS.has(r.estado) && r.fecha_prometida).length,
+      vencidas:lin.filter(r => ACTIVOS.has(r.estado) && vencida(r)).length,
+      preguntas:preg.length, respondidas, pctResp: preg.length ? respondidas / preg.length : null,
+      diasResp: respondidas ? sumDias / respondidas : null,
+      riesgo:lin.filter(enRiesgo).length, cambios, lineasConCambios:lin.filter(r => +r.contador_cambios > 0).length,
+      maxCambios:lin.reduce((m, r) => Math.max(m, +r.contador_cambios || 0), 0),
+      sinNecesidad:lin.filter(r => ACTIVOS.has(r.estado) && r.sinNecesidad).length, porCancelar:lin.filter(r => r.estado === 'POR_CANCELAR').length,
+      rojas:lin.filter(r => semaforo(r) === 'rojo').length, verdes:lin.filter(r => semaforo(r) === 'verde').length,
+      epc:lin.filter(r => r.estado === 'ENTREGADO_POR_CONFIRMAR').length, almacen:lin.filter(revisarAlmacen).length,
+      cerradas:lin.filter(r => CERRADOS.has(r.estado)).length });
+  }
+  return out.sort((a, b) => b.riesgo - a.riesgo || a.alias.localeCompare(b.alias));
+}
+function lineasRiesgo(){
+  return Object.values(S.seg).filter(r => enRiesgo(r) && (TAB.inactivos || provActivo(r.proveedor))).sort((a, b) => desfase(b) - desfase(a));
+}
+function lineasCambios(){
+  return Object.values(S.seg).filter(r => +r.contador_cambios > 0 && (TAB.inactivos || provActivo(r.proveedor))).sort((a, b) => b.contador_cambios - a.contador_cambios || (a.proveedor < b.proveedor ? -1 : 1));
+}
+const pct = v => v == null ? '—' : Math.round(v * 100) + ' %';
+const d1 = v => v == null ? '—' : (Math.round(v * 10) / 10).toLocaleString('es-CO');
+function vistaTablero(){
+  const m = metricasProveedores(), riesgo = lineasRiesgo(), camb = lineasCambios();
+  const tot = k => m.reduce((s, x) => s + x[k], 0);
+  const preg = tot('preguntas'), resp = tot('respondidas');
+  let h = `<div class="kpis">
+    <div class="kpi"><div class="v">${tot('abiertas')}</div><div class="l">líneas abiertas</div></div>
+    <div class="kpi"><div class="v">${pct(preg ? resp / preg : null)}</div><div class="l">respuesta (${resp}/${preg} mensajes)</div></div>
+    <div class="kpi ${riesgo.length ? 'rojo' : ''}"><div class="v">${riesgo.length}</div><div class="l">riesgo de faltante (prometida &gt; requerida)</div></div>
+    <div class="kpi"><div class="v">${tot('cambios')}</div><div class="l">cambios de fecha</div></div>
+    <div class="kpi"><div class="v">${tot('sinNecesidad')}</div><div class="l">sin necesidad en planeación</div></div>
+    <div class="kpi"><div class="v">${tot('porCancelar')}</div><div class="l">por cancelar en Siesa</div></div>
+    <div class="kpi"><div class="v">${tot('epc')}</div><div class="l">entregados por confirmar</div></div>
+    <div class="kpi ${tot('almacen') ? 'rojo' : ''}"><div class="v">${tot('almacen')}</div><div class="l">revisar con almacén</div></div></div>
+  <div class="panel fila">
+    <button class="b ${TAB.vista === 'resumen' ? 'pri' : ''}" data-tv="resumen">Resumen por proveedor</button>
+    <button class="b ${TAB.vista === 'riesgo' ? 'pri' : ''}" data-tv="riesgo">Riesgo de faltante (${riesgo.length})</button>
+    <button class="b ${TAB.vista === 'cambios' ? 'pri' : ''}" data-tv="cambios">Cambios de fecha por línea (${camb.length})</button>
+    <label class="chk"><input type="checkbox" id="tbInact" ${TAB.inactivos ? 'checked' : ''}> Incluir proveedores no activos</label>
+    <span class="sp"></span><button class="b pri" id="tbExport">Exportar tablero a Excel</button></div>`;
+  if (TAB.vista === 'resumen'){
+    h += `<div class="panel"><h2>Por proveedor</h2><div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>Comprador</th><th class="n">Abiertas</th><th class="n">Semáforo<br>verde / rojo</th><th class="n">Sin fecha</th><th class="n">Vencidas</th><th class="n">Sin necesidad</th><th class="n">Por cancelar</th>
+      <th class="n">Mensajes</th><th class="n">% respuesta</th><th class="n">Días prom. respuesta</th><th class="n">Riesgo faltante</th><th class="n">Cambios de fecha</th>
+      <th class="n">Líneas con cambios</th><th class="n">Máx. cambios / línea</th><th class="n">Entregados por confirmar</th><th class="n">Revisar almacén</th></tr></thead><tbody>
+      ${m.map(x => `<tr><td><b>${esc(x.alias)}</b>${x.activo ? '' : ' <span class="chip">inactivo</span>'}<br><span class="peq mut">${esc(x.proveedor)}</span></td><td>${esc(x.comprador)}</td>
+        <td class="n">${x.abiertas}</td><td class="n"><span class="verde">${x.verdes}</span> / <span class="rojo">${x.rojas}</span></td><td class="n">${x.sinFecha}</td><td class="n ${x.vencidas ? 'rojo' : ''}">${x.vencidas}</td><td class="n">${x.sinNecesidad}</td><td class="n">${x.porCancelar}</td><td class="n">${x.preguntas}</td>
+        <td class="n">${pct(x.pctResp)}</td><td class="n">${d1(x.diasResp)}</td><td class="n ${x.riesgo ? 'rojo' : ''}">${x.riesgo}</td><td class="n">${x.cambios}</td>
+        <td class="n">${x.lineasConCambios}</td><td class="n">${x.maxCambios}</td><td class="n">${x.epc}</td><td class="n ${x.almacen ? 'rojo' : ''}">${x.almacen}</td></tr>`).join('') || '<tr><td colspan="17" class="vacio">Sin datos</td></tr>'}
+      </tbody></table></div></div>`;
+  } else if (TAB.vista === 'riesgo'){
+    h += `<div class="panel"><h2>Riesgo de faltante</h2><p class="peq mut">Líneas abiertas cuya fecha prometida supera la fecha requerida, de mayor a menor desfase.</p>
+      <div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>OC</th><th>Solicitud</th><th>Ítem</th><th>Descripción</th><th class="n">Pendiente</th><th>Requerida</th><th>Prometida</th><th class="n">Desfase (días)</th><th class="n">Cambios</th><th>Estado</th></tr></thead><tbody>
+      ${riesgo.map(r => `<tr class="riesgo"><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td>
+        <td class="n">${fmtN(r.cantidad_pendiente)} ${esc(r.unidad)}</td><td>${fmtF(r.fecha_requerida)}</td><td class="rojo">${fmtF(r.fecha_prometida)}</td>
+        <td class="n rojo">+${desfase(r)}</td><td class="n">${r.contador_cambios || ''}</td><td>${chipEstado(r.estado)}</td></tr>`).join('') || '<tr><td colspan="11" class="vacio">Sin líneas en riesgo</td></tr>'}
+      </tbody></table></div></div>`;
+  } else {
+    h += `<div class="panel"><h2>Cambios de fecha por línea</h2><div class="tabla-scroll"><table><thead><tr><th>Proveedor</th><th>OC</th><th>Solicitud</th><th>Ítem</th><th>Descripción</th><th class="n">Cambios</th><th>Fecha anterior</th><th>Fecha prometida</th><th>Requerida</th><th>Estado</th><th>Historial</th></tr></thead><tbody>
+      ${camb.map(r => `<tr><td>${esc(provAlias(r.proveedor))}</td><td>${esc(r.oc)}</td><td>${esc(r.solicitud)}</td><td>${esc(r.item)}</td><td>${esc(r.descripcion)}</td>
+        <td class="n"><b>${r.contador_cambios}</b></td><td>${fmtF(r.fecha_prometida_anterior)}</td><td class="${enRiesgo(r) ? 'rojo' : ''}">${fmtF(r.fecha_prometida)}</td><td>${fmtF(r.fecha_requerida)}</td><td>${chipEstado(r.estado)}</td>
+        <td class="peq mut">${historialFechas(r.clave).map(fmtC).join(' → ')}</td></tr>`).join('') || '<tr><td colspan="11" class="vacio">Sin cambios de fecha</td></tr>'}
+      </tbody></table></div></div>`;
+  }
+  return h;
+}
+function historialFechas(clave){
+  const ev = S.eventos.filter(e => e.clave === clave && e.tipo === 'RESPUESTA' && e.fecha_nueva).sort((a, b) => a.fecha_hora < b.fecha_hora ? -1 : 1);
+  const f = []; ev.forEach(e => { if (e.fecha_anterior && !f.length) f.push(e.fecha_anterior); if (f[f.length - 1] !== e.fecha_nueva) f.push(e.fecha_nueva); });
+  return f;
+}
+function libroTablero(){
+  const wb = XLSX.utils.book_new();
+  const m = metricasProveedores();
+  const ws1 = XLSX.utils.aoa_to_sheet([['Proveedor','Alias','Comprador','Líneas abiertas','Semáforo verde','Semáforo rojo','Sin necesidad en planeación','Por cancelar','Sin fecha','Vencidas','Mensajes enviados','Mensajes respondidos','% respuesta','Días promedio respuesta','Líneas riesgo faltante','Cambios de fecha','Líneas con cambios','Máx. cambios por línea','Entregados por confirmar','Revisar con almacén','Cerradas'],
+    ...m.map(x => [x.proveedor, x.alias, x.comprador, x.abiertas, x.verdes, x.rojas, x.sinNecesidad, x.porCancelar, x.sinFecha, x.vencidas, x.preguntas, x.respondidas, x.pctResp == null ? '' : Math.round(x.pctResp * 1000) / 1000, x.diasResp == null ? '' : Math.round(x.diasResp * 10) / 10, x.riesgo, x.cambios, x.lineasConCambios, x.maxCambios, x.epc, x.almacen, x.cerradas])]);
+  for (let i = 1; i <= m.length; i++){ const c = ws1[XLSX.utils.encode_cell({ r:i, c:12 })]; if (c && c.t === 'n') c.z = '0%'; }
+  ws1['!cols'] = [{wch:44},{wch:14},{wch:18}, ...Array(14).fill({wch:12})];
+  XLSX.utils.book_append_sheet(wb, ws1, 'resumen_proveedores');
+  const lin = (rs, extra) => rs.map(r => ({ ...r, proveedor_alias:provAlias(r.proveedor), desfase_dias:desfase(r) == null ? '' : desfase(r),
+    riesgo_faltante:enRiesgo(r) ? 'SI' : '', fecha_requerida_efectiva:reqEf(r), semaforo:SEM_ETQ[semaforo(r)] || '', estado_visible:ETQ_ESTADO[estadoVisible(r)] || r.estado, revisar_almacen:revisarAlmacen(r) ? 'SI' : '', ...(extra ? extra(r) : {}) }));
+  const colsL = ['proveedor_alias','proveedor','oc','item','solicitud','descripcion','unidad','cantidad_pendiente','fecha_oc','fecha_requerida','fecha_requerida_efectiva','fecha_prometida','desfase_dias','semaforo','estado_visible','contador_cambios','fecha_prometida_anterior','riesgo_faltante','revisar_almacen','ultima_pregunta','ultima_respuesta','fecha_entregado','comprador'];
+  XLSX.utils.book_append_sheet(wb, hojaConFechas(colsL, lin(lineasRiesgo())), 'riesgo_faltante');
+  XLSX.utils.book_append_sheet(wb, hojaConFechas([...colsL, 'historial'], lin(lineasCambios(), r => ({ historial:historialFechas(r.clave).map(fmtF).join(' > ') }))), 'cambios_por_linea');
+  const todas = Object.values(S.seg).filter(r => TAB.inactivos || provActivo(r.proveedor)).sort((a, b) => (a.proveedor + a.clave).localeCompare(b.proveedor + b.clave));
+  XLSX.utils.book_append_sheet(wb, hojaConFechas(colsL, lin(todas)), 'detalle_lineas');
+  return wb;
+}
+function enlazarTablero(){
+  document.querySelectorAll('[data-tv]').forEach(b => b.onclick = () => { TAB.vista = b.dataset.tv; renderTodo(); });
+  $('#tbInact').onchange = e => { TAB.inactivos = e.target.checked; renderTodo(); };
+  $('#tbExport').onclick = () => XLSX.writeFile(libroTablero(), `tablero_seguimiento_${sello()}.xlsx`);
+}
+/* =========================================================================
+   Modo administrador
+   ========================================================================= */
+const ADM = { prevProv:'', prevPl:'', prevTrato:'' };
+const admDesbloqueado = () => { try{ return sessionStorage.getItem('segprov.adm') === '1'; }catch(e){ return !!ADM.ok; } };
+function guardarConfigLocal(){
+  S.configLocalSucia = true;
+  lsSet(LS.config, { config:S.config, sucia:true, ts:Date.now() });
+  if (!/sin exportar/.test(S.configFuente)) S.configFuente += ' + cambios locales sin exportar';
+  renderCabecera();
+}
+function provsExplosion(){
+  const c = {};
+  if (S.ocs) for (const L of Object.values(S.ocs.lineas)) c[L.proveedor] = (c[L.proveedor] || 0) + 1;
+  return c;
+}
+function lineasEjemplo(prov){
+  const g = gestionHoy(true, true).find(x => normH(x.proveedor) === normH(prov));
+  if (g && g.envio.length) return g.envio;
+  return Object.values(S.seg).filter(r => normH(r.proveedor) === normH(prov) && ACTIVOS.has(r.estado)).sort(ordenUrgencia).slice(0, 5);
+}
+function previaPlantilla(){
+  const prov = ADM.prevProv || ((S.config.proveedores[0] || {}).proveedor || '');
+  const pl = ADM.prevPl || 'primera_solicitud';
+  if (!prov) return 'Agregue un proveedor para ver la vista previa.';
+  const p = provCfg(prov) || {};
+  let rs = lineasEjemplo(prov);
+  if (!rs.length) rs = [{ clave:'EJ', oc:'OC-000000', linea:'1', item:'ITEM-EJEMPLO', descripcion:'Ítem de ejemplo (el proveedor no tiene líneas activas)', unidad:'UN', cantidad_pendiente:10, fecha_requerida:addDias(hoy(), 10), fecha_prometida:'' }];
+  const tratoOrig = p.trato;
+  if (ADM.prevTrato && provCfg(prov)) provCfg(prov).trato = ADM.prevTrato;
+  const m = construirMensaje(prov, rs, pl, S.comprador || provComprador(prov) || 'Comprador');
+  if (provCfg(prov)) provCfg(prov).trato = tratoOrig;
+  return m;
+}
+function vistaAdmin(){
+  if (!admDesbloqueado()) return `<div class="panel" style="max-width:420px"><h2>Modo administrador</h2>
+    <p class="peq mut">El PIN es solo un freno visual. La seguridad real son los permisos de OneDrive sobre config.xlsx.</p>
+    <div class="fila"><input type="password" id="admPin" placeholder="PIN"><button class="b pri" id="admEntrar">Entrar</button></div></div>`;
+  const cfg = S.config, enEx = provsExplosion();
+  const nombresEx = Object.keys(enEx).sort();
+  const faltantes = nombresEx.filter(n => !provCfg(n));
+  const rg = { ...REGLAS_DEF, ...cfg.reglas };
+  let h = S.configLocalSucia ? '<div class="aviso">Hay cambios de configuración guardados solo en este navegador. Use «Exportar config.xlsx» para publicarlos a los compradores.</div>' : '';
+  h += `<div class="panel fila"><b>Configuración:</b> <span class="mut">${esc(S.configFuente)}</span><span class="sp"></span>
+    <button class="b pri" id="admExportar">Exportar config.xlsx</button><button class="b" id="admDescartar">Descartar cambios locales</button><button class="b" id="admSalir">Bloquear</button></div>`;
+  h += `<div class="panel"><h2>Fecha simulada (solo pruebas)</h2><p class="peq mut">Permite ver qué preguntaría la herramienta otro día. Mientras esté activa se muestra una franja roja y no se guarda automáticamente en respuestas/.</p>
+    <div class="fila"><input type="date" id="admSim" value="${esc(SIMULADA || '')}"><button class="b" id="admSimOk">Aplicar</button><button class="b" id="admSimNo" ${fechaSimulada() ? '' : 'disabled'}>Volver a la fecha real</button>
+    <span class="peq">Hoy para la herramienta: <b>${fmtF(hoy())}</b></span></div></div>`;
+  // Proveedores
+  h += `<div class="panel"><h2>Proveedores</h2><p class="peq mut">«proveedor» debe ser el nombre exacto del listado de OC de Siesa. «Nombre en WhatsApp» es como aparece el contacto al copiar de WhatsApp Web (ej. «PRAMEC - Carlos»; varios separados por ;). Celular de 10 dígitos (se antepone 57). Solo los activos (SI) reciben mensajes.</p>
+    <datalist id="dlProv">${nombresEx.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+    <table><tr><th>Proveedor (nombre en la explosión)</th><th>Alias</th><th>Activo</th><th>Contacto</th><th>Celular</th><th>Nombre en WhatsApp</th><th>Comprador</th><th>Trato</th><th>En explosión</th><th></th></tr>
+    ${cfg.proveedores.map((p, i) => `<tr data-i="${i}">
+      <td><input type="text" data-f="proveedor" list="dlProv" value="${esc(p.proveedor)}" style="width:100%;min-width:340px"></td>
+      <td><input type="text" data-f="alias" value="${esc(p.alias)}" size="10"></td>
+      <td><select data-f="activo"><option ${p.activo !== 'NO' ? 'selected' : ''}>SI</option><option ${p.activo === 'NO' ? 'selected' : ''}>NO</option></select></td>
+      <td><input type="text" data-f="contacto" value="${esc(p.contacto)}" size="16"></td>
+      <td><input type="text" data-f="celular" value="${esc(p.celular)}" size="12"> ${p.celular && !celularWa(p.celular) ? '<span class="rojo peq">inválido</span>' : ''}</td>
+      <td><input type="text" data-f="nombre_whatsapp" value="${esc(p.nombre_whatsapp || '')}" size="18" placeholder="PRAMEC - Carlos"></td>
+      <td><input type="text" data-f="comprador" value="${esc(p.comprador)}" size="14"></td>
+      <td><select data-f="trato"><option value="usted" ${p.trato !== 'tu' ? 'selected' : ''}>usted</option><option value="tu" ${p.trato === 'tu' ? 'selected' : ''}>tú</option></select></td>
+      <td>${S.explosion ? (enEx[Object.keys(enEx).find(n => normH(n) === normH(p.proveedor))] ? '<span class="verde">✓ ' + enEx[Object.keys(enEx).find(n => normH(n) === normH(p.proveedor))] + ' líneas</span>' : '<span class="rojo">no aparece</span>') : ''}</td>
+      <td><button class="b peq" data-adm="delProv">Quitar</button></td></tr>`).join('')}
+    </table><p><button class="b" data-adm="addProv">Agregar proveedor</button></p>
+    ${faltantes.length ? `<details><summary class="peq">${faltantes.length} proveedor(es) nacionales de la explosión no están en la configuración</summary>
+      <table>${faltantes.map(n => `<tr><td>${esc(n)}</td><td class="n">${enEx[n]} líneas</td><td><button class="b peq" data-adm="addEx" data-nombre="${esc(n)}">Agregar (inactivo)</button></td></tr>`).join('')}</table></details>` : ''}
+  </div>`;
+  // Reglas
+  h += `<div class="panel"><h2>Reglas</h2><table style="max-width:1000px"><tr><th>Parámetro</th><th>Valor</th><th>Descripción</th></tr>
+    ${Object.keys(REGLAS_DEF).map(k => `<tr><td><code>${k}</code></td><td><input type="text" data-regla="${k}" value="${esc(rg[k])}" size="${/nombre|prefijos/.test(k) ? 22 : 10}"></td><td class="peq mut">${esc(REGLAS_DESC[k])}</td></tr>`).join('')}
+    </table><p class="peq mut">Valores efectivos: horizonte ${R().horizonte_semanas} semanas · repregunta ${R().dias_antes_repregunta.join(', ')} días antes · vencidas cada ${R().frecuencia_vencidas_dias} días · recordatorio a las ${R().horas_sin_respuesta_para_recordatorio} h.</p></div>`;
+  // Plantillas
+  const provSel = ADM.prevProv || ((cfg.proveedores[0] || {}).proveedor || '');
+  h += `<div class="panel"><h2>Plantillas</h2>
+    <p class="peq mut">Campos: <code>{contacto}</code> <code>{comprador}</code> <code>{detalle}</code> <code>{n_lineas}</code> <code>{formato}</code> (instrucciones de respuesta según las líneas). Si falta, se agrega al final: «${esc(AVISO_PLATAFORMA)}».</p>
+    <table><tr><th>Plantilla</th><th>Usted</th><th>Tú</th></tr>
+    ${PLANTILLAS_NOMBRES.map(k => `<tr><td><code>${k}</code></td>
+      <td><textarea data-pl="${k}" data-trato="usted" rows="7">${esc(cfg.plantillas[k].usted)}</textarea></td>
+      <td><textarea data-pl="${k}" data-trato="tu" rows="7">${esc(cfg.plantillas[k].tu)}</textarea></td></tr>`).join('')}</table>
+    <h3>Vista previa con datos reales</h3>
+    <div class="fila"><select id="pvProv">${cfg.proveedores.map(p => `<option value="${esc(p.proveedor)}" ${p.proveedor === provSel ? 'selected' : ''}>${esc(p.alias || p.proveedor)}</option>`).join('')}</select>
+      <select id="pvPl">${PLANTILLAS_NOMBRES.map(k => `<option ${k === (ADM.prevPl || 'primera_solicitud') ? 'selected' : ''}>${k}</option>`).join('')}</select>
+      <select id="pvTrato"><option value="">trato del proveedor</option><option value="usted" ${ADM.prevTrato === 'usted' ? 'selected' : ''}>usted</option><option value="tu" ${ADM.prevTrato === 'tu' ? 'selected' : ''}>tú</option></select></div>
+    <pre class="msg" id="pvMsg">${esc(previaPlantilla())}</pre></div>`;
+  // Exclusiones
+  h += `<div class="panel"><h2>Exclusiones</h2><p class="peq mut">OC, ítems o líneas que no se deben preguntar. Tipo LINEA: valor «OC-12345|10» (OC|línea).</p>
+    <table style="max-width:900px"><tr><th>Tipo</th><th>Valor</th><th>Motivo</th><th></th></tr>
+    ${cfg.exclusiones.map((x, i) => `<tr data-x="${i}"><td><select data-xf="tipo">${['OC','ITEM','LINEA'].map(t => `<option ${t === x.tipo ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
+      <td><input type="text" data-xf="valor" value="${esc(x.valor)}"></td><td><input type="text" data-xf="motivo" value="${esc(x.motivo)}" style="width:100%"></td>
+      <td><button class="b peq" data-adm="delEx">Quitar</button></td></tr>`).join('')}
+    </table><p><button class="b" data-adm="addExc">Agregar exclusión</button></p></div>`;
+  return h;
+}
+function enlazarAdmin(){
+  if (!admDesbloqueado()){
+    const go = () => {
+      if ($('#admPin').value === R().pin_admin){ try{ sessionStorage.setItem('segprov.adm', '1'); }catch(e){ ADM.ok = true; } renderTodo(); }
+      else alert('PIN incorrecto.');
+    };
+    $('#admEntrar').onclick = go; $('#admPin').onkeydown = e => { if (e.key === 'Enter') go(); };
+    return;
+  }
+  const cfg = S.config;
+  $('#admSimOk').onclick = () => { const v = $('#admSim').value; if (!v){ alert('Elija una fecha.'); return; } aplicarFechaSimulada(v); S.avisos = ['Fecha simulada: ' + fmtF(v) + '.']; if (ULTIMA_CARGA) procesar(ULTIMA_CARGA); else renderTodo(); };
+  $('#admSimNo').onclick = () => { aplicarFechaSimulada(''); S.avisos = ['Se volvió a la fecha real.']; if (ULTIMA_CARGA) procesar(ULTIMA_CARGA); else renderTodo(); };
+  $('#admSalir').onclick = () => { try{ sessionStorage.removeItem('segprov.adm'); }catch(e){} ADM.ok = false; renderTodo(); };
+  $('#admExportar').onclick = async () => {
+    if (S.dirHandle && !confirm('Se sobrescribirá config.xlsx en la carpeta «' + S.dirHandle.name + '». ¿Continuar?')) return;
+    const donde = await guardarLibro(libroConfig(cfg), 'config.xlsx', '');
+    lsSet(LS.config, { config:cfg, sucia:false, ts:Date.now() }); S.configLocalSucia = false;
+    S.configFuente = 'config.xlsx (exportado ' + fmtFH(ahora()) + ')';
+    S.avisos = [donde === 'carpeta' ? 'config.xlsx actualizado en la carpeta.' : 'config.xlsx descargado: reemplace el archivo en la carpeta de OneDrive.'];
+    renderTodo();
+  };
+  $('#admDescartar').onclick = async () => {
+    if (!confirm('¿Descartar los cambios locales y volver a config.xlsx?')) return;
+    try{ localStorage.removeItem(LS.config); }catch(e){}
+    if (ULTIMA_CARGA) await procesar(ULTIMA_CARGA); else { S.config = configDefecto(); renderTodo(); }
+  };
+  const main = $('#main');
+  main.onchange = e => {
+    const t = e.target;
+    const tr = t.closest('tr');
+    if (t.dataset.f && tr && tr.dataset.i != null){
+      cfg.proveedores[+tr.dataset.i][t.dataset.f] = t.dataset.f === 'proveedor' ? t.value.trim().replace(/\s+/g, ' ') : t.value.trim();
+      guardarConfigLocal(); renderTodo();
+    } else if (t.dataset.regla){ cfg.reglas[t.dataset.regla] = t.value.trim(); guardarConfigLocal(); renderTodo(); }
+    else if (t.dataset.xf && tr){ cfg.exclusiones[+tr.dataset.x][t.dataset.xf] = t.dataset.xf === 'tipo' ? t.value : t.value.trim(); guardarConfigLocal(); }
+    else if (t.id === 'pvProv'){ ADM.prevProv = t.value; $('#pvMsg').textContent = previaPlantilla(); }
+    else if (t.id === 'pvPl'){ ADM.prevPl = t.value; $('#pvMsg').textContent = previaPlantilla(); }
+    else if (t.id === 'pvTrato'){ ADM.prevTrato = t.value; $('#pvMsg').textContent = previaPlantilla(); }
+  };
+  main.oninput = e => {
+    const t = e.target;
+    if (t.dataset.pl){
+      cfg.plantillas[t.dataset.pl][t.dataset.trato] = t.value;
+      ADM.prevPl = t.dataset.pl; if (!ADM.prevTrato) ADM.prevTrato = t.dataset.trato;
+      $('#pvPl').value = t.dataset.pl; $('#pvMsg').textContent = previaPlantilla();
+      guardarConfigLocal();
+    }
+  };
+  main.onclick = e => {
+    const a = e.target.dataset && e.target.dataset.adm; if (!a) return;
+    const tr = e.target.closest('tr');
+    if (a === 'addProv') cfg.proveedores.push({ proveedor:'', alias:'', activo:'SI', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' });
+    else if (a === 'delProv'){ if (!confirm('¿Quitar este proveedor de la configuración?')) return; cfg.proveedores.splice(+tr.dataset.i, 1); }
+    else if (a === 'addEx') cfg.proveedores.push({ proveedor:e.target.dataset.nombre, alias:'', activo:'NO', contacto:'', celular:'', nombre_whatsapp:'', comprador:'', trato:'usted' });
+    else if (a === 'addExc') cfg.exclusiones.push({ tipo:'OC', valor:'', motivo:'' });
+    else if (a === 'delEx') cfg.exclusiones.splice(+tr.dataset.x, 1);
+    else return;
+    guardarConfigLocal(); renderTodo();
+  };
+}
+
+/* =========================================================================
+   Arranque
+   ========================================================================= */
+function enlazarGlobal(){
+  document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => { S.tab = b.dataset.tab; renderTodo(); });
+  $('#btnCarpeta').onclick = conectarCarpeta;
+  $('#btnReconectar').onclick = reconectarCarpeta;
+  $('#btnArchivos').onclick = () => $('#inpArchivos').click();
+  $('#inpArchivos').onchange = e => { if (e.target.files.length) cargarArchivosSueltos(e.target.files); e.target.value = ''; };
+  $('#btnRecargar').onclick = async () => {
+    if (S.dirHandle) await cargarDesdeCarpeta();
+    else if (ULTIMA_CARGA) await procesar(ULTIMA_CARGA);
+    else renderTodo();
+  };
+  $('#selComprador').onchange = e => {
+    let v = e.target.value;
+    if (v === '__otro__'){ v = (prompt('Nombre del comprador:') || '').trim(); }
+    S.comprador = v; lsSet(LS.comprador, v); renderTodo(); if (S.modificadas.size) guardadoAutomatico();
+  };
+}
+async function init(){
+  enlazarGlobal();
+  if (!window.XLSX){ $('#main').innerHTML = '<div class="error">No se pudo cargar SheetJS (sin internet o CDN bloqueado). Copie <b>xlsx.full.min.js</b> en la misma carpeta de este archivo.</div>'; return; }
+  const h = await idbGet('carpeta');
+  if (h){
+    try{
+      if ((await h.queryPermission({ mode:'readwrite' })) === 'granted'){ S.dirHandle = h; await cargarDesdeCarpeta(); return; }
+    }catch(e){}
+    const b = $('#btnReconectar'); b.textContent = 'Reconectar «' + h.name + '»'; b.classList.remove('oculto');
+  }
+  const local = lsGet(LS.config, null); if (local){ S.config = local.config; S.configFuente = 'guardada en este navegador'; }
+  S.avisos = ['Conecte la carpeta de OneDrive del seguimiento (Edge/Chrome) o use «Cargar archivos…» para seleccionar la explosión, config.xlsx y los archivos de respuestas/.'];
+  renderTodo();
+}
+window.App = { S, R, parseFecha, parseFechaHora, procesarOC, procesarExplosion, calcularFechasRequeridas, leerMatriz, textoAMatriz, normItem, numOC, reqEf, semaforo, estadoVisible, leerConfig, libroConfig, leerSeguimiento, libroSeguimiento,
+  conciliar, procesar, elegirExplosion, fechaDeNombreExplosion, detectarColumnas, setAhora, hoy, ahora, diasEntre, addDias,
+  revisarAlmacen, enRiesgo, renderTodo, evaluarLinea, gestionHoy, plantillaPara, construirMensaje, ctxProveedor, separarWhatsApp, identificarRemitente, analizarPegado, confirmarPanel, deshacerUltima, ultimoLote, mensajesVigentes, guardadoAutomatico, marcarDepuracion, libroDepuracion, analizarDepuracion, depuracionPendiente, lineasDepuracion, aplicarFechaSimulada, fechaSimulada, archivoDelDia,
+  interpretarNatural, loteMensaje, numerarPorOC, detalleMensaje, fechaPalabras, metricasProveedores, lineasRiesgo, lineasCambios, libroTablero, historialFechas, validarAccion, aplicarAccion, registrarPregunta, datosMiSeguimiento, lineasDeMensaje, fechaRespuesta, vencida };
+init();
+</script>
+</body>
+</html>

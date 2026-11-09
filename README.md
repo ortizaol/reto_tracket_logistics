@@ -1,5 +1,8 @@
 # Radar de Disrupciones
 
+> Este repositorio también contiene [`seguimiento_proveedores/`](seguimiento_proveedores/README.md): herramienta de seguimiento
+> de fechas de entrega de proveedores nacionales vía WhatsApp (un solo HTML, independiente del Radar).
+
 Sistema que escucha noticias y redes sociales y muestra, en un dashboard
 estático, eventos que amenazan la cadena de suministro Colombia ↔ México
 (paros portuarios, bloqueos de vías, clima extremo, congestión, líos de
